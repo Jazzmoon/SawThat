@@ -13,15 +13,6 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func setupRoutes() {
-	http.HandleFunc("/", homepage)
-	http.HandleFunc("/ws", wsEndpoint)
-}
-
-func homepage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Basic Home Page")
-}
-
 func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Websocket Endpoint")
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
@@ -47,10 +38,4 @@ func reader(conn *websocket.Conn) {
 			return
 		}
 	}
-}
-
-func startSocket() {
-	fmt.Println("Starting HTTP Server")
-	setupRoutes()
-	log.Fatal(http.ListenAndServe(":8080", nil))
 }
