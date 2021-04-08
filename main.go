@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+
+	"github.com/AstroCoding/SawThatGoLang/backend/api"
 )
 
 func main() {
-	fmt.Println("Hello World")
+	fmt.Println("Starting HTTP Server")
+	api.StartAPI()
 }
