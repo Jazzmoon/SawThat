@@ -1,6 +1,6 @@
 # Saw That?
 
-As a kid, my sister and I was obsessed with Screenlife's DVD Trivia game called [**Scene It?**][Scene It?]. Sadly, those games are no longer being produced anymore, as the medium of DVD game isn't very popular anymore. However, especially due to the recent pandemic, remote games, such as those featured in [Jackbox Party Packs][Jackbox Party Packs], that you can play with friends have become more and more valued.
+As a kid, my sister and I was obsessed with Screenlife's DVD Trivia game called [**Scene It?**][SceneIt]. Sadly, those games are no longer being produced anymore, as the medium of DVD game isn't very popular anymore. However, especially due to the recent pandemic, remote games, such as those featured in [Jackbox Party Packs][JPP], that you can play with friends have become more and more valued.
 
 **Saw That?** is intended to bring the DVD trivia game genre that **Scene It?** revolutionized into a more modernized medium, in the hopes that it will become a popular game if the rights can be obtained to the different themes you want to make.
 
@@ -53,7 +53,10 @@ The HTML5, CSS, and JS are all going to be templates stored on the Server side o
 
 ### Links featured in ReadMe
 
-[Disney]: <https://www.disney.com/>{:target="_blank"} "Disney - Official Website"
-[Jackbox Party Packs]: <https://www.jackboxgames.com/>{:target="_blank"} "Jackbox Party Games - Official Website"
-[Neo4J]: <https://neo4j.com/>{:target="_blank"} "Neo4J - Official Website"
-[Scene It?]: <https://www.wikiwand.com/en/Scene_It%3F>{:target="_blank"} "Scene It? - Wikipedia"
+[Disney]: <https://www.disney.com/?target=_blank> "Disney - Official Website"
+
+[JPP]: <https://www.jackboxgames.com/?target=_blank> "Jackbox Party Games - Official Website"
+
+[Neo4J]: <https://neo4j.com/?target=_blank> "Neo4J - Official Website"
+
+[SceneIt]: <https://www.wikiwand.com/en/Scene_It%3F/?target=_blank> "Scene It? - Wikipedia"
