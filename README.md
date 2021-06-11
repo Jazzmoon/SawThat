@@ -51,10 +51,10 @@ We will also need to record the Game's state in memory, so that way everyone in 
 
 The HTML5, CSS, and JS are all going to be templates stored on the Server side of the project. When a page loads, the template will be filled with content using GoLang Templates and then served to the Frontend. This way, all users get the exact same information loaded the exact same way, and the questions from the Database are all loaded in appropriately.
 
-[Disney]: <https://www.disney.com?target=_blank> "Disney - Official Website"
+[Disney]: <https://www.disney.com/> "Disney - Official Website"
 
-[JPP]: <https://www.jackboxgames.com?target=_blank> "Jackbox Party Games - Official Website"
+[JPP]: <https://www.jackboxgames.com/> "Jackbox Party Games - Official Website"
 
-[Neo4J]: <https://neo4j.com?target=_blank> "Neo4J - Official Website"
+[Neo4J]: <https://neo4j.com/> "Neo4J - Official Website"
 
-[SceneIt]: <https://www.wikiwand.com/en/Scene_It%3F?target=_blank> "Scene It? - Wikipedia"
+[SceneIt]: <https://www.wikiwand.com/en/Scene_It%3F/> "Scene It? - Wikipedia"
