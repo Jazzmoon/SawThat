@@ -18,7 +18,7 @@ The backend will include an API that acts as a middle ground between the Server 
 
 ### Database
 
-The database I am interested in using will be a GraphDB such as [Neo4J][Neo4J] and its querying language called Cypher. Graph databases solve the issue of `PRIMARY` and `FOREIGN` key relations that SQL databases so commonly cause. Since the nodes all store their links, we don't have to worry about it.
+The database I am interested in using will be a GraphDB known as [Neo4J][Neo4J] and its querying language called Cypher. Graph databases solve the issue of `PRIMARY` and `FOREIGN` key relations that SQL databases so commonly cause. Since the nodes all store their links, we don't have to worry about it.
 
 The database design will require a lot of care and initial planning before we mindlessly go into coding it, but the general idea will be like so:
 
