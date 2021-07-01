@@ -1,0 +1,8 @@
+common:
+  - app_name="Saw That?"
+  - log_level="info"
+mongo:
+  - host=mongo-dev
+  - db=SawThat
+  - user=SawThatUser
+  - pass=fxEob*6W^T83o9A82eGUR&j

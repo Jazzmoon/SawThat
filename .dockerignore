@@ -1,0 +1,7 @@
+# ignore assets while building backend
+
+config/
+frontend/
+.gitignore
+deploy-dev.yaml
+README.md
