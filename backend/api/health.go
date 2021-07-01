@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jazzmoon/SawThat/backend/state"
-	"github.com/jazzmoon/SawThat/backend/util"
+	"github.com/Jazzmoon/SawThat/backend/state"
+	"github.com/Jazzmoon/SawThat/backend/util"
 )
 
 // health is the response format of "/health".
