@@ -18,8 +18,6 @@ The backend will include an API that acts as a middle ground between the Server 
 
 ### Database
 
-The database I am interested in using will be a GraphDB known as [Neo4J][Neo4J] and its querying language called Cypher. Graph databases solve the issue of `PRIMARY` and `FOREIGN` key relations that SQL databases so commonly cause. Since the nodes all store their links, we don't have to worry about it.
-
 The database design will require a lot of care and initial planning before we mindlessly go into coding it, but the general idea will be like so:
 
 - `type User`: Represent the different user accounts
@@ -49,12 +47,16 @@ We will also need to record the Game's state in memory, so that way everyone in 
 
 ### Frontend Serving
 
-The HTML5, CSS, and JS are all going to be templates stored on the server-side of the project. When a page loads, the template will be filled with content using GoLang Templates and then served to the Frontend. This way, all users get the same information loaded the same way, and the questions from the Database are all loaded appropriately into the game template.
+After getting aquainted with [**ReactJS**][ReactJS] over the summer, we plan on using a version of that to host the front-end. Either using [ReactJS][ReactJS] itself, or a minified version of it called [**NextJS**][NextJS]. Communication to the backend API would likely then be done using [Axios][Axios], and a websocket would be established allowing the game to be played Async.
+
+[Axios]: <https://www.npmjs.com/package/axios> "Axios NPM Package"
 
 [Disney]: <https://www.disney.com/> "Disney - Official Website"
 
 [JPP]: <https://www.jackboxgames.com/> "Jackbox Party Games - Official Website"
 
-[Neo4J]: <https://neo4j.com/> "Neo4J - Official Website"
+[NextJS]: <https://nextjs.org/> "NextJS - Official Website"
+
+[ReactJS]: <https://reactjs.org/> "ReactJS - Official Website"
 
 [SceneIt]: <https://www.wikiwand.com/en/Scene_It%3F/> "Scene It? - Wikipedia"
