@@ -1,84 +1,5 @@
 version: '3.7'
 services:
-  mongo:
-    container_name: mongo-dev
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: SawThatUser
-      MONGO_INITDB_ROOT_PASSWORD: fxEob*6W^T83o9A82eGUR&j
-    ports:
-      - 27017:27017
-    volumes:
-      - mongodb-dev:/data/db
-
-  backend:
-    container_name: SawThat-backend-dev
-    image: jazzmoon/SawThat-backend
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    restart: unless-stopped
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:6060/health']
-      interval: 10s
-      timeout: 3s
-      retries: 2
-      start_period: 15s
-    logging:
-      driver: 'json-file'
-      options:
-        max-size: '1m'
-        max-file: '5'
-    networks:
-      - vlan
-    security_opt:
-      - apparmor:unconfined
-    ulimits:
-      nofile:
-        soft: 65536
-        hard: 65536
-    depends_on:
-      - mongodb
-    expose:
-      - 6060 # internal HTTP port
-    volumes:
-      - ./config/config-dev.yaml:/project/config.yaml
-
-  frontend:
-    container_name: SawThat-frontend-dev
-    image: jazzmoon/SawThat-frontend
-    build:
-      context: frontend/
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:80']
-      interval: 10s
-      timeout: 3s
-      retries: 2
-      start_period: 15s
-    logging:
-      driver: 'json-file'
-      options:
-        max-size: '1m'
-        max-file: '5'
-    networks:
-      - vlan
-    security_opt:
-      - apparmor:unconfined
-    ulimits:
-      nofile:
-        soft: 65536
-        hard: 65536
-    depends_on:
-      - backend
-    ports:
-      - 80:80   # external HTTP port
-      - 443:443 # external HTTPS port
-    volumes:
-      - ./config/Caddyfile-dev:/etc/caddy/Caddyfile
-      - caddy-dev:/data/caddy
-
   api-docs:
     container_name: api-docs
     image: redocly/redoc
@@ -102,10 +23,6 @@ services:
       - ./backend/swagger.yaml:/usr/share/nginx/html/swagger.yaml
     environment:
      - SPEC_URL=/swagger.yaml
-
 networks:
   vlan:
-
 volumes:
-  mongo-dev:
-  caddy-dev:
