@@ -1,0 +1,3 @@
+# Redirect any request to 8080/client to client frontend
+
+# Redirect any request to 8080/game to game frontend

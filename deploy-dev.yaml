@@ -1,14 +1,38 @@
 version: '3.7'
 services:
-  frontend:
-    container_name: frontend
+  caddy:
+    container_name: caddy
+    image: caddy:2.0.0-alpine
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+    networks:
+      - vlan
+  client:
+    container_name: client
     build:
-      context: ./frontend
+      context: ./client
       dockerfile: Dockerfile
     ports:
-      - 8080:8080
+      - 8080:8081
     volumes:
-      - ./frontend:/app/vue
+      - ./client:/app/vue
+      - /app/vue/node_modules
+    depends_on:
+      - backend
+    networks:
+      - vlan
+  game:
+    container_name: game
+    build:
+      context: ./game
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8082
+    volumes:
+      - ./game:/app/vue
       - /app/vue/node_modules
     depends_on:
       - backend
@@ -26,29 +50,15 @@ services:
       - /app/api/node_modules
     networks:
       - vlan
-  # api-docs:
-  #   container_name: api-docs
-  #   image: redocly/redoc
-  #   restart: unless-stopped
-  #   logging:
-  #     driver: "json-file"
-  #     options:
-  #       max-size: "1m"
-  #       max-file: "5"
-  #   networks:
-  #     - vlan
-  #   security_opt:
-  #     - apparmor:unconfined
-  #   ulimits:
-  #     nofile:
-  #       soft: 65536
-  #       hard: 65536
-  #   expose:
-  #     - 80 # internal HTTP port
-  #   volumes:
-  #     - ./backend/swagger.yaml:/usr/share/nginx/html/swagger.yaml
-  #   environment:
-  #    - SPEC_URL=/swagger.yaml
+  mongoDB:
+    container_name: mongoDB
+    image: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - ./mongoDB:/data/db
+    networks:
+      - vlan
 networks:
   vlan:
 volumes:
