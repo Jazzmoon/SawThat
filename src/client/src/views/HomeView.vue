@@ -44,6 +44,7 @@ function submit() {
   display: block;
   margin-left: auto;
   margin-right: auto;
+  margin-top: 48px;
   max-width: 500px;
   min-width: 50px;
   width: 20vmin;
