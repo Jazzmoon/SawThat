@@ -2,10 +2,20 @@
 import fastify, { FastifyInstance } from "fastify";
 import websocket from "@fastify/websocket";
 
+// Import Mongoose
+import mongoose from "mongoose";
+
 // Import Routers
 import ClientRouter from "./routes/client.router";
 import GameRouter from "./routes/game.router";
 import WSRouter from "./routes/ws.router";
+
+// Establish Mongoose connection
+mongoose.connect(`localhost`);
+
+const db = mongoose.connection;
+db.on("error", console.error);
+db.once("open", () => console.log("Database connection established."));
 
 // Set-Up Fastify Instance
 const app: FastifyInstance = fastify({

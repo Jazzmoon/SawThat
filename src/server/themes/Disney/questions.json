@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "category": "Take Three",
+    "question": "What is the last name of the superhero family whose kids are named <_>, <_>, and <_>.",
+    "answer": "Parr (Disney • Pixar's The Incredibles)",
+    "clue_list": ["Violet", "Dashiel", "Jack Jack"],
+    "mediaType": "image",
+    "mediaURL": "https://d2j1wkp1bavyfs.cloudfront.net/wp-content/legacy/posts/82bd36d7-0027-4666-921c-f74928785e04.jpg?q=80"
+  },
+  {
+    "id": 2,
+    "category": "Musical",
+    "question": "What classic character muses that things are getting \"<_>\".",
+    "answer": "Alice (Disney's Alice in Wonderland)",
+    "clue_list": ["Curiouser and curiouser"],
+    "mediaType": null,
+    "mediaURL": null
+  },
+  {
+    "id": 3,
+    "category": "Miscellaneous",
+    "question": "Where does Disney's 101 Dalmatians take place: <_>, <_>, or <_>?.",
+    "answer": "England",
+    "clue_list": ["England", "America", "France"],
+    "mediaType": "image",
+    "mediaURL": "https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/A7985D9BF379DE15F82293F034CFC045A17B88449EE56DB9770BD7AE5AA69825/scale?width=1200&aspectRatio=1.78&format=jpeg"
+  }
+]
