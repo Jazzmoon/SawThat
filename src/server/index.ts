@@ -1,3 +1,5 @@
+import * as dotenv from "dotenv";
+
 // Import Fastify Requirements
 import fastify, { FastifyInstance } from "fastify";
 import websocket from "@fastify/websocket";
@@ -10,8 +12,10 @@ import ClientRouter from "./routes/client.router";
 import GameRouter from "./routes/game.router";
 import WSRouter from "./routes/ws.router";
 
+dotenv.config();
+
 // Establish Mongoose connection
-mongoose.connect(`localhost`);
+mongoose.connect(process.env.DATABASE_URL!);
 
 const db = mongoose.connection;
 db.on("error", console.error);
@@ -29,7 +33,7 @@ app.register(GameRouter, { prefix: "/game" });
 app.register(WSRouter, { prefix: "/ws" });
 
 // Spin up the backend
-app.listen({ port: 3000 }, (err, address) => {
+app.listen({ port: parseInt(process.env.PORT!) }, (err, address) => {
   if (err) {
     app.log.error(err);
     console.error(err);

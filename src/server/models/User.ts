@@ -11,4 +11,5 @@ const UserSchema = new Schema({
   token: { type: String, required: false },
 });
 
-module.exports = mongoose.model("User", UserSchema);
+const User = mongoose.model("User", UserSchema);
+export default User;

@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyPluginCallback } from "fastify";
-import { basicGet, createGame } from "../controllers/GameController";
+import { createGame } from "../controllers/GameController";
 
 const GameRouter: FastifyPluginCallback = async (
   fastify: FastifyInstance,
@@ -7,16 +7,27 @@ const GameRouter: FastifyPluginCallback = async (
   done
 ) => {
   fastify.route({
-    method: "GET",
-    url: "/",
-    schema: {},
-    handler: basicGet,
-  });
-
-  fastify.route({
     method: "POST",
     url: "/create",
-    schema: {},
+    schema: {
+      response: {
+        200: {
+          type: "object",
+          properties: {
+            game: { type: "object" },
+            gameID: { type: "string" },
+            userToken: { type: "string" },
+          },
+        },
+        400: {
+          type: "object",
+          properties: {
+            error: { type: "string" },
+            message: { type: "string" },
+          },
+        },
+      },
+    },
     handler: createGame,
   });
   done();

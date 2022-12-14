@@ -1,12 +1,6 @@
-// import mongoose from "mongoose";
+import { generateJWT } from "./AuthController";
 
-const Game = require("../models/Game");
-
-export async function basicGet() {
-  return {
-    hello: "world",
-  };
-}
+import Game from "../models/Game";
 
 const generateGameID = async (): Promise<string> => {
   // Generate 7 digit alphanumeric game code
@@ -17,12 +11,41 @@ const generateGameID = async (): Promise<string> => {
 
   // Check if Game object can be found by Mongoose using this id
   try {
-    let game = await Game.findByID(gameID);
+    let game = await Game.findById(gameID);
     return game === null ? gameID : generateGameID();
-  } catch (e) {
-    console.error(e);
-    return "";
+  } catch (err) {
+    console.error(err);
+    return "ABCDEFG";
   }
 };
 
-export const createGame = async (req, res) => {};
+export const createGame = async (req: any, res: any) => {
+  const { themePack } = req.body;
+  const gameCode: string = await generateGameID(),
+    accessToken = await generateJWT({
+      username: `game${gameCode}`,
+      gameCode: gameCode,
+      userType: "Game",
+    }),
+    game = new Game({
+      hostID: accessToken,
+      players: [],
+      themePack: themePack,
+      used_questions: [],
+      used_consequences: [],
+    });
+  try {
+    const newGame = await game.save();
+    res.status(200).json({
+      game: newGame,
+      gameID: gameCode,
+      userToken: accessToken,
+    });
+  } catch (err) {
+    if (err instanceof Error) {
+      res.status(400).json({ error: err, message: err.message });
+    } else {
+      res.status(400).json({ error: err, message: "Unknown Error Type" });
+    }
+  }
+};

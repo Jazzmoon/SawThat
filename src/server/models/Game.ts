@@ -18,4 +18,5 @@ const GameSchema = new Schema({
   used_consequences: [{ type: String }],
 });
 
-module.exports = mongoose.model("Game", GameSchema);
+const Game = mongoose.model("Game", GameSchema);
+export default Game;
