@@ -10,11 +10,27 @@ const GameRouter: FastifyPluginCallback = async (
     method: "POST",
     url: "/create",
     schema: {
+      body: {
+        type: "object",
+        properties: {
+          theme_pack: { type: "string" },
+        },
+      },
       response: {
         200: {
           type: "object",
           properties: {
-            game: { type: "object" },
+            game: {
+              type: "object",
+              properties: {
+                hostID: { type: "string" },
+                game_code: { type: "string" },
+                themePack: { type: "string" },
+                players: { type: "array", items: { type: "object" } },
+                used_questions: { type: "array" },
+                used_consequences: { type: "array" },
+              },
+            },
             gameID: { type: "string" },
             userToken: { type: "string" },
           },

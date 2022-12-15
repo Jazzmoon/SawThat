@@ -15,6 +15,7 @@ import WSRouter from "./routes/ws.router";
 dotenv.config();
 
 // Establish Mongoose connection
+console.log(`Connecting to: ${process.env.DATABASE_URL}`);
 mongoose.connect(process.env.DATABASE_URL!);
 
 const db = mongoose.connection;

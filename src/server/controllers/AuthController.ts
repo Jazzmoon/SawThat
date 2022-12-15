@@ -23,15 +23,14 @@ export const generateJWT = async (requestData: {
   );
   let user = new User({
     username: requestData.username,
-    userType: requestData.gameCode,
+    userType: requestData.userType,
     token: accessToken,
   });
 
   try {
     const newUser = user.save();
-    return accessToken;
   } catch (e) {
     console.error(e);
-    return accessToken;
   }
+  return Promise.resolve(accessToken);
 };

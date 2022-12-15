@@ -1,25 +1,40 @@
 import { generateJWT } from "./AuthController";
 
 import Game from "../models/Game";
+import { FastifyReply, FastifyRequest } from "fastify";
 
 const generateGameID = async (): Promise<string> => {
-  // Generate 7 digit alphanumeric game code
-  let gameID = "";
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  for (let i = 0; i < 7; i++)
-    gameID += characters.charAt(Math.floor(Math.random() * characters.length));
+
+  // Generate random game code
+  let gameID = characters.charAt(Math.floor(Math.random() * characters.length));
+  console.log(`Starting GameID: ${gameID}`);
 
   // Check if Game object can be found by Mongoose using this id
   try {
-    let game = await Game.findById(gameID);
-    return game === null ? gameID : generateGameID();
+    const exists = await Game.exists({ game_code: gameID }).then((res) => {
+      console.log(`Verifying Game Code Existence: ${res}`);
+      return res !== null;
+    });
+    if (exists) {
+      gameID += await generateGameID();
+      console.log(`Game Code exists, generating new code: ${gameID}`);
+    }
   } catch (err) {
-    console.error(err);
-    return "ABCDEFG";
+    console.error("An error in game ID generation occurred.", err);
+    gameID = "ABCDEFG";
   }
+  return Promise.resolve(gameID);
 };
 
-export const createGame = async (req: any, res: any) => {
+export const createGame = async (
+  req: FastifyRequest<{
+    Body: {
+      themePack: string;
+    };
+  }>,
+  res: FastifyReply
+) => {
   const { themePack } = req.body;
   const gameCode: string = await generateGameID(),
     accessToken = await generateJWT({
@@ -27,25 +42,34 @@ export const createGame = async (req: any, res: any) => {
       gameCode: gameCode,
       userType: "Game",
     }),
-    game = new Game({
+    gameData = {
       hostID: accessToken,
-      players: [],
+      game_code: gameCode,
       themePack: themePack,
+      players: [],
       used_questions: [],
       used_consequences: [],
-    });
+    },
+    game = new Game(gameData);
   try {
     const newGame = await game.save();
-    res.status(200).json({
-      game: newGame,
+    res.code(200).type("application/json").send({
+      game: gameData,
       gameID: gameCode,
       userToken: accessToken,
     });
   } catch (err) {
     if (err instanceof Error) {
-      res.status(400).json({ error: err, message: err.message });
+      res
+        .code(400)
+        .type("application/json")
+        .send({ error: err, message: err.message });
     } else {
-      res.status(400).json({ error: err, message: "Unknown Error Type" });
+      res
+        .code(400)
+        .type("application/json")
+        .send({ error: err, message: "Unknown Error Type" });
     }
   }
+  return Promise.resolve(res);
 };

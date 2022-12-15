@@ -6,14 +6,14 @@ const GameSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "User",
   },
+  game_code: { type: String, require: true },
+  theme_pack: { type: String, require: true },
   players: [
     {
       type: Schema.Types.ObjectId,
       ref: "User",
     },
   ],
-  game_code: { type: String },
-  theme_pack: { type: String },
   used_questions: [{ type: String }],
   used_consequences: [{ type: String }],
 });
