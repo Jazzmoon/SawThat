@@ -8,6 +8,10 @@ const UserSchema = new Schema({
     required: true,
   },
   username: { type: String },
+  game: {
+    type: Schema.Types.ObjectId,
+    ref: "Game",
+  },
   token: { type: String, required: false },
 });
 
