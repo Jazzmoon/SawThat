@@ -23,20 +23,15 @@ export const generateJWT = async (requestData: {
       expiresIn: "1000m",
     }
   );
-  // Find the Game in the database to link to user
-  const gameID = Game.exists(
-    { game_code: requestData.gameCode },
-    (res) => res !== null
-  );
-  if (gameID) {
-    const game = Game.findById(gameID);
-    // Create User
+  // If userType is Game, simply create the user
+  if (requestData.userType === "Game") {
     let user = new User({
       username: requestData.username,
       userType: requestData.userType,
       token: accessToken,
-      game: game,
+      game: null,
     });
+    console.log(user);
 
     try {
       const newUser = user.save();
@@ -45,6 +40,25 @@ export const generateJWT = async (requestData: {
     }
     return Promise.resolve(accessToken);
   } else {
-    return Promise.reject("Game with that ID doesn't exist.");
+    // Find the Game in the database to link to user
+    const game = await Game.findOne({ game_code: requestData.gameCode }).lean();
+    if (game) {
+      // Create User
+      let user = new User({
+        username: requestData.username,
+        userType: requestData.userType,
+        token: accessToken,
+        game: game._id,
+      });
+
+      try {
+        const newUser = user.save();
+      } catch (e) {
+        console.error(e);
+      }
+      return Promise.resolve(accessToken);
+    } else {
+      return Promise.reject("Game with that ID doesn't exist to join.");
+    }
   }
 };

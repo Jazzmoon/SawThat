@@ -16,7 +16,10 @@ dotenv.config();
 
 // Establish Mongoose connection
 console.log(`Connecting to: ${process.env.DATABASE_URL}`);
-mongoose.connect(process.env.DATABASE_URL!);
+mongoose.connect(`${process.env.DATABASE_URL!}`, {
+  user: process.env.DATABASE_USER!,
+  pass: process.env.DATABASE_PASS!,
+});
 
 const db = mongoose.connection;
 db.on("error", console.error);

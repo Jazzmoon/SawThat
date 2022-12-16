@@ -1,24 +1,32 @@
 import { generateJWT } from "./AuthController";
 
 import Game from "../models/Game";
+import User from "../models/User";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 const generateGameID = async (): Promise<string> => {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
   // Generate random game code
-  let gameID = characters.charAt(Math.floor(Math.random() * characters.length));
+  let gameID = "";
+  for (let i = 0; i < 4; i++)
+    gameID += characters.charAt(Math.floor(Math.random() * characters.length));
   console.log(`Starting GameID: ${gameID}`);
 
   // Check if Game object can be found by Mongoose using this id
   try {
-    const exists = await Game.exists({ game_code: gameID }).then((res) => {
+    let exists = await Game.exists({ game_code: gameID }).then((res) => {
       console.log(`Verifying Game Code Existence: ${res}`);
       return res !== null;
     });
-    if (exists) {
-      gameID += await generateGameID();
-      console.log(`Game Code exists, generating new code: ${gameID}`);
+    while (exists) {
+      gameID += characters.charAt(
+        Math.floor(Math.random() * characters.length)
+      );
+      exists = await Game.exists({ game_code: gameID }).then((res) => {
+        console.log(`Verifying Game Code Existence: ${res}`);
+        return res !== null;
+      });
     }
   } catch (err) {
     console.error("An error in game ID generation occurred.", err);
@@ -41,20 +49,45 @@ export const createGame = async (
       username: `game${gameCode}`,
       gameCode: gameCode,
       userType: "Game",
-    }),
-    gameData = {
-      hostID: accessToken,
-      game_code: gameCode,
-      themePack: themePack,
-      players: [],
-      used_questions: [],
-      used_consequences: [],
-    },
-    game = new Game(gameData);
+    });
+
+  // Create game object
+  const game = new Game({
+    hostID: null,
+    game_code: gameCode,
+    themePack: themePack,
+    players: [],
+    used_questions: [],
+    used_consequences: [],
+  });
+
   try {
     const newGame = await game.save();
+
+    // Link Game and User objects together
+    const updateUser = User.findOneAndUpdate(
+        {
+          username: `game${gameCode}`,
+          userType: "Game",
+          token: accessToken,
+        },
+        { game: newGame._id }
+      ).exec(),
+      gameUpdate = newGame
+        .updateOne({
+          hostId: await User.findOne({
+            username: `game${gameCode}`,
+            userType: "Game",
+            token: accessToken,
+          })
+            .lean()
+            .then((rec) => rec!._id),
+        })
+        .exec();
+
+    // Send back response
     res.code(200).type("application/json").send({
-      game: gameData,
+      game: newGame,
       gameID: gameCode,
       userToken: accessToken,
     });

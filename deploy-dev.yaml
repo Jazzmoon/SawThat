@@ -55,6 +55,10 @@ services:
     image: mongo
     ports:
       - 27017:27017
+    environment:
+      MONGO_INITDB_DATABASE: SawThat
+      MONGO_INITDB_ROOT_USERNAME: sawthat
+      MONGO_INITDB_ROOT_PASSWORD: sawthatsecretpass
     volumes:
       - ./mongoDB:/data/db
     networks:

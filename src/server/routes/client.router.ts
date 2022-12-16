@@ -7,17 +7,23 @@ const ClientRouter: FastifyPluginCallback = async (
   done
 ) => {
   fastify.route({
-    method: "GET",
+    method: "POST",
     url: "/join",
     schema: {
       body: {
-        username: { type: "string" },
-        game_code: { type: "string" },
+        type: "object",
+        properties: {
+          username: { type: "string" },
+          game_code: { type: "string" },
+        },
       },
       response: {
         200: {
-          username: { type: "string" },
-          token: { type: "string" },
+          type: "object",
+          properties: {
+            username: { type: "string" },
+            token: { type: "string" },
+          },
         },
         400: {
           type: "object",

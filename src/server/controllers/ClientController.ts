@@ -16,11 +16,9 @@ export const joinGame = async (
   // Decompose the request body
   const { game_code, username } = req.body;
   // Verify that a game with the game code exists
-  const game_exists = Game.exists(
-    { game_code: game_code },
-    (res) => res !== null
-  );
-  if (!game_exists) {
+  const game = await Game.findOne({ game_code: game_code }).lean();
+  console.log(`Checking if game exists with game code ${game_code}: ${game}`);
+  if (!game) {
     res
       .code(400)
       .type("application/json")
@@ -30,13 +28,14 @@ export const joinGame = async (
       });
     return Promise.resolve(res);
   }
-  const game = Game.findById(game_exists);
   // Verify that a user with the same username is not already in game
-  const user_exists = await User.exists(
-    { game: game, username: username, userType: "Client" },
-    (res) => res !== null
-  );
-  if (user_exists) {
+  // Fetch all users of type "Client" within game
+  const players = await User.find({
+    userType: "Client",
+    game: game._id,
+  });
+
+  if (players.map((rec) => rec.username).includes(username)) {
     res
       .code(400)
       .type("application/json")
@@ -46,19 +45,26 @@ export const joinGame = async (
       });
     return Promise.resolve(res);
   }
+
+  // Verify that the game is not full
+  if (players?.length >= 8) {
+    res
+      .code(400)
+      .type("application/json")
+      .send({
+        err: new Error("This game already has the maximum players allowed."),
+        message: "This game already has the maximum players allowed.",
+      });
+    return Promise.resolve(res);
+  }
+
   // Create a user and link them to the game
+  // Note: Generating a JWT will create a user, so no need to do it here.
   const accessToken = await generateJWT({
-      username: username,
-      gameCode: game_code,
-      userType: "Client",
-    }),
-    user = new User({
-      userType: "Client",
-      username: username,
-      game: game,
-      token: accessToken,
-    }),
-    newUser = await user.save();
+    username: username,
+    gameCode: game_code,
+    userType: "Client",
+  });
   res.code(200).type("application/json").send({
     username: username,
     token: accessToken,
