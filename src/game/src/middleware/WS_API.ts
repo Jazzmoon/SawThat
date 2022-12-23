@@ -45,6 +45,24 @@ export class WS_API {
     }
 
     /**
+     * Attempts to create a new game with the server
+     * @returns the game code if the game was created. undefined if some error occured.
+     */
+    public static async sendCreateGameRequest(): Promise<string | undefined> {
+        // TODO implement via the send request method
+        return "12345";
+    }
+
+    /**
+     * Attempts to start the game with the server
+     * @returns true if the game was started. False if some error occured.
+     */
+    public static async sendStartGameRequest(): Promise<boolean> {
+        // TODO implement via the send request method
+        return true;
+    }
+
+    /**
      * Handles all incoming messages from the server
      * @param data the raw string that is received from the server per each message
      */
@@ -57,6 +75,26 @@ export class WS_API {
 
         WS_API.pendingRequests[data.requestId].success(); // todo handle th failure case
         delete WS_API.pendingRequests[data.requestId];
+    }
+
+    /**
+     * Sends a request over websockets to the server and waits for a response
+     * @param type the type of request
+     * @param payload the data to send
+     * @returns an awaitable promise that resolves once the request finishes
+     */
+    private static async sendRequest(type: string, payload: object): Promise<any> {
+        const requestId = this.createRequestId(type);
+
+        // assign the requestId to the payload
+        Object.defineProperty(payload, 'requestId', {
+            value: requestId,
+            writable: false
+        });
+
+        WS_API.socket?.send(JSON.stringify(payload));
+
+        return WS_API.addRequestToQueue(requestId);
     }
 
     /**

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import LogoSVG from "@/assets/logo.svg?component";
 import PlayersListVue from "@/components/PlayersList.vue";
-import { sendCreateGameRequest, sendStartGameRequest } from "@/middleware/HTTP_API";
 import { WS_API } from "@/middleware/WS_API";
 import router from "@/router";
 import { computed, ref } from "vue";
@@ -95,7 +94,7 @@ async function nextSetupStep() {
  * Creates a new game with the server that client nodes can then join.
  */
 async function createGame() {
-  const requestResult = await sendCreateGameRequest();
+  const requestResult = await WS_API.sendCreateGameRequest();
 
   if (!requestResult) {
     alert("Failed to create a new game.")
@@ -109,7 +108,7 @@ async function createGame() {
  * display to the game board
  */
 async function startGame() {
-  const requestSuccess = await sendStartGameRequest();
+  const requestSuccess = await WS_API.sendStartGameRequest();
 
   if (!requestSuccess) {
     alert("An error occured while trying to start the game.");

@@ -50,16 +50,10 @@ export class WS_API {
      * @param gameCode the game code of the game to join
      */
     public static sendJoinRequest(playerName: string, gameCode: string): Promise<boolean> {
-        const requestId = this.createRequestId('join');
-
-        WS_API.socket?.send(JSON.stringify({
-            requestId: requestId,
+        return WS_API.sendRequest('join', {
             playerName: playerName,
             gameCode: gameCode
-        }));
-
-
-        return WS_API.addRequestToQueue(requestId);
+        });
     }
 
     /**
@@ -75,6 +69,26 @@ export class WS_API {
 
         WS_API.pendingRequests[data.requestId].success(); // todo handle th failure case
         delete WS_API.pendingRequests[data.requestId];
+    }
+
+    /**
+     * Sends a request over websockets to the server and waits for a response
+     * @param type the type of request
+     * @param payload the data to send
+     * @returns an awaitable promise that resolves once the request finishes
+     */
+    private static async sendRequest(type: string, payload: object): Promise<any> {
+        const requestId = this.createRequestId(type);
+
+        // assign the requestId to the payload
+        Object.defineProperty(payload, 'requestId', {
+            value: requestId,
+            writable: false
+        });
+
+        WS_API.socket?.send(JSON.stringify(payload));
+
+        return WS_API.addRequestToQueue(requestId);
     }
 
     /**
