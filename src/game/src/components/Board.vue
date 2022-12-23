@@ -1,7 +1,7 @@
 <template>
     <div>
         <div id="top">
-            <PlayersListVue id="players" :players="players" :currentPlayer="currentPlayer"/>
+            <PlayersListVue id="players" :players="props.players" :currentPlayer="props.currentPlayerIndex"/>
         </div>
         <BoardSVG id="board"/>
     </div>
@@ -12,55 +12,10 @@ import BoardSVG from "@/assets/board.svg?skipsvgo"; // load svg but don't optimi
 import { onUpdated } from 'vue';
 import PlayersListVue from "./PlayersList.vue";
 
-let players: Player[] = [
-    {
-        name: "Player 1",
-        color: "#003FA3",
-        position: 2,
-    },
-    {
-        name: "Player 2",
-        color: "#00A324",
-        position: 20,
-    },
-    {
-        name: "Player 3",
-        color: "#A30000",
-        position: 12,
-    },
-    {
-        name: "Player 4",
-        color: "#A39C00",
-        position: 14,
-    },
-    {
-        name: "Player 5",
-        color: "#A39C00",
-        position: 30,
-    },        
-    {
-        name: "Player 3",
-        color: "#A30000",
-        position: 13,
-    },
-    {
-        name: "Player 4",
-        color: "#A39C00",
-        position: 7,
-    },
-    {
-        name: "Player 5",
-        color: "#A39C00",
-        position: 9,
-    },        
-    {
-        name: "Player 4",
-        color: "#A39C00",
-        position: 3
-    },
-];
-
-let currentPlayer = 0;
+const props = defineProps<{
+    players: Player[],
+    currentPlayerIndex: number
+}>()
 
 let previousPlayerPositions: number[] = [];
 
@@ -78,7 +33,7 @@ onUpdated(() => {
     previousPlayerPositions = []
 
     // loop through the player positions list and update the board tiles (tiles indexed at 1)
-    for (const playerPosition of players) { // TODO HANDLE MULTIPLE PLAYERS ON SAME TILE
+    for (const playerPosition of props.players) { // TODO HANDLE MULTIPLE PLAYERS ON SAME TILE
         const tile = document.getElementById(`spot${playerPosition.position}`)
         if (tile){
             tile.style.fill = playerPosition.color;
