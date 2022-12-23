@@ -1,11 +1,20 @@
 <script setup lang="ts">
 import LogoSVG from "@/assets/logo.svg";
+import { WS_API } from "@/middleware/WS_API";
+import router from "@/router";
 
 let gameCode = "";
 let playerName = "";
 
-function submit() {
-  alert("Submit clicked");
+async function submit() {
+  const requestSuccess = await WS_API.sendJoinRequest(playerName, gameCode);
+
+  if (!requestSuccess) {
+    alert("Failed to join the game");
+    return;
+  }
+
+  router.push("/leaderboard");
 }
 </script>
 
