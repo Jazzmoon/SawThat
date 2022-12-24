@@ -5,19 +5,31 @@
 export class WS_API {
     private static socket: WebSocket | null = null;
     private static pendingRequests: Record<string, {success: Function, fail: Function}> = {};
+    private static incomingMessageCallback: ((data: object) => void) | null = null;
 
-    private WS_API() {
-        // no-op but this method should not be used from outside this class
-        // so it is made private
+    /**
+     * no-op but this method should not be used from outside this class
+     * so it is made private
+    */
+    private constructor() {}
+
+    /**
+     * Sets the callback method that is called with the parsed data when the server sends data to this node.
+     * @param incomingMessageCallback 
+     */
+    public static setIncomingMessageCallback(incomingMessageCallback: (data: object) => void): void {
+        WS_API.incomingMessageCallback = incomingMessageCallback;
     }
 
     /**
      * Attempts to setup a connection to the Server via
      * WebSockets.
+     * @param wsURL the url for the websocket connection
+     * @returns an awaitable promise that indicates if the connection was successful
      */
     public static async setupWebSocketConnection(wsURL: string): Promise<boolean> {
         // create a promise to await the connection to open before returning
-        const requestId = this.createRequestId('connect');
+        const requestId = WS_API.createRequestId('connect');
         const promise = WS_API.addRequestToQueue(requestId);
 
         WS_API.socket = new WebSocket(wsURL);
@@ -59,16 +71,18 @@ export class WS_API {
     /**
      * Handles all incoming messages from the server
      * @param data the raw string that is received from the server per each message
+     * @param incomingMessageCallback the callback to call with the parsed payload from the message
      */
     private static handleMessageFromServer(rawData: string): void {
-        const data = JSON.parse(rawData); // TODO type this thing
+        const data = JSON.parse(rawData);
 
-        // switch(data.requestType) { // todo
-
-        // }
-
-        WS_API.pendingRequests[data.requestId].success(); // todo handle th failure case
-        delete WS_API.pendingRequests[data.requestId];
+        // if the request was initiated by the game node, end the promise that is waiting for it
+        if (WS_API.pendingRequests[data.requestId]) {
+            WS_API.pendingRequests[data.requestId].success();
+            delete WS_API.pendingRequests[data.requestId];
+        }
+        
+        WS_API.incomingMessageCallback?(data);
     }
 
     /**
@@ -78,7 +92,7 @@ export class WS_API {
      * @returns an awaitable promise that resolves once the request finishes
      */
     private static async sendRequest(type: string, payload: object): Promise<any> {
-        const requestId = this.createRequestId(type);
+        const requestId = WS_API.createRequestId(type);
 
         // assign the requestId to the payload
         Object.defineProperty(payload, 'requestId', {

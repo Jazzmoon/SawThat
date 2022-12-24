@@ -5,17 +5,27 @@ import router from "@/router";
 
 let gameCode = "";
 let playerName = "";
+const serverURL = "";
 
 async function submit() {
-  const requestSuccess = await WS_API.sendJoinRequest(playerName, gameCode);
+  const connectRequestSuccess = await WS_API.setupWebSocketConnection(serverURL);
 
-  if (!requestSuccess) {
+  if (!connectRequestSuccess) {
+    alert("Failed to establish connection with the server");
+    return;
+  }
+
+  const joinRequestSuccess = await WS_API.sendJoinRequest(playerName, gameCode);
+
+  if (!joinRequestSuccess) {
     alert("Failed to join the game");
     return;
   }
 
   router.push("/leaderboard");
 }
+
+
 </script>
 
 <template>
