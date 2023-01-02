@@ -13,16 +13,25 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
       conn.socket.on("message", (stream) => {
         // Validate data stream contains required information about user
         const data = JSON.parse(stream.toString());
+        try {
+        } catch (error) {}
         jwt.verify(
           data.token,
           process.env.ACCESS_TOKEN_SECRET! as Secret,
           (err: any, token: any) => {
             if (err || token === undefined) {
-              console.error(err);
-              conn.socket.send({
-                err: err,
-                data: token,
-              });
+              console.log(`[WS] Validation Error: ${err}`);
+              if (err instanceof Error) {
+                conn.socket.send(
+                  JSON.stringify({
+                    error: {
+                      name: err.name,
+                      message: err.message,
+                    },
+                    data: data.token,
+                  })
+                );
+              }
               conn.end();
               return;
             }
