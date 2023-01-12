@@ -19,6 +19,8 @@ export enum WebsocketType {
   ConsequenceEnded = 17,
   ConsequenceEndedAck = 18,
   QuestionTimeOut = 19,
+  Ping = 20,
+  Pong = 21,
 }
 
 export interface WebsocketMessage {

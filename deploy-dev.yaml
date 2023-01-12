@@ -16,7 +16,7 @@ services:
       context: ./client
       dockerfile: Dockerfile
     ports:
-      - 8080:8081
+      - 8081:8080
     volumes:
       - ./client:/app/vue
       - /app/vue/node_modules
@@ -30,7 +30,7 @@ services:
       context: ./game
       dockerfile: Dockerfile
     ports:
-      - 8080:8082
+      - 8082:8080
     volumes:
       - ./game:/app/vue
       - /app/vue/node_modules
@@ -50,11 +50,15 @@ services:
       - /app/api/node_modules
     networks:
       - vlan
+    env_file:
+      - ./server/.env
   mongoDB:
     container_name: mongoDB
     image: mongo
     ports:
       - 27017:27017
+    env_file:
+      - ./server/.env
     environment:
       MONGO_INITDB_DATABASE: SawThat
       MONGO_INITDB_ROOT_USERNAME: sawthat
