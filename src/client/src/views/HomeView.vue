@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import LogoSVG from "@/assets/logo.svg";
 import { WS_API } from "@/middleware/WS_API";
-import router from "@/router";
+
+const emit = defineEmits(['joined']);
 
 let gameCode = "";
 let playerName = "";
@@ -22,7 +23,7 @@ async function submit() {
     return;
   }
 
-  router.push("/leaderboard");
+  emit('joined');
 }
 
 

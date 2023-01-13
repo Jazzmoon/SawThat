@@ -1,10 +1,3 @@
-<script setup lang="ts">
-let questionText = "A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines";
-function submit(choice: number){
-  alert("clicked button: " + choice);
-}
-</script>
-
 <template>
   <main id="backgroundImage">
     <p id="questiontext">{{questionText}}</p>
@@ -16,6 +9,13 @@ function submit(choice: number){
     </div>
   </main>
 </template>
+
+<script setup lang="ts">
+let questionText = "A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines";
+function submit(choice: number){
+  alert("clicked button: " + choice);
+}
+</script>
 
 <style scoped>
 #questiontext {

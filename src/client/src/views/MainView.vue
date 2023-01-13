@@ -1,3 +1,20 @@
+<template>
+    <main>
+        <div id="root">
+            <div>
+                <img id="logo" :src="LogoSVG"/>
+                <h2 id="title">Leaderboard</h2>
+            </div>
+            <div id="players">
+                <div v-for="(player, index) in players" :key="player.name" :class="['player', (currentPlayer == index) ? 'chosen' : '']">
+                    <div class="colorIndicator" :style="`border-color: ${player.color}`"></div>
+                    <p class="playerName">{{player.name}}</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</template>
+
 <script lang="ts" setup>
     import LogoSVG from "@/assets/logo.svg";
 
@@ -62,23 +79,6 @@
         }
     ];
 </script>
-
-<template>
-    <main>
-        <div id="root">
-            <div>
-                <img id="logo" :src="LogoSVG"/>
-                <h2 id="title">Leaderboard</h2>
-            </div>
-            <div id="players">
-                <div v-for="(player, index) in players" :key="player.name" :class="['player', (currentPlayer == index) ? 'chosen' : '']">
-                    <div class="colorIndicator" :style="`border-color: ${player.color}`"></div>
-                    <p class="playerName">{{player.name}}</p>
-                </div>
-            </div>
-        </div>
-    </main>
-</template>
 
 <style scoped>
 #title {

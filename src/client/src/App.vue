@@ -1,9 +1,23 @@
-<script setup lang="ts">
-</script>
-
 <template>
-  <RouterView style="height: 100%;"/>
+  <HomeView v-if="!joined" @joined="joined = true"/>
+  <MultiChoiceQuestion v-else-if="answering" />
+  <MainView v-else />
 </template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+import HomeView from './views/HomeView.vue';
+import MainView from './views/MainView.vue';
+import MultiChoiceQuestion from './views/MultiChoiceQuestion.vue';
+
+let joined = ref(false);
+let answering = ref(false);
+
+// TODO IF GAME ENDS OR CONNECTION IS LOST, SET JOINED TO FALSE AND ANSWERING TO FALSE
+// SET THIS CLASS AS THE CALLBACK FOR MESSAGES AND THEN FORWARD TO THE VIEWS AS NEEDED
+// BUT THI SAPPROACH WILL ALLOW ME TO INTERCEPT CONNECTION CHANGES AND GAME ENDS
+
+</script>
 
 <style scoped>
 
