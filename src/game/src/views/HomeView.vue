@@ -2,13 +2,13 @@
 import LogoSVG from "@/assets/logo.svg?component";
 import PlayersListVue from "@/components/PlayersList.vue";
 import { WS_API } from "@/middleware/WS_API";
-import router from "@/router";
 import { computed, ref } from "vue";
+
+const emit = defineEmits(['gameStarted']);
 
 let serverURL = "TODO";
 let serverWSURL = "wss://demo.piesocket.com/v3/channel_123?api_key=VCXCEuvhGcBDP7XhiJJUDvR1e1D3eiVjgZ9VRiaV&notify_self"; // TODO REPLACE WITH OURS. THIS I JUST A DEMO ECHO SERVER I FOUND ONLINE
 const gameCode = ref("");
-
 
 let players: Player[] = [
   {
@@ -122,7 +122,8 @@ async function startGame() {
     alert("An error occured while trying to upgrade the connection with the server.");
     return;
   }
-  router.push("/game");
+  
+  emit('gameStarted');
 }
 
 </script>
