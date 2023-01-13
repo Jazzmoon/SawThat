@@ -9,7 +9,7 @@
 
 <script lang="ts" setup>
 import BoardSVG from "@/assets/board.svg?skipsvgo"; // load svg but don't optimize away id fields
-import { onUpdated } from 'vue';
+import { onMounted } from 'vue';
 import PlayersListVue from "./PlayersList.vue";
 
 const props = defineProps<{
@@ -17,30 +17,47 @@ const props = defineProps<{
     currentPlayerIndex: number
 }>()
 
-let previousPlayerPositions: number[] = [];
+let playerPieces: Record<string, SVGCircleElement> = {};
+let playerPosition: Record<string, number> = {};
+let playersOnTile: Record<number, number> = {};
+
+onMounted(() => {
+    // create the player pieces for each player and position at starting location
+    const startingSpot = document.getElementById("spot1");
+    for (const player of props.players) {
+        const piece = document.createElementNS("http://www.w3.org/2000/svg", "circle"); // TODO CHANGE TO A UNIQUE ID
+        piece.setAttribute('cy', startingSpot?.getAttribute('cy')!);
+        piece.setAttribute('cx', startingSpot?.getAttribute('cx')!);
+        piece.setAttribute('r', startingSpot?.getAttribute('r')!);
+        piece.setAttribute('stroke', "black");
+        piece.setAttribute('stroke-width', "7px");
+        piece.setAttribute('fill', player.color);
+        playerPieces[player.name] = piece;
+        startingSpot?.parentElement?.append(piece);
+        playerPosition[player.name] = 0;
+    }
+    playersOnTile[0] = props.players.length;
+
+    updatePlayerLocations();
+});
 
 // TODO MIGHT NEED TO UPDATE THE PARTICULAR CALLBACK FUNCTION THAT WE USE BUT THE LOGIC WORKS
-onUpdated(() => {
-    // cleanup old player positions
-    for (const playerPosition of previousPlayerPositions) {
-        const tile = document.getElementById(`spot${playerPosition}`)
-        if (tile){
-            tile.style.fill = 'unset';
-        }
-    }
-    
-    // clear array
-    previousPlayerPositions = []
+function updatePlayerLocations() {
+    // for each player check if they have moved, if so move their piece to the proper location
+    for (const player of props.players) {
+        if (playerPosition[player.name] !== player.position) {
+            // remove player from previous tile and add them to the new one
+            playersOnTile[playerPosition[player.name]]--;
+            playersOnTile[player.position] = (playersOnTile[player.position] ?? 0) + 1;
+            playerPosition[player.name] = player.position;
 
-    // loop through the player positions list and update the board tiles (tiles indexed at 1)
-    for (const playerPosition of props.players) { // TODO HANDLE MULTIPLE PLAYERS ON SAME TILE
-        const tile = document.getElementById(`spot${playerPosition.position}`)
-        if (tile){
-            tile.style.fill = playerPosition.color;
+            // move the player's piece on the board. Note that if there are already players on this tile, we stack them up
+            const newSpot = document.getElementById(`spot${player.position}`);
+            playerPieces[player.name].setAttribute('cy', String(parseInt(newSpot?.getAttribute('cy')!) - 50 * (playersOnTile[player.position] - 1)));
+            playerPieces[player.name].setAttribute('cx', newSpot?.getAttribute('cx')!);
         }
-        previousPlayerPositions.push(playerPosition.position);
     }
-});
+};
 
 </script>
 

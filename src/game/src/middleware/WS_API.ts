@@ -88,7 +88,9 @@ export class WS_API {
             delete WS_API.pendingRequests[data.requestId];
         }
         
-        WS_API.incomingMessageCallback?(data);
+        if (WS_API.incomingMessageCallback) {
+            WS_API.incomingMessageCallback(data);
+        }
     }
 
     /**
