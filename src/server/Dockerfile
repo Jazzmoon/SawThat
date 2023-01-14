@@ -1,9 +1,9 @@
 # Choose the Image which has Node installed already
 FROM node:lts-alpine
 
-WORKDIR /app/api
+WORKDIR /app
 
-COPY package*.json ./
+COPY . .
 
 RUN npm install
 
