@@ -13,60 +13,59 @@ services:
   client:
     container_name: client
     build:
-      context: ./client
+      context: ./src/client
       dockerfile: Dockerfile
     ports:
       - 8081:8080
     volumes:
-      - ./client:/app/vue
+      - ./src/client:/app/vue
       - /app/vue/node_modules
     depends_on:
-      - backend
+      - server
     networks:
       - vlan
   game:
     container_name: game
     build:
-      context: ./game
+      context: ./src/game
       dockerfile: Dockerfile
     ports:
       - 8082:8080
     volumes:
-      - ./game:/app/vue
+      - ./src/game:/app/vue
       - /app/vue/node_modules
     depends_on:
-      - backend
+      - server
     networks:
       - vlan
-  backend:
-    container_name: backend
+  server:
+    container_name: server
     build:
-      context: ./backend
+      context: ./src/server
       dockerfile: Dockerfile
     ports:
       - 3000:3000
     volumes:
-      - ./backend:/app/api
-      - /app/api/node_modules
+      - ./src/server:/app/api
+      - /app/node_modules
     networks:
       - vlan
     env_file:
-      - ./server/.env
+      - ./src/server/.env
   mongoDB:
     container_name: mongoDB
     image: mongo
     ports:
       - 27017:27017
     env_file:
-      - ./server/.env
+      - ./src/server/.env
     environment:
       MONGO_INITDB_DATABASE: SawThat
       MONGO_INITDB_ROOT_USERNAME: sawthat
       MONGO_INITDB_ROOT_PASSWORD: sawthatsecretpass
     volumes:
-      - ./mongoDB:/data/db
+      - ./database:/data/db
     networks:
       - vlan
 networks:
   vlan:
-volumes:
