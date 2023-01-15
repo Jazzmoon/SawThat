@@ -9,6 +9,7 @@ services:
     env_file:
       - ./src/shared/.env
     volumes:
+      - ./src/shared:/shared
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
     networks:
       - vlan
@@ -22,6 +23,7 @@ services:
     env_file:
       - ./src/shared/.env
     volumes:
+      - ./src/shared:/shared
       - ./src/client:/app/vue
       - /app/vue/node_modules
     depends_on:
@@ -38,6 +40,7 @@ services:
     env_file:
       - ./src/shared/.env
     volumes:
+      - ./src/shared:/shared
       - ./src/game:/app/vue
       - /app/vue/node_modules
     depends_on:
@@ -52,6 +55,7 @@ services:
     ports:
       - 3000:3000
     volumes:
+      - ./src/shared:/shared
       - ./src/server:/app/api
       - /app/node_modules
     networks:
@@ -70,6 +74,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: sawthat
       MONGO_INITDB_ROOT_PASSWORD: sawthatsecretpass
     volumes:
+      - ./src/shared:/shared
       - ./database:/data/db
     networks:
       - vlan
