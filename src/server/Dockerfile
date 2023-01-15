@@ -9,7 +9,7 @@ COPY . .
 
 # copy shared directory to location
 CMD [ "mkdir", "-p", "/shared" ]
-COPY ../shared /shared
+COPY ../shared ../shared
 
 # Install app
 RUN npm install

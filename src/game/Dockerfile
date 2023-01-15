@@ -17,7 +17,7 @@ COPY . .
 
 # copy shared directory to location
 CMD [ "mkdir", "-p", "/shared" ]
-COPY ../shared /shared
+COPY ../shared ../shared
 
 # build app for production with minification
 RUN npm run build
