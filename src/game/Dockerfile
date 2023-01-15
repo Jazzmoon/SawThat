@@ -16,6 +16,7 @@ RUN npm install
 COPY . .
 
 # copy shared directory to location
+CMD [ "mkdir", "-p", "/shared" ]
 COPY ../shared /shared
 
 # build app for production with minification

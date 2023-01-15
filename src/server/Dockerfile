@@ -8,10 +8,13 @@ WORKDIR /app
 COPY . .
 
 # copy shared directory to location
+CMD [ "mkdir", "-p", "/shared" ]
 COPY ../shared /shared
 
+# Install app
 RUN npm install
 
+# Run build command
 RUN npm run build
 
 EXPOSE 3000
