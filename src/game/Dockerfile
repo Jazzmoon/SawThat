@@ -13,11 +13,11 @@ COPY package*.json ./
 RUN npm install
 
 # copy project files and folders to the current working directory (i.e. 'app' folder)
-COPY . .
+COPY game /app
 
 # copy shared directory to location
-CMD [ "mkdir", "-p", "/shared" ]
-COPY ../shared ../shared
+RUN mkdir -p /shared
+COPY shared /shared
 
 # build app for production with minification
 RUN npm run build

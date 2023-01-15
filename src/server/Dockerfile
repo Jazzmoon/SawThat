@@ -5,14 +5,14 @@ FROM node:lts-alpine
 WORKDIR /app
 
 # copy project files and folders to the current working directory (i.e. 'app' folder)
-COPY . .
+COPY server /app
 
 # copy shared directory to location
-CMD [ "mkdir", "-p", "/shared" ]
-COPY ../shared ../shared
+RUN mkdir -p /shared
+COPY shared /shared
 
 # Install app
-RUN npm install
+RUN npm ci
 
 # Run build command
 RUN npm run build
