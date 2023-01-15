@@ -5,7 +5,7 @@ FROM node:lts-alpine
 WORKDIR /app
 
 # copy both 'package.json' and 'package-lock.json' (if available)
-COPY package*.json /app
+COPY server/package*.json /app
 
 # Install app
 RUN npm ci
