@@ -10,7 +10,7 @@ WORKDIR /app
 COPY game/package*.json /app
 
 # install project dependencies
-RUN npm install
+RUN npm ci
 
 # copy project files and folders to the current working directory (i.e. 'app' folder)
 COPY game /app

@@ -62,9 +62,11 @@ services:
       - vlan
     env_file:
       - ./src/shared/.env
+    depends_on:
+      - mongoDB
   mongoDB:
     container_name: mongoDB
-    image: mongo
+    image: mongo:alpine-4.4.0
     ports:
       - 27017:27017
     env_file:
