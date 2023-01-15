@@ -15,6 +15,9 @@ RUN npm install
 # copy project files and folders to the current working directory (i.e. 'app' folder)
 COPY . .
 
+# copy shared directory to location
+COPY ../shared /shared
+
 # build app for production with minification
 RUN npm run build
 
