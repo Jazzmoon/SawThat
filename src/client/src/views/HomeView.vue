@@ -26,7 +26,6 @@ async function submit() {
   emit('joined');
 }
 
-
 </script>
 
 <template>
