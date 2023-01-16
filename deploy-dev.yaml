@@ -1,16 +1,15 @@
 version: '3.7'
 services:
-  caddy:
-    container_name: caddy
-    image: caddy:2.0.0-alpine
+  nginx:
+    container_name: nginx
+    image: nginx:1.23.3-alpine
     ports:
-      - 80:80
-      - 443:443
+      - 8080:80
     env_file:
       - ./src/shared/.env
     volumes:
       - ./src/shared:/shared
-      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
       - vlan
   client:
