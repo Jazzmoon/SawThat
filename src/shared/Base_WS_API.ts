@@ -1,11 +1,11 @@
 /**
- * Static class that wraps websockets to facilitate communication with the server
+ * class that wraps websockets to facilitate communication with the server
  * during the game.
  */
 export default class Base_WS_API {
     private static socket: WebSocket | null = null;
     private static pendingRequests: Record<string, {success: Function, fail: Function}> = {};
-    private static incomingMessageCallback: ((data: object) => void) | null = null;
+    private static incomingMessageCallbacks: Record<string, ((data: object) => void)> = {};
 
     /**
      * no-op but this method should not be used from outside this class
@@ -14,11 +14,22 @@ export default class Base_WS_API {
     protected constructor() {}
 
     /**
-     * Sets the callback method that is called with the parsed data when the server sends data to this node.
-     * @param incomingMessageCallback 
+     * Adds a callback method that is called with the parsed data when the server sends data to this node.
+     * @param id the id of the callback that can then be used to unassign it
+     * @param incomingMessageCallback the callback function
      */
-    public static setIncomingMessageCallback(incomingMessageCallback: (data: object) => void): void {
-        Base_WS_API.incomingMessageCallback = incomingMessageCallback;
+    public static addIncomingMessageCallback(id: string, incomingMessageCallback: (data: object) => void): void {
+        Base_WS_API.incomingMessageCallbacks[id] = incomingMessageCallback;
+    }
+
+    /**
+     * Removed a callback method that is called with the parsed data when the server sends data to this node.
+     * @param id the id of the callback to remove 
+     */
+    public static removeIncomingMessageCallback(id: string): void {
+        if (Base_WS_API.incomingMessageCallbacks[id]) {
+            delete Base_WS_API.incomingMessageCallbacks[id];
+        }
     }
 
     /**
@@ -50,7 +61,13 @@ export default class Base_WS_API {
         try {
             await promise;
         } catch (exception) {
-            alert("An error occured with the connection to the server"); // TODO HANDLE BY EXITING GAME
+            for (const callback of Object.values(Base_WS_API.incomingMessageCallbacks)) {
+                callback({
+                    type: "Error",
+                    message: "An error occured with the connection to the server",
+                    exception: exception
+                });
+            }
         }
 
         return Base_WS_API.socket.readyState === WebSocket.OPEN;
@@ -70,8 +87,8 @@ export default class Base_WS_API {
             delete Base_WS_API.pendingRequests[data.requestId];
         }
         
-        if (Base_WS_API.incomingMessageCallback) {
-            Base_WS_API.incomingMessageCallback(data);
+        for (const callback of Object.values(Base_WS_API.incomingMessageCallbacks)) {
+            callback(data);
         }
     }
 
@@ -82,6 +99,13 @@ export default class Base_WS_API {
      * @returns an awaitable promise that resolves once the request finishes
      */
     protected static async sendRequest(type: string, payload: object): Promise<any> {
+        if (Base_WS_API.socket?.readyState !== WebSocket.OPEN) {
+            return {
+                type: "error",
+                message: "Attempted to send a message over a non-open socket"
+            };
+        }
+        
         const requestId = Base_WS_API.createRequestId(type);
 
         // assign the requestId to the payload
