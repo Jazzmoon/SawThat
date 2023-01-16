@@ -56,5 +56,8 @@ let currentPlayerIndex = 0;
 <style scoped>
 #gameBoard {
     width: 100%;
+    height: 100%;
+    display: inline-flex;
+    flex-direction: column;
 }
 </style>
