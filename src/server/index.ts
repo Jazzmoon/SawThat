@@ -8,6 +8,7 @@ import websocket from "@fastify/websocket";
 import mongoose from "mongoose";
 
 // Import Routers
+import BasicRouter from "./routes/basic.router";
 import ClientRouter from "./routes/client.router";
 import GameRouter from "./routes/game.router";
 import WSRouter from "./routes/ws.router";
@@ -32,6 +33,7 @@ const app: FastifyInstance = fastify({
 app.register(websocket);
 
 // Bind Routes
+app.register(BasicRouter, { prefix: "/" });
 app.register(ClientRouter, { prefix: "/client" });
 app.register(GameRouter, { prefix: "/game" });
 app.register(WSRouter, { prefix: "/ws" });
