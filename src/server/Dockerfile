@@ -18,7 +18,6 @@ RUN mkdir -p /shared
 COPY shared /shared
 
 # Run build command
-RUN pwd
 RUN npm run build
 
 EXPOSE 3000

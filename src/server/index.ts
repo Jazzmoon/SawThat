@@ -39,11 +39,14 @@ app.register(GameRouter, { prefix: "/game" });
 app.register(WSRouter, { prefix: "/ws" });
 
 // Spin up the backend
-app.listen({ port: parseInt(process.env.PORT!) }, (err, address) => {
-  if (err) {
-    app.log.error(err);
-    console.error(err);
-    process.exit(1);
+app.listen(
+  { port: parseInt(process.env.PORT!), host: "0.0.0.0" },
+  (err, address) => {
+    if (err) {
+      app.log.error(err);
+      console.error(err);
+      process.exit(1);
+    }
+    app.log.info(`Server listening on ${address}`);
   }
-  app.log.info(`Server listening on ${address}`);
-});
+);
