@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import LogoSVG from "@/assets/logo.svg";
+import { HTTP_API } from "@/middleware/HTTP_API";
 import { WS_API } from "@/middleware/WS_API";
 
 const emit = defineEmits(['joined']);
@@ -8,20 +9,28 @@ let gameCode = "";
 let playerName = "";
 const serverURL = "";
 
+// TODO TEST THESE METHODS
 async function submit() {
-  const connectRequestSuccess = await WS_API.setupWebSocketConnection(serverURL);
+  const joinGameRequest = await HTTP_API.sendJoinRequest(playerName, gameCode);
 
-  if (!connectRequestSuccess) {
+  if (!joinGameRequest) {
+    alert("Failed to join the game");
+    return;
+  }
+
+  const connectResponse = await WS_API.setupWebSocketConnection(serverURL);
+
+  if (!connectResponse) {
     alert("Failed to establish connection with the server");
     return;
   }
 
-  const joinRequestSuccess = await WS_API.sendJoinRequest(playerName, gameCode);
+  // const joinResponse = await WS_API.sendJoinRequest(playerName, gameCode);
 
-  if (!joinRequestSuccess) {
-    alert("Failed to join the game");
-    return;
-  }
+  // if (!joinResponse) {
+  //   alert("Failed to join the game");
+  //   return;
+  // }
 
   emit('joined');
 }

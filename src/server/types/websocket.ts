@@ -25,5 +25,5 @@ export enum WebsocketType {
 
 export interface WebsocketMessage {
   Type: WebsocketType;
-  Data: any;
+  Data: any; // TODO define predefined types for data and then make WebsocketMessage type generic. It will help a lot in the client
 }

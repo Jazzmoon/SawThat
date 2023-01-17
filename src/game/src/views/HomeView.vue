@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import LogoSVG from "@/assets/logo.svg?component";
 import PlayersListVue from "@/components/PlayersList.vue";
+import { HTTP_API } from "@/middleware/HTTP_API";
 import { WS_API } from "@/middleware/WS_API";
 import { computed, ref } from "vue";
 
@@ -94,7 +95,7 @@ async function nextSetupStep() {
  * Creates a new game with the server that client nodes can then join.
  */
 async function createGame() {
-  const requestResult = await WS_API.sendCreateGameRequest();
+  const requestResult = await HTTP_API.sendCreate("disney"); // todo let the user decide this
 
   if (!requestResult) {
     alert("Failed to create a new game.")
@@ -107,20 +108,21 @@ async function createGame() {
  * Notifies server to start the game and then transitions the game node
  * display to the game board
  */
-async function startGame() {
-  const requestSuccess = await WS_API.sendStartGameRequest();
+// TODO TEST THESE AND/OR ADJUST AS NECESSARY
+async function startGame() {  
+  // setup the websocket connection
+  const requestSuccess = await WS_API.setupWebSocketConnection(serverWSURL);
 
   if (!requestSuccess) {
-    alert("An error occured while trying to start the game.");
-    return; 
-  }
-  
-  // setup the websocket connection
-  const request2Success = await WS_API.setupWebSocketConnection(serverWSURL);
-
-  if (!request2Success) {
     alert("An error occured while trying to upgrade the connection with the server.");
     return;
+  }
+
+  const request2Success = await WS_API.sendStartGameRequest();
+
+  if (!request2Success) {
+    alert("An error occured while trying to start the game.");
+    return; 
   }
   
   emit('gameStarted');
