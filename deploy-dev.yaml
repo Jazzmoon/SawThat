@@ -2,9 +2,12 @@ version: '3.7'
 services:
   caddy:
     container_name: caddy
-    image: caddy:2.6.2-alpine
+    build:
+      context: ./caddy
+      dockerfile: Dockerfile
     ports:
       - 80:80
+      - 443:443
     env_file:
       - ./src/shared/.env
     volumes:
