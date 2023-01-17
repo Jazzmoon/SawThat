@@ -8,6 +8,7 @@ import websocket from "@fastify/websocket";
 import mongoose from "mongoose";
 
 // Import Routers
+import BasicRouter from "./routes/basic.router";
 import ClientRouter from "./routes/client.router";
 import GameRouter from "./routes/game.router";
 import WSRouter from "./routes/ws.router";
@@ -32,16 +33,20 @@ const app: FastifyInstance = fastify({
 app.register(websocket);
 
 // Bind Routes
+app.register(BasicRouter, { prefix: "/" });
 app.register(ClientRouter, { prefix: "/client" });
 app.register(GameRouter, { prefix: "/game" });
 app.register(WSRouter, { prefix: "/ws" });
 
 // Spin up the backend
-app.listen({ port: parseInt(process.env.PORT!) }, (err, address) => {
-  if (err) {
-    app.log.error(err);
-    console.error(err);
-    process.exit(1);
+app.listen(
+  { port: parseInt(process.env.PORT!), host: "0.0.0.0" },
+  (err, address) => {
+    if (err) {
+      app.log.error(err);
+      console.error(err);
+      process.exit(1);
+    }
+    app.log.info(`Server listening on ${address}`);
   }
-  app.log.info(`Server listening on ${address}`);
-});
+);
