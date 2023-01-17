@@ -2,7 +2,11 @@ import { SocketStream } from "@fastify/websocket";
 import { FastifyPluginCallback, FastifyRequest } from "fastify";
 import jwt, { Secret } from "jsonwebtoken";
 
-import { WebsocketType } from "../types/websocket";
+import {
+  WebsocketMessage,
+  WebsocketRequest,
+  WebsocketType,
+} from "../types/websocket";
 
 // Create Record to match WS to GameID
 let connections: Record<string, Array<SocketStream>> = {};
@@ -24,15 +28,11 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
       * 1. Get the game id from the request params
       * 2. Add connection to the `connections` record
       */ // Verify that game has a connection array
-      if (!connections[gameID]) {
-        connections[gameID] = [];
-      }
+      if (!connections[gameID]) connections[gameID] = [];
       // Add connection socket to array
       connections[gameID].push(conn);
-
       // Verify socket added
       console.log(`[WS] Connection added: ${connections[gameID]}`);
-
       /*
       | Message:
       * 1. Validate connection via JWT
@@ -40,7 +40,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
       */
       conn.socket.on("message", (stream) => {
         // Validate data stream contains required information about user
-        const data = JSON.parse(stream.toString());
+        const data = JSON.parse(stream.toString()) as WebsocketRequest;
         // Verify user JWT
         jwt.verify(
           data.token,
@@ -51,12 +51,19 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
               if (err instanceof Error) {
                 conn.socket.send(
                   JSON.stringify({
-                    Type: WebsocketType.Error,
-                    Data: {
-                      error: err,
+                    type: WebsocketType.Error,
+                    data: { error: err, token: token },
+                  } as WebsocketMessage)
+                );
+              } else {
+                conn.socket.send(
+                  JSON.stringify({
+                    type: WebsocketType.Error,
+                    data: {
+                      error: "[WS] Token sent is undefined.",
                       token: token,
                     },
-                  })
+                  } as WebsocketMessage)
                 );
               }
               conn.end();
@@ -68,12 +75,12 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
             if (gameCode !== gameID) {
               conn.socket.send(
                 JSON.stringify({
-                  Type: WebsocketType.Error,
-                  Data: {
+                  type: WebsocketType.Error,
+                  data: {
                     message: "[WS] Game ID and JWT mismatch.",
                     data: `You requested game with ID ${gameID} but have a JWT for game ${gameCode}.`,
                   },
-                })
+                } as WebsocketMessage)
               );
               conn.end();
               return;
@@ -81,34 +88,49 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
             // Send confirmation to current socket that they have joined:
             conn.socket.send(
               JSON.stringify({
-                Type: WebsocketType.GameJoinAck,
-                Data: {
+                type: WebsocketType.GameJoinAck,
+                data: {
                   message: `[WS] Game with ID ${gameID} joined successfully.`,
                   username: username,
                   userType: userType,
                   gameCode: gameCode,
                   JWT: token,
                 },
-              })
+              } as WebsocketMessage)
             );
             // Send message to everyone in game to confirm user has joined:
             connections[gameID].forEach((c) => {
               c.socket.send(
                 JSON.stringify({
-                  Type: WebsocketType.GameJoinAck,
-                  Data: {
+                  type: WebsocketType.GameJoinAck,
+                  data: {
                     message: `[WS] Player has joined game ${gameID}.`,
                     username: username,
                     userType: userType,
                     gameCode: gameCode,
                     JWT: token,
                   },
-                })
+                } as WebsocketMessage)
               );
             });
+            // Handle message
+            switch (data.type) {
+              case WebsocketType.Ping:
+              default: {
+                // Handle Pong Response
+                conn.socket.send(
+                  JSON.stringify({
+                    type: WebsocketType.Pong,
+                    data: {
+                      message: "[WS] Pong!",
+                    },
+                  } as WebsocketMessage)
+                );
+                break;
+              }
+            }
           }
         );
-        // Handle message
       });
 
       /*
