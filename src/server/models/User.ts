@@ -15,6 +15,7 @@ const UserSchema = new Schema({
   },
   token: { type: String, required: false },
   color: { type: String, required: false },
+  position: { type: Number, required: true, default: 0 },
 });
 
 UserSchema.index({ username: 1, game: 1 }, { unique: true });
