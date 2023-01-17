@@ -1,10 +1,5 @@
-{$DOMAIN:localhost}:80,
-{$DOMAIN:localhost}:443 {
+{$DOMAIN:localhost}:80 {
   encode gzip
-
-  tls {
-    dns cloudflare FiCH6ENA5_F6XW9iDaqaTdJ_5oT3VluWmyIYSoGR
-  }
 
   handle / {
     reverse_proxy http://client:8081
