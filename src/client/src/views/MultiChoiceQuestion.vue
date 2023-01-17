@@ -1,6 +1,6 @@
 <template>
   <main id="backgroundImage">
-    <p id="questiontext">{{questionText}}</p>
+    <p id="questiontext">{{props.question}}</p>
     <div id="choices">
       <button class="btnBlue" @click="submit(1)">A</button>
       <button class="btnRed" @click="submit(2)">B</button>
@@ -11,9 +11,13 @@
 </template>
 
 <script setup lang="ts">
-let questionText = "A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines";
+const props = defineProps<{
+  question: string
+}>();
+
 function submit(choice: number){
   alert("clicked button: " + choice);
+  // TODO SEND BACK TO THE SERVER (APP WILL HANDLE RETURNING TO THE LEADERBOARD SCREEN)
 }
 </script>
 
