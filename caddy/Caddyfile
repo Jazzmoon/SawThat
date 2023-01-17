@@ -1,16 +1,15 @@
 {$DOMAIN:localhost}:80 {
-  handle /client/* {
-    uri strip_prefix /client
-    reverse_proxy /* http://client:8081
+  encode gzip
+
+  handle / {
+    reverse_proxy http://client:8081
   }
 
-  handle /game/* {
-    uri strip_prefix /game
-    reverse_proxy /* http://game:8082
+  handle_path /game/* {
+    reverse_proxy http://game:8082
   }
 
-  handle /api/* {
-    uri strip_prefix /api
-    reverse_proxy /* http://server:3000
+  handle_path /api/* {
+    reverse_proxy http://server:3000
   }
 }
