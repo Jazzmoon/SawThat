@@ -4,7 +4,7 @@ import Base_HTTP_API from "../../../shared/Base_HTTP_API";
  * during the game.
  */
 export class HTTP_API extends Base_HTTP_API {
-
+    private static serverUrl = "https://sawthat.jazzmoon.host/api/client"
     /**
      * no-op but this method should not be used from outside this class
      * so it is made private.
@@ -22,9 +22,9 @@ export class HTTP_API extends Base_HTTP_API {
         username: string,
         token: string // TODO MAKE THIS A PROPER TYPE and add error type into it
     }> {
-        return HTTP_API.sendPOST('join', {
-            playerName: playerName,
-            gameCode: gameCode
+        return HTTP_API.sendPOST(`${this.serverUrl}/join`, {
+            username: playerName,
+            game_code: gameCode
         });
     }
 }
