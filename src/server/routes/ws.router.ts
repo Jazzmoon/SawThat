@@ -2,14 +2,20 @@ import { SocketStream } from "@fastify/websocket";
 import { FastifyPluginCallback, FastifyRequest } from "fastify";
 import jwt, { Secret } from "jsonwebtoken";
 
+import { WebsocketType } from "../../shared/types/enums/WebsocketTypes";
 import {
-  WebsocketMessage,
   WebsocketRequest,
-  WebsocketType,
-} from "../types/websocket";
+  WebsocketResponse,
+} from "../../shared/types/types/Websocket";
 
 // Create Record to match WS to GameID
-let connections: Record<string, Array<SocketStream>> = {};
+let connections: Record<
+  string,
+  {
+    host: SocketStream;
+    clients: Array<SocketStream>;
+  }
+> = {};
 
 const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
   fastify.get(
@@ -21,18 +27,6 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
 
       // Get params and data
       const { gameID } = req.params as { gameID: string };
-      console.log(`[WS] Connection Received for game with ID: ${gameID}`);
-
-      /*
-      | Connect:
-      * 1. Get the game id from the request params
-      * 2. Add connection to the `connections` record
-      */ // Verify that game has a connection array
-      if (!connections[gameID]) connections[gameID] = [];
-      // Add connection socket to array
-      connections[gameID].push(conn);
-      // Verify socket added
-      console.log(`[WS] Connection added: ${connections[gameID]}`);
       /*
       | Message:
       * 1. Validate connection via JWT
@@ -53,7 +47,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                   JSON.stringify({
                     type: WebsocketType.Error,
                     data: { error: err, token: token },
-                  } as WebsocketMessage)
+                  } as WebsocketResponse)
                 );
               } else {
                 conn.socket.send(
@@ -63,7 +57,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       error: "[WS] Token sent is undefined.",
                       token: token,
                     },
-                  } as WebsocketMessage)
+                  } as WebsocketResponse)
                 );
               }
               conn.end();
@@ -80,7 +74,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     message: "[WS] Game ID and JWT mismatch.",
                     data: `You requested game with ID ${gameID} but have a JWT for game ${gameCode}.`,
                   },
-                } as WebsocketMessage)
+                } as WebsocketResponse)
               );
               conn.end();
               return;
@@ -96,10 +90,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                   gameCode: gameCode,
                   JWT: token,
                 },
-              } as WebsocketMessage)
+              } as WebsocketResponse)
             );
             // Send message to everyone in game to confirm user has joined:
-            connections[gameID].forEach((c) => {
+            connections[gameID]?.clients.forEach((c) => {
               c.socket.send(
                 JSON.stringify({
                   type: WebsocketType.GameJoinAck,
@@ -110,11 +104,64 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     gameCode: gameCode,
                     JWT: token,
                   },
-                } as WebsocketMessage)
+                } as WebsocketResponse)
               );
             });
             // Handle message
             switch (data.type) {
+              case WebsocketType.GameSetup: {
+                if (userType === "Game" && !connections[gameID]) {
+                  // Create spot in the connections array for players
+                  connections[gameID] = {
+                    host: conn,
+                    clients: [],
+                  };
+                } else if (userType !== "Game") {
+                  conn.socket.send(
+                    JSON.stringify({
+                      type: WebsocketType.Error,
+                      data: {
+                        message: `[WS] Only the game node can set-up a game.`,
+                      },
+                    } as WebsocketResponse)
+                  );
+                } else {
+                  conn.socket.send(
+                    JSON.stringify({
+                      type: WebsocketType.Error,
+                      data: {
+                        message: `[WS] A user has already connected to this game as the host.`,
+                      },
+                    } as WebsocketResponse)
+                  );
+                }
+                break;
+              }
+              case WebsocketType.GameJoin: {
+                if (userType === "Client" && connections[gameID]) {
+                  // Add connection socket to array
+                  connections[gameID].clients.push(conn);
+                } else if (userType !== "Client") {
+                  conn.socket.send(
+                    JSON.stringify({
+                      type: WebsocketType.Error,
+                      data: {
+                        message: `[WS] Game nodes cannot connect as players.`,
+                      },
+                    } as WebsocketResponse)
+                  );
+                } else {
+                  conn.socket.send(
+                    JSON.stringify({
+                      type: WebsocketType.Error,
+                      data: {
+                        message: `[WS] The host has not yet connected to the game. Please try again later.`,
+                      },
+                    } as WebsocketResponse)
+                  );
+                }
+                break;
+              }
               case WebsocketType.Ping:
               default: {
                 // Handle Pong Response
@@ -124,7 +171,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     data: {
                       message: "[WS] Pong!",
                     },
-                  } as WebsocketMessage)
+                  } as WebsocketResponse)
                 );
                 break;
               }
@@ -138,8 +185,56 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
       * 1. Find client within the connections record and remove them from the connections array
       */
       conn.socket.on("close", (stream) => {
-        // Remove conn from connection array
-        connections[gameID] = connections[gameID].filter((c) => c !== conn);
+        if (!connections[gameID]) {
+          // User never sent message and was never assigned to game
+          conn.socket.send(
+            JSON.stringify({
+              type: WebsocketType.Error,
+              data: {
+                message:
+                  "[WS] This connection was never associated with a game.",
+              },
+            } as WebsocketResponse)
+          );
+          return;
+        }
+        // Check if close was host or clients
+        if (connections[gameID].host === conn) {
+          // If Host, disconnect all clients and send message
+          connections[gameID].host.socket.send(
+            JSON.stringify({
+              type: WebsocketType.GameEndedAck,
+            } as WebsocketResponse)
+          );
+          connections[gameID].clients.forEach((c) => {
+            c.socket.send(
+              JSON.stringify({
+                type: WebsocketType.GameEndedAck,
+              } as WebsocketResponse)
+            );
+            c.end();
+          });
+          delete connections[gameID];
+          conn.end();
+        } else {
+          // If Client, just DC and alert everyone else
+          connections[gameID].host.socket.send(
+            JSON.stringify({
+              type: WebsocketType.PlayerDisconnectAck,
+            } as WebsocketResponse)
+          );
+          connections[gameID].clients.forEach((c) => {
+            c.socket.send(
+              JSON.stringify({
+                type: WebsocketType.PlayerDisconnectAck,
+              } as WebsocketResponse)
+            );
+          });
+          connections[gameID].clients = connections[gameID].clients.filter(
+            (c) => c !== conn
+          );
+          conn.end();
+        }
       });
     }
   );

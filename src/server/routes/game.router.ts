@@ -20,18 +20,6 @@ const GameRouter: FastifyPluginCallback = async (
         200: {
           type: "object",
           properties: {
-            // TODO I DON"T THINK WE NEED THIS ENTIRE SUB-OBJECT. THE GAMECODE AND TOKEN ARE ALL THAT THE GAME NODE NEEDS
-            game: {
-              type: "object",
-              properties: {
-                hostID: { type: "string" },
-                game_code: { type: "string" },
-                themePack: { type: "string" },
-                players: { type: "array", items: { type: "object" } },
-                used_questions: { type: "array" },
-                used_consequences: { type: "array" },
-              },
-            },
             gameID: { type: "string" },
             userToken: { type: "string" },
           },
