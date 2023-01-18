@@ -6,7 +6,7 @@
                 <h2 id="title">Leaderboard</h2>
             </div>
             <div id="players">
-                <div v-for="(player, index) in players" :key="player.name" :class="['player', (currentPlayer == index) ? 'chosen' : '']">
+                <div v-for="(player, index) in props.players" :key="player.name" :class="['player', (props.currentPlayerIndex == index) ? 'chosen' : '']">
                     <div class="colorIndicator" :style="`border-color: ${player.color}`"></div>
                     <p class="playerName">{{player.name}}</p>
                 </div>
@@ -16,68 +16,13 @@
 </template>
 
 <script lang="ts" setup>
-    import LogoSVG from "@/assets/logo.svg";
+import LogoSVG from "@/assets/logo.svg";
 
-    let currentPlayer = 0;
-    let players = [
-        {
-            name: "Player 1",
-            color: "#003FA3"
-        },
-        {
-            name: "Player 2",
-            color: "#00A324"
-        },
-        {
-            name: "Player 3",
-            color: "#A30000"
-        },
-        {
-            name: "Player 4",
-            color: "#A39C00"
-        },
-        {
-            name: "Player 5",
-            color: "#A39C00"
-        },        {
-            name: "Player 3",
-            color: "#A30000"
-        },
-        {
-            name: "Player 4",
-            color: "#A39C00"
-        },
-        {
-            name: "Player 5",
-            color: "#A39C00"
-        },        {
-            name: "Player 3",
-            color: "#A30000"
-        },
-        {
-            name: "Player 4",
-            color: "#A39C00"
-        },
-        {
-            name: "Player 5",
-            color: "#A39C00"
-        },        {
-            name: "Player 3",
-            color: "#A30000"
-        },
-        {
-            name: "Player 4",
-            color: "#A39C00"
-        },
-        {
-            name: "Player 5",
-            color: "#A39C00"
-        },
-        {
-            name: "Player 6",
-            color: "#CE5D5D"
-        }
-    ];
+const props = defineProps<{
+    players: any[],
+    currentPlayerIndex: number
+}>();
+
 </script>
 
 <style scoped>
