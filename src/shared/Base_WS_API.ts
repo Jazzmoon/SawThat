@@ -38,7 +38,7 @@ export default class Base_WS_API {
      * @param wsURL the url for the websocket connection
      * @returns an awaitable promise that indicates if the connection was successful
      */
-    public static async setupWebSocketConnection(wsURL: string): Promise<boolean> {
+    protected static async setupWebSocketConnection(wsURL: string): Promise<boolean> {
         // create a promise to await the connection to open before returning
         const requestId = Base_WS_API.createRequestId('connect');
         const promise = Base_WS_API.addRequestToQueue(requestId);
@@ -47,6 +47,7 @@ export default class Base_WS_API {
 
         // fire the promise when it opens and is ready for communication
         Base_WS_API.socket.onopen = (event: Event) => {
+            // complete the promise as initial handshake is now complete
             Base_WS_API.pendingRequests[requestId]?.success();
         };
         

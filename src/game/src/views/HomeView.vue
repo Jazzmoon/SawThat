@@ -8,8 +8,7 @@ import type { Player } from "../../../types/types/Player";
 
 const emit = defineEmits(['gameStarted']);
 
-let serverURL = "TODO";
-let serverWSURL = "wss://demo.piesocket.com/v3/channel_123?api_key=VCXCEuvhGcBDP7XhiJJUDvR1e1D3eiVjgZ9VRiaV&notify_self"; // TODO REPLACE WITH OURS. THIS I JUST A DEMO ECHO SERVER I FOUND ONLINE
+let userToken = "";
 const gameCode = ref("");
 
 let players: Player[] = [
@@ -98,10 +97,11 @@ async function nextSetupStep() {
 async function createGame() {
   const requestResult = await HTTP_API.sendCreate("disney"); // todo let the user decide this
 
-  if (!requestResult) {
+  if (!requestResult.error) {
     alert("Failed to create a new game.")
   } else {
-    gameCode.value = requestResult;
+    gameCode.value = requestResult.gameID;
+    userToken = requestResult.userToken;
   }
 }
 
@@ -112,7 +112,7 @@ async function createGame() {
 // TODO TEST THESE AND/OR ADJUST AS NECESSARY
 async function startGame() {  
   // setup the websocket connection
-  const requestSuccess = await WS_API.setupWebSocketConnection(serverWSURL);
+  const requestSuccess = await WS_API.setupWebSocketConnection(gameCode.value);
 
   if (!requestSuccess) {
     alert("An error occured while trying to upgrade the connection with the server.");
@@ -140,7 +140,7 @@ async function startGame() {
         <div v-if="gameCode">
           <p>Game Code (Click to Copy):</p>
           <button id="gamecode" @click="copyCode()">{{ gameCode }}</button>
-          <p>Go to {{ serverURL }} and enter this code to join!</p>
+          <p>Go to {{ import.meta.env.DOMAIN }} and enter this code to join!</p>
         </div>
         <button @click="nextSetupStep()">{{ buttonText }}</button>
       </div>

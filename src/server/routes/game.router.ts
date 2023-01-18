@@ -20,6 +20,7 @@ const GameRouter: FastifyPluginCallback = async (
         200: {
           type: "object",
           properties: {
+            // TODO I DON"T THINK WE NEED THIS ENTIRE SUB-OBJECT. THE GAMECODE AND TOKEN ARE ALL THAT THE GAME NODE NEEDS
             game: {
               type: "object",
               properties: {
