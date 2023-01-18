@@ -10,7 +10,7 @@ import { WS_API } from './middleware/WS_API';
 import HomeView from './views/HomeView.vue';
 import MainView from './views/MainView.vue';
 import QuestionView from './views/QuestionView.vue';
-import type { Player } from "../../types/types/Player";
+import type { Player } from "../../shared/types/types/Player";
 
 let gameStarted = ref(false);
 let questionShown = ref(false);

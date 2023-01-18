@@ -1,4 +1,4 @@
-import type { Player } from "../types/Player";
+import type { Player } from "../shared/types/Player";
 
 export type JoinResponse = {
     username: string,

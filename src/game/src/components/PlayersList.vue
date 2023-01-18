@@ -7,7 +7,7 @@
     </div>
 </template>
 
-<script setup lang="ts">import type { Player } from '../../../types/types/Player';
+<script setup lang="ts">import type { Player } from '../../../shared/types/types/Player';
 
 const props = defineProps<{
     players: Player[],

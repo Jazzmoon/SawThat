@@ -6,7 +6,7 @@ import {
   WebsocketMessage,
   WebsocketRequest,
   WebsocketType,
-} from "../types/websocket";
+} from "../shared/types/websocket";
 
 // Create Record to match WS to GameID
 let connections: Record<string, Array<SocketStream>> = {};

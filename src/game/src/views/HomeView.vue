@@ -4,7 +4,7 @@ import PlayersListVue from "@/components/PlayersList.vue";
 import { HTTP_API } from "@/middleware/HTTP_API";
 import { WS_API } from "@/middleware/WS_API";
 import { computed, ref } from "vue";
-import type { Player } from "../../../types/types/Player";
+import type { Player } from "../../../shared/types/types/Player";
 
 const emit = defineEmits(['gameStarted']);
 
