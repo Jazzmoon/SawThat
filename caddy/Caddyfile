@@ -1,15 +1,19 @@
 {$DOMAIN:localhost}:80 {
-  encode gzip
-
-  handle_path /game/* {
-    reverse_proxy http://game:8080
-  }
-
   handle_path /api/* {
-    reverse_proxy http://server:3000
+    reverse_proxy * http://server:3000
   }
 
+ handle {
+    reverse_proxy * http://client:8080
+  }
+}
+
+{$GAME_DOMAIN:localhost}:80 {  
+  handle_path /api/* {
+    reverse_proxy * http://server:3000
+  }
+  
   handle {
-    reverse_proxy http://client:8080
+    reverse_proxy * http://game:8080
   }
 }
