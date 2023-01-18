@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import BoardVue from '@/components/Board.vue';
+import type { Player } from '../../../types/types/Player';
 
 const props = defineProps<{
   players: Player[],
