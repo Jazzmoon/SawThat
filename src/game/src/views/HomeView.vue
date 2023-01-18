@@ -140,7 +140,7 @@ async function startGame() {
         <div v-if="gameCode">
           <p>Game Code (Click to Copy):</p>
           <button id="gamecode" @click="copyCode()">{{ gameCode }}</button>
-          <p>Go to {{ import.meta.env.DOMAIN }} and enter this code to join!</p>
+          <p>Go to {{ /*import.meta.env.DOMAIN*/ 'https://sawthat.jazzmoon.host/' }} and enter this code to join!</p>
         </div>
         <button @click="nextSetupStep()">{{ buttonText }}</button>
       </div>
