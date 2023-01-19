@@ -56,7 +56,7 @@ export default class Base_WS_API {
         Base_WS_API.socket.onopen = (event: Event) => {
             // complete the promise as initial handshake is now complete
             Base_WS_API.pendingRequests[requestId]?.success();
-            console.log("open")
+            console.log("open");
         };
         
         Base_WS_API.socket.onmessage = (event: MessageEvent) => {
@@ -65,6 +65,7 @@ export default class Base_WS_API {
         
         Base_WS_API.socket.onerror = (event: Event) => {
             Base_WS_API.pendingRequests[requestId]?.fail();
+            console.error(event);
         }
 
         try {
