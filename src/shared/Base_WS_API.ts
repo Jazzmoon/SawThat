@@ -121,16 +121,16 @@ export default class Base_WS_API {
         const requestId = Base_WS_API.createRequestId(type);
 
         // assign the requestId to the payload
-        Object.defineProperty(payload, 'requestId', {
+        payload = Object.defineProperty(payload, 'requestId', {
             value: requestId
         });
 
         // assign the token to the payload
-        Object.defineProperty(payload, 'token', {
+        payload = Object.defineProperty(payload, 'token', {
             value: Base_WS_API.token
         });
 
-        Base_WS_API.socket.send("test message");//JSON.stringify(payload));
+        Base_WS_API.socket.send(JSON.stringify(payload));
 
         return Base_WS_API.addRequestToQueue(requestId);
     }
