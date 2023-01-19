@@ -96,9 +96,8 @@ async function nextSetupStep() {
  */
 async function createGame() {
   const requestResult = await HTTP_API.sendCreate("disney"); // todo let the user decide this
-
-  if (!requestResult.error) {
-    alert("Failed to create a new game.")
+  if (requestResult.hasOwnProperty('error')) {
+    alert(`Failed to create a new game.\n${requestResult.message}`);
   } else {
     gameCode.value = requestResult.gameID;
     userToken = requestResult.userToken;
