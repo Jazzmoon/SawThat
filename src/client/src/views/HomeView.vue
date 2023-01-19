@@ -12,8 +12,8 @@ let playerName = "";
 async function submit() {
   const joinGameRequest = await HTTP_API.sendJoinRequest(playerName, gameCode);
 
-  if (!joinGameRequest.error) {
-    alert("Failed to join the game");
+  if (joinGameRequest.hasOwnProperty('error')) {
+    alert(`Failed to join the game.\n${joinGameRequest.message}`);
     return;
   }
 
