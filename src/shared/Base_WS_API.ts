@@ -132,6 +132,7 @@ export default class Base_WS_API {
             writable: false
         });
 
+        console.log("token", Base_WS_API.token);
         console.log(JSON.stringify(payload)) // TODO REMOVE THIS FOR PROD
 
         Base_WS_API.socket?.send(JSON.stringify(payload));

@@ -74,6 +74,7 @@ async function createGame() {
     gameCode.value = requestResult.gameID;
   }
 
+  console.log(requestResult);
   WS_API.setUserToken(requestResult.userToken);
 
   // setup the websocket connection
