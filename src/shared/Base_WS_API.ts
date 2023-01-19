@@ -122,24 +122,15 @@ export default class Base_WS_API {
 
         // assign the requestId to the payload
         Object.defineProperty(payload, 'requestId', {
-            value: requestId,
-            writable: false
+            value: requestId
         });
 
         // assign the token to the payload
         Object.defineProperty(payload, 'token', {
-            value: Base_WS_API.token,
-            writable: false
+            value: Base_WS_API.token
         });
 
-        // TODO REMOVE THIS FOR PROD
-        console.log(JSON.stringify(payload));
-
-        // convert to byte array
-        const utf8Encode = new TextEncoder();
-        const data = utf8Encode.encode(JSON.stringify(payload));
-
-        Base_WS_API.socket.send(data);
+        Base_WS_API.socket.send("test message");//JSON.stringify(payload));
 
         return Base_WS_API.addRequestToQueue(requestId);
     }
