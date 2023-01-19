@@ -56,6 +56,7 @@ export default class Base_WS_API {
         Base_WS_API.socket.onopen = (event: Event) => {
             // complete the promise as initial handshake is now complete
             Base_WS_API.pendingRequests[requestId]?.success();
+            console.log("open")
         };
         
         Base_WS_API.socket.onmessage = (event: MessageEvent) => {
@@ -109,7 +110,7 @@ export default class Base_WS_API {
      * @returns an awaitable promise that resolves once the request finishes
      */
     protected static async sendRequest(type: WebsocketType, payload: object): Promise<WebsocketMessage> {
-        if (Base_WS_API.socket?.readyState !== WebSocket.OPEN) {
+        if (Base_WS_API.socket == null || Base_WS_API.socket.readyState !== WebSocket.OPEN) {
             return {
                 type: WebsocketType.Error,
                 data: {
@@ -132,10 +133,14 @@ export default class Base_WS_API {
             writable: false
         });
 
-        console.log("token", Base_WS_API.token);
-        console.log(JSON.stringify(payload)) // TODO REMOVE THIS FOR PROD
+        // TODO REMOVE THIS FOR PROD
+        console.log(JSON.stringify(payload));
 
-        Base_WS_API.socket?.send(JSON.stringify(payload));
+        Base_WS_API.socket.send(JSON.stringify(payload));
+
+        setInterval(() => {
+            console.log(Base_WS_API.socket?.bufferedAmount);
+        }, 100);
 
         return Base_WS_API.addRequestToQueue(requestId);
     }
