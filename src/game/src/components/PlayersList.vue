@@ -1,13 +1,14 @@
 <template>
     <div id="players">
         <div v-for="(player, index) in props.players" :key="player.name" :class="['player', (props.currentPlayer !== null && props.currentPlayer === index) ? 'chosen' : '']">
-            <div class="colorIndicator" :style="`border-color: ${player.color}`"></div>
+            <div class="colorIndicator" :style="`border-color: ${player.colour}`"></div>
             <p class="playerName">{{player.name}}</p>
         </div>
     </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts">import type { Player } from '../../../shared/types/types/Player';
+
 const props = defineProps<{
     players: Player[],
     currentPlayer: number | null

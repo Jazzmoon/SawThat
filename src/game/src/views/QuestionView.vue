@@ -1,10 +1,14 @@
 <script setup lang="ts">
-let questionText = "A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines";
+const props = defineProps<{
+  question: string,
+  backgroundImageUrl: string
+}>();
+
 </script>
 
 <template>
-  <main id="backgroundImage">
-    <p id="questiontext">{{questionText}}</p>
+  <main id="backgroundImage" :style="`background-image: url(${props.backgroundImageUrl});`">
+    <p id="questiontext">{{props.question}}</p>
   </main>
 </template>
 

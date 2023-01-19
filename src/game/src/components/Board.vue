@@ -10,6 +10,7 @@
 <script lang="ts" setup>
 import BoardSVG from "@/assets/board.svg?skipsvgo"; // load svg but don't optimize away id fields
 import { onMounted } from 'vue';
+import type { Player } from "../../../shared/types/types/Player";
 import PlayersListVue from "./PlayersList.vue";
 
 const props = defineProps<{
@@ -30,7 +31,7 @@ onMounted(() => {
         piece.setAttribute('r', startingSpot?.getAttribute('r')!);
         piece.setAttribute('stroke', "black");
         piece.setAttribute('stroke-width', "7px");
-        piece.setAttribute('fill', player.color);
+        piece.setAttribute('fill', player.colour);
         playerPieces[player.name] = piece;
         startingSpot?.parentElement?.append(piece);
         

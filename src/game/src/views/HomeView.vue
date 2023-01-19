@@ -4,52 +4,52 @@ import PlayersListVue from "@/components/PlayersList.vue";
 import { HTTP_API } from "@/middleware/HTTP_API";
 import { WS_API } from "@/middleware/WS_API";
 import { computed, ref } from "vue";
+import type { Player } from "../../../shared/types/types/Player";
 
 const emit = defineEmits(['gameStarted']);
 
-let serverURL = "TODO";
-let serverWSURL = "wss://demo.piesocket.com/v3/channel_123?api_key=VCXCEuvhGcBDP7XhiJJUDvR1e1D3eiVjgZ9VRiaV&notify_self"; // TODO REPLACE WITH OURS. THIS I JUST A DEMO ECHO SERVER I FOUND ONLINE
+let userToken = "";
 const gameCode = ref("");
 
 let players: Player[] = [
   {
     name: "Player 1",
-    color: "#003FA3",
+    colour: "#003FA3",
     position: 1,
   },
   {
     name: "Player 2",
-    color: "#00A324",
+    colour: "#00A324",
     position: 10,
   },
   {
     name: "Player 3",
-    color: "#A30000",
+    colour: "#A30000",
     position: 12,
   },
   {
     name: "Player 4",
-    color: "#A39C00",
+    colour: "#A39C00",
     position: 6,
   },
   {
     name: "Player 5",
-    color: "#A39C00",
+    colour: "#A39C00",
     position: 24,
   },
   {
     name: "Player 6",
-    color: "#A30000",
+    colour: "#A30000",
     position: 21,
   },
   {
     name: "Player 7",
-    color: "#A39C00",
+    colour: "#A39C00",
     position: 13,
   },
   {
     name: "Player 8",
-    color: "#A39C00",
+    colour: "#A39C00",
     position: 4,
   }
 ];
@@ -97,10 +97,11 @@ async function nextSetupStep() {
 async function createGame() {
   const requestResult = await HTTP_API.sendCreate("disney"); // todo let the user decide this
 
-  if (!requestResult) {
+  if (!requestResult.error) {
     alert("Failed to create a new game.")
   } else {
-    gameCode.value = requestResult;
+    gameCode.value = requestResult.gameID;
+    userToken = requestResult.userToken;
   }
 }
 
@@ -111,7 +112,7 @@ async function createGame() {
 // TODO TEST THESE AND/OR ADJUST AS NECESSARY
 async function startGame() {  
   // setup the websocket connection
-  const requestSuccess = await WS_API.setupWebSocketConnection(serverWSURL);
+  const requestSuccess = await WS_API.setupWebSocketConnection(gameCode.value);
 
   if (!requestSuccess) {
     alert("An error occured while trying to upgrade the connection with the server.");
@@ -139,7 +140,7 @@ async function startGame() {
         <div v-if="gameCode">
           <p>Game Code (Click to Copy):</p>
           <button id="gamecode" @click="copyCode()">{{ gameCode }}</button>
-          <p>Go to {{ serverURL }} and enter this code to join!</p>
+          <p>Go to {{ /*import.meta.env.DOMAIN*/ 'https://sawthat.jazzmoon.host/' }} and enter this code to join!</p>
         </div>
         <button @click="nextSetupStep()">{{ buttonText }}</button>
       </div>

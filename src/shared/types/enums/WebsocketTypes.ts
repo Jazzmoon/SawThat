@@ -1,6 +1,5 @@
 export enum WebsocketType {
   // Requests
-  Error = 0,
   GameSetup = 1,
   GameJoin = 3,
   GameEnded = 5,
@@ -11,9 +10,10 @@ export enum WebsocketType {
   QuestionAnswer = 14,
   Consequence = 15,
   ConsequenceEnded = 17,
-  Pong = 21,
+  Ping = 20,
 
   // Responses
+  Error = 0,
   GameSetupAck = 2,
   GameJoinAck = 4,
   GameEndedAck = 6,
@@ -23,14 +23,6 @@ export enum WebsocketType {
   ConsequenceAck = 16,
   ConsequenceEndedAck = 18,
   QuestionTimeOut = 19,
-  Ping = 20,
-}
-
-export interface WebsocketMessage {
-  type: WebsocketType;
-  data: any; // TODO define predefined types for data and then make WebsocketMessage type generic. It will help a lot in the client
-}
-
-export interface WebsocketRequest extends WebsocketMessage {
-  token: string;
+  PlayerDisconnectAck = 22,
+  Pong = 21,
 }
