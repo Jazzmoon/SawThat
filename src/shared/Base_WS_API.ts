@@ -1,5 +1,5 @@
 import { WebsocketType } from "./enums/WebsocketTypes";
-import { WebsocketMessage } from "./types/Websocket";
+import type { WebsocketMessage } from "./types/Websocket";
 /**
  * class that wraps websockets to facilitate communication with the server
  * during the game.

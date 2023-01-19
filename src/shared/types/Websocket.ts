@@ -1,11 +1,11 @@
-import { WebsocketType } from "../enums/WebsocketTypes";
+import type { WebsocketType } from "../enums/WebsocketTypes";
 
-type WebsocketMessage = {
+export type WebsocketMessage = {
   type: WebsocketType;
   data: any;
 };
 
-type WebsocketRequest = WebsocketMessage & {
+export type WebsocketRequest = WebsocketMessage & {
   type:
     | WebsocketType.GameSetup
     | WebsocketType.GameJoin
@@ -21,7 +21,7 @@ type WebsocketRequest = WebsocketMessage & {
   token: string;
 };
 
-type WebsocketResponse = WebsocketMessage & {
+export type WebsocketResponse = WebsocketMessage & {
   type:
     | WebsocketType.Error
     | WebsocketType.GameSetupAck
@@ -35,5 +35,3 @@ type WebsocketResponse = WebsocketMessage & {
     | WebsocketType.PlayerDisconnectAck
     | WebsocketType.Pong;
 };
-
-export { WebsocketMessage, WebsocketRequest, WebsocketResponse };
