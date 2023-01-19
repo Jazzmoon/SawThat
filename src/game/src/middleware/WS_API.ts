@@ -1,10 +1,12 @@
 import Base_WS_API from "../../../shared/Base_WS_API";
+import { WebsocketType } from "../../../shared/enums/WebsocketTypes";
+import type { WebsocketMessage } from "../../../shared/types/Websocket";
 /**
  * Static class that wraps websockets to facilitate communication with the server
  * during the game.
  */
 export class WS_API extends Base_WS_API {
-    private static serverURL = "https://sawthatgame.jazzmoon.host/api/ws";
+    private static serverURL = "wss://sawthatgame.jazzmoon.host/api/ws";
 
     /**
      * no-op but this method should not be used from outside this class
@@ -28,17 +30,15 @@ export class WS_API extends Base_WS_API {
      * Attempts to create a new game with the server
      * @returns the game code if the game was created. undefined if some error occured.
      */
-    public static async sendCreateGameRequest(): Promise<string | undefined> {
-        // TODO implement via the send request method
-        return "12345";
+    public static async sendCreateGameRequest(): Promise<WebsocketMessage> {
+        return WS_API.sendRequest(WebsocketType.GameSetup, {});
     }
 
     /**
      * Attempts to start the game with the server
      * @returns true if the game was started. False if some error occured.
      */
-    public static async sendStartGameRequest(): Promise<boolean> {
-        // TODO implement via the send request method
-        return true;
+    public static async sendStartGameRequest(): Promise<WebsocketMessage> {
+        return  WS_API.sendRequest(WebsocketType.GameSetup, {});
     }
 }

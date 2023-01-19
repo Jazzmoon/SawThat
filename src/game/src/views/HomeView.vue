@@ -73,14 +73,7 @@ async function createGame() {
   } else {
     gameCode.value = requestResult.gameID;
   }
-}
 
-/**
- * Notifies server to start the game and then transitions the game node
- * display to the game board
- */
-// TODO TEST THESE AND/OR ADJUST AS NECESSARY
-async function startGame() {
   // setup the websocket connection
   const requestSuccess = await WS_API.setupWebSocketConnection(gameCode.value);
 
@@ -89,6 +82,19 @@ async function startGame() {
     return;
   }
 
+  const request2Success = await WS_API.sendCreateGameRequest();
+
+  if (!request2Success) {
+    alert("An error occured while trying to start the game.");
+    return;
+  }
+}
+
+/**
+ * Notifies server to start the game and then transitions the game node
+ * display to the game board
+ */
+async function startGame() {
   const request2Success = await WS_API.sendStartGameRequest();
 
   if (!request2Success) {

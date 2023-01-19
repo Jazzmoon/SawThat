@@ -1,10 +1,12 @@
 import Base_WS_API from "../../../shared/Base_WS_API";
+import { WebsocketType } from "../../../shared/enums/WebsocketTypes";
+import type { WebsocketMessage } from "../../../shared/types/Websocket";
 /**
  * Static class that wraps websockets to facilitate communication with the server
  * during the game.
  */
 export class WS_API extends Base_WS_API {
-    private static serverURL = "https://sawthat.jazzmoon.host/api/ws";
+    private static serverURL = "wss://sawthat.jazzmoon.host/api/ws";
 
     /**
      * no-op but this method should not be used from outside this class
@@ -26,13 +28,8 @@ export class WS_API extends Base_WS_API {
 
     /**
      * Sends a request to join a game
-     * @param playerName the id of the player to add
-     * @param gameCode the game code of the game to join
      */
-    public static sendJoinRequest(playerName: string, gameCode: string): Promise<boolean> {
-        return WS_API.sendRequest('join', {
-            playerName: playerName,
-            gameCode: gameCode
-        });
+    public static sendJoinRequest(): Promise<WebsocketMessage> {
+        return WS_API.sendRequest(WebsocketType.GameJoin, {});
     }
 }

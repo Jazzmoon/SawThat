@@ -24,6 +24,13 @@ async function submit() {
     return;
   }
 
+  const joinWSResponse = await WS_API.sendJoinRequest();
+
+  if (!joinWSResponse) {
+    alert("Failed to join the server");
+    return;
+  }
+
   emit('joined');
 }
 

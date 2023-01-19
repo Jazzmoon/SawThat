@@ -106,11 +106,13 @@ export default class Base_WS_API {
      * @param payload the data to send
      * @returns an awaitable promise that resolves once the request finishes
      */
-    protected static async sendRequest(type: string, payload: object): Promise<any> {
+    protected static async sendRequest(type: WebsocketType, payload: object): Promise<WebsocketMessage> {
         if (Base_WS_API.socket?.readyState !== WebSocket.OPEN) {
             return {
-                type: "error",
-                message: "Attempted to send a message over a non-open socket"
+                type: WebsocketType.Error,
+                data: {
+                    message: "Attempted to send a message over a non-open socket"
+                }
             };
         }
         
@@ -138,8 +140,8 @@ export default class Base_WS_API {
      * @param requestId id of the request 
      * @returns the awaitable promise that will resolve when the request is filled
      */
-    private static addRequestToQueue(requestId: string): Promise<any> {
-        const connectedPromise = new Promise((pass, fail) => {
+    private static addRequestToQueue(requestId: string): Promise<WebsocketMessage> {
+        const connectedPromise = new Promise<WebsocketMessage>((pass, fail) => {
             Base_WS_API.pendingRequests[requestId] = {success: pass, fail: fail};
         });
         return connectedPromise;
@@ -150,7 +152,7 @@ export default class Base_WS_API {
      * @param type the type of the request (included in the key for readability)
      * @returns a string for the newly created key
      */
-    private static createRequestId(type: string): string {
+    private static createRequestId(type: WebsocketType | string): string {
         return `${type}${Date.now()}`; // TODO FIND A BETTER WAY
     }
 }
