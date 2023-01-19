@@ -6,7 +6,7 @@ services:
     ports:
       - 80:80
     env_file:
-      - ./src/shared/.env.dev
+      - ./src/shared/.env
     volumes:
       - ./src/shared:/shared
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
@@ -18,7 +18,7 @@ services:
       context: ./src
       dockerfile: ./client/Dockerfile
     env_file:
-      - ./src/shared/.env.dev
+      - ./src/shared/.env
     volumes:
       - ./src/client:/app/vue
       - /app/vue/node_modules
@@ -32,7 +32,7 @@ services:
       context: ./src
       dockerfile: ./game/Dockerfile
     env_file:
-      - ./src/shared/.env.dev
+      - ./src/shared/.env
     volumes:
       - ./src/game:/app/vue
       - /app/vue/node_modules
@@ -53,7 +53,7 @@ services:
     networks:
       - vlan
     env_file:
-      - ./src/shared/.env.dev
+      - ./src/shared/.env
     depends_on:
       - mongoDB
   mongoDB:
@@ -62,7 +62,7 @@ services:
     ports:
       - 27017:27017
     env_file:
-      - ./src/shared/.env.dev
+      - ./src/shared/.env
     volumes:
       - ./src/shared:/shared
       - ./database:/data/db

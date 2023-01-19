@@ -18,9 +18,10 @@ const GameSchema = new Schema({
   },
   game_code: { type: String, require: true, unique: true },
   theme_pack: { type: String, require: true },
-  used_questions: [{ type: String, require: false }],
-  used_consequences: [{ type: String, require: false }],
+  used_questions: [{ type: Number, require: false }],
+  used_consequences: [{ type: Number, require: false }],
   players: [playerPosition],
+  started: { type: Boolean, require: true, default: false },
 });
 
 const Game = mongoose.model("Game", GameSchema);

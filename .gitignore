@@ -227,3 +227,6 @@ dist
 dist/
 npm-debug.log
 yarn-error.log
+
+### Database Specific ###
+database/

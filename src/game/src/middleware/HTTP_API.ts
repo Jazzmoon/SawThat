@@ -1,5 +1,5 @@
 import Base_HTTP_API from "../../../shared/Base_HTTP_API";
-import type { CreateResponse } from "../../../shared/types/apis/HttpAPIType";
+import type { CreateResponse } from "../../../shared/apis/HttpAPIType";
 
 /**
  * Static class that wraps http requests to facilitate communication with the server
