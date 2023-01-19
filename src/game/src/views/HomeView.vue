@@ -4,7 +4,7 @@ import PlayersListVue from "@/components/PlayersList.vue";
 import { HTTP_API } from "@/middleware/HTTP_API";
 import { WS_API } from "@/middleware/WS_API";
 import { computed, ref } from "vue";
-import type { Player } from "../../../shared/types/types/Player";
+import type { Player } from "../../../shared/types/Player";
 
 const emit = defineEmits(['gameStarted']);
 
@@ -110,7 +110,7 @@ async function createGame() {
  * display to the game board
  */
 // TODO TEST THESE AND/OR ADJUST AS NECESSARY
-async function startGame() {  
+async function startGame() {
   // setup the websocket connection
   const requestSuccess = await WS_API.setupWebSocketConnection(gameCode.value);
 
@@ -123,9 +123,9 @@ async function startGame() {
 
   if (!request2Success) {
     alert("An error occured while trying to start the game.");
-    return; 
+    return;
   }
-  
+
   emit('gameStarted');
 }
 

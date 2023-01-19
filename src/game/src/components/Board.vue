@@ -10,7 +10,7 @@
 <script lang="ts" setup>
 import BoardSVG from "@/assets/board.svg?skipsvgo"; // load svg but don't optimize away id fields
 import { onMounted } from 'vue';
-import type { Player } from "../../../shared/types/types/Player";
+import type { Player } from "../../../shared/types/Player";
 import PlayersListVue from "./PlayersList.vue";
 
 const props = defineProps<{
@@ -34,7 +34,7 @@ onMounted(() => {
         piece.setAttribute('fill', player.colour);
         playerPieces[player.name] = piece;
         startingSpot?.parentElement?.append(piece);
-        
+
         updatePiecePosition(player);
     }
 });
