@@ -72,7 +72,6 @@ async function createGame() {
     alert(`Failed to create a new game.\n${requestResult.message}`);
   } else {
     gameCode.value = requestResult.gameID;
-    userToken = requestResult.userToken;
   }
 }
 
