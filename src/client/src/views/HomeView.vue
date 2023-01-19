@@ -17,6 +17,8 @@ async function submit() {
     return;
   }
 
+  WS_API.setUserToken(joinGameRequest.token);
+
   const connectResponse = await WS_API.setupWebSocketConnection(gameCode);
 
   if (!connectResponse) {

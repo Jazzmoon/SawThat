@@ -74,6 +74,8 @@ async function createGame() {
     gameCode.value = requestResult.gameID;
   }
 
+  WS_API.setUserToken(requestResult.userToken);
+
   // setup the websocket connection
   const requestSuccess = await WS_API.setupWebSocketConnection(gameCode.value);
 

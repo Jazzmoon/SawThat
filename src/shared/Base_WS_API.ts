@@ -16,6 +16,10 @@ export default class Base_WS_API {
     */
     protected constructor() {}
 
+    public static setUserToken(userToken: string) {
+        Base_WS_API.token = userToken;
+    }
+
     /**
      * Adds a callback method that is called with the parsed data when the server sends data to this node.
      * @param id the id of the callback that can then be used to unassign it
@@ -55,8 +59,6 @@ export default class Base_WS_API {
         };
         
         Base_WS_API.socket.onmessage = (event: MessageEvent) => {
-            Base_WS_API.token = event.data.token;
-
             Base_WS_API.handleMessageFromServer(event.data);
         };
         
