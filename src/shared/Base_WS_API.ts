@@ -56,7 +56,6 @@ export default class Base_WS_API {
         Base_WS_API.socket.onopen = (event: Event) => {
             // complete the promise as initial handshake is now complete
             Base_WS_API.pendingRequests[requestId]?.success();
-            console.log("open");
         };
         
         Base_WS_API.socket.onmessage = (event: MessageEvent) => {
@@ -65,7 +64,6 @@ export default class Base_WS_API {
         
         Base_WS_API.socket.onerror = (event: Event) => {
             Base_WS_API.pendingRequests[requestId]?.fail();
-            console.error(event);
         }
 
         try {
@@ -137,11 +135,11 @@ export default class Base_WS_API {
         // TODO REMOVE THIS FOR PROD
         console.log(JSON.stringify(payload));
 
-        Base_WS_API.socket.send(JSON.stringify(payload));
+        // convert to byte array
+        const utf8Encode = new TextEncoder();
+        const data = utf8Encode.encode(JSON.stringify(payload));
 
-        setInterval(() => {
-            console.log(Base_WS_API.socket?.bufferedAmount);
-        }, 100);
+        Base_WS_API.socket.send(data);
 
         return Base_WS_API.addRequestToQueue(requestId);
     }
