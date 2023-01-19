@@ -2,11 +2,11 @@ import { SocketStream } from "@fastify/websocket";
 import { FastifyPluginCallback, FastifyRequest } from "fastify";
 import jwt, { Secret } from "jsonwebtoken";
 
-import { WebsocketType } from "../../shared/types/enums/WebsocketTypes";
+import { WebsocketType } from "../../shared/enums/WebsocketTypes";
 import {
   WebsocketRequest,
   WebsocketResponse,
-} from "../../shared/types/types/Websocket";
+} from "../../shared/types/Websocket";
 
 // Create Record to match WS to GameID
 let connections: Record<
