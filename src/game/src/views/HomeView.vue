@@ -3,56 +3,28 @@ import LogoSVG from "@/assets/logo.svg?component";
 import PlayersListVue from "@/components/PlayersList.vue";
 import { HTTP_API } from "@/middleware/HTTP_API";
 import { WS_API } from "@/middleware/WS_API";
-import { computed, ref } from "vue";
+import { computed, ref, onMounted, onUnmounted } from "vue";
 import type { Player } from "../../../shared/types/Player";
 
 const emit = defineEmits(['gameStarted']);
 
-let userToken = "";
 const gameCode = ref("");
 
-let players: Player[] = [
-  {
-    name: "Player 1",
-    colour: "#003FA3",
-    position: 1,
-  },
-  {
-    name: "Player 2",
-    colour: "#00A324",
-    position: 10,
-  },
-  {
-    name: "Player 3",
-    colour: "#A30000",
-    position: 12,
-  },
-  {
-    name: "Player 4",
-    colour: "#A39C00",
-    position: 6,
-  },
-  {
-    name: "Player 5",
-    colour: "#A39C00",
-    position: 24,
-  },
-  {
-    name: "Player 6",
-    colour: "#A30000",
-    position: 21,
-  },
-  {
-    name: "Player 7",
-    colour: "#A39C00",
-    position: 13,
-  },
-  {
-    name: "Player 8",
-    colour: "#A39C00",
-    position: 4,
-  }
-];
+let players: Player[] = [];
+
+onMounted(() => {
+  WS_API.addIncomingMessageCallback("JoiningGame", (data) => {
+    switch(data.type) {
+      // case "Player added": // TODO WHEN MARK FINALIZES PLAYER JOIN NOTIFICATIONS, FIX AND UNCOMMENT
+      //   players.push(data.player);
+      //   break;
+    }
+  });
+});
+
+onUnmounted(() => {
+  WS_API.removeIncomingMessageCallback("JoiningGame");
+});
 
 /**
  * Helper function to decide what text to show on the button that

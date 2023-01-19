@@ -1,3 +1,5 @@
+import { WebsocketType } from "./enums/WebsocketTypes";
+import type { WebsocketMessage } from "./types/Websocket";
 /**
  * class that wraps websockets to facilitate communication with the server
  * during the game.
@@ -5,7 +7,8 @@
 export default class Base_WS_API {
     private static socket: WebSocket | null = null;
     private static pendingRequests: Record<string, {success: Function, fail: Function}> = {};
-    private static incomingMessageCallbacks: Record<string, ((data: object) => void)> = {};
+    private static incomingMessageCallbacks: Record<string, ((data: WebsocketMessage) => void)> = {};
+    private static token = "";
 
     /**
      * no-op but this method should not be used from outside this class
@@ -18,7 +21,7 @@ export default class Base_WS_API {
      * @param id the id of the callback that can then be used to unassign it
      * @param incomingMessageCallback the callback function
      */
-    public static addIncomingMessageCallback(id: string, incomingMessageCallback: (data: object) => void): void {
+    public static addIncomingMessageCallback(id: string, incomingMessageCallback: (data: WebsocketMessage) => void): void {
         Base_WS_API.incomingMessageCallbacks[id] = incomingMessageCallback;
     }
 
@@ -52,6 +55,8 @@ export default class Base_WS_API {
         };
         
         Base_WS_API.socket.onmessage = (event: MessageEvent) => {
+            Base_WS_API.token = event.data.token;
+
             Base_WS_API.handleMessageFromServer(event.data);
         };
         
@@ -64,9 +69,11 @@ export default class Base_WS_API {
         } catch (exception) {
             for (const callback of Object.values(Base_WS_API.incomingMessageCallbacks)) {
                 callback({
-                    type: "Error",
-                    message: "An error occured with the connection to the server",
-                    exception: exception
+                    type: WebsocketType.Error,
+                    data: {
+                        error: exception,
+                        message: "An error occured with the connection to the server"
+                    }
                 });
             }
         }
@@ -112,6 +119,12 @@ export default class Base_WS_API {
         // assign the requestId to the payload
         Object.defineProperty(payload, 'requestId', {
             value: requestId,
+            writable: false
+        });
+
+        // assign the token to the payload
+        Object.defineProperty(payload, 'token', {
+            value: Base_WS_API.token,
             writable: false
         });
 
