@@ -1,9 +1,21 @@
+/**
+ * @file AuthController.ts
+ * @author Mark Hutchison
+ * Handles any logic that is specific to the client node only.
+ */
 import { generateJWT } from "./AuthController";
 
 import Game from "../models/Game";
 import User from "../models/User";
 import { FastifyReply, FastifyRequest } from "fastify";
 
+/**
+ * Allow user to join a game assuming they provide
+ * their username and the game code.
+ * @param {FastifyRequest} req The user request containing their username and the game id.
+ * @param {FastifyResponse} res The response to indicate to the user whether that their request succeeded.
+ * @returns A resolution, or rejection, to indicate if the request was successful.
+ */
 export const joinGame = async (
   req: FastifyRequest<{
     Body: {

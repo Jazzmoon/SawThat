@@ -1,3 +1,10 @@
+/**
+ * @file QuizController.ts
+ * @author Luna Yao
+ * Handles any logic for generating trivia content for the game.
+ * This module handles the interaction between the Themes module
+ * and the remainder of the system.
+ */
 import { generateJWT } from "./AuthController";
 import { readFile } from "node:fs/promises";
 
@@ -6,7 +13,13 @@ import User from "../models/User";
 import StringUtil from "../../shared/util/StringUtil";
 import MathUtil from "../../shared/util/MathUtil";
 
-// Returns whether or not a user's answer to a question is correct.
+/**
+ * Returns whether or not a user's answer to a question is correct.
+ * @param themePackName
+ * @param questionID
+ * @param userAnswer
+ * @returns
+ */
 export const validateAnswer = async (
   themePackName: string,
   questionID: number,
@@ -33,7 +46,12 @@ export const validateAnswer = async (
   return userAnswer == potentialQuestions[0].answer;
 };
 
-// Fetches a random question from the given theme pack, formatted for display.
+/**
+ * Fetches a random question from the given theme pack, formatted for display.
+ * @param themePackName
+ * @param questionType
+ * @returns
+ */
 export const formatQuestion = async (
   themePackName: string,
   questionType: string

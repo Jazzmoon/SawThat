@@ -1,3 +1,9 @@
+/**
+ * @file WebSocketAPIType.ts
+ * @author Mark Hutchison
+ * Details the structure of data that will be transferred over the
+ * websocket connection.
+ */
 import { ConsequenceType } from "../enums/ConsequenceType";
 
 export type TimedData = {

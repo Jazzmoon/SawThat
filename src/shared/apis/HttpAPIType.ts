@@ -1,4 +1,9 @@
-import type { Player } from "../types/Player";
+/**
+ * @file HttpAPIType.ts
+ * @author Mark Hutchison
+ * Details the structure of data that will be transferred over the
+ * REST API connection.
+ */
 
 export type JoinResponse = {
   username: string;

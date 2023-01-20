@@ -1,3 +1,9 @@
+/**
+ * @file Websocket.ts
+ * @author Mark Hutchison
+ * An file that details the typing information for all Websocket
+ * requests and responses sent over the stream.
+ */
 import type { WebsocketType } from "../enums/WebsocketTypes";
 
 export type WebsocketMessage = {

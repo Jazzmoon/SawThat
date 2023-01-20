@@ -1,3 +1,8 @@
+/**
+ * @file WebsocketTypes.ts
+ * @author Mark Hutchison
+ * An enum that details the exact options allowed within the websocket "type" field.
+ */
 export enum WebsocketType {
   // Requests
   GameSetup = 1,

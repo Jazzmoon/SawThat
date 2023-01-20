@@ -16,7 +16,7 @@ import mongoose from "mongoose";
 /**
  * Generates a unique game code that is a minimum of 4 characters long,
  * but can grow in size if is a conflict with an existing game.
- * @returns {string} Unique Alpha-Numeric Game Code
+ * @returns {Promise<string>} Unique Alpha-Numeric Game Code
  */
 const generateGameID = async (): Promise<string> => {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -133,7 +133,7 @@ export const createGame = async (
  * 2. Change the boolean in the game model to be True.
  * 3. Return the username of the first player in the turn order.
  * @param {string} gameID The Model Game ID within the database.
- * @return {string} The username of the player first in the rotation.
+ * @return {Promise<string>} The username of the player first in the rotation.
  */
 export const startGame = async (gameID: string): Promise<string> => {
   // Look-Up the game in the database
