@@ -1,7 +1,10 @@
 <template>
-  <HomeView v-if="!gameStarted" :players="players" />
-  <QuestionView v-else-if="questionShown" :question="currentQuestionText" :background-image-url="'TODO'"/>
-  <MainView v-else :players="players" :current-player-index="currentPlayerIndex" />
+  <div>
+    <ConsequenceModal v-if="consequenceShown" :message="consequenceMessage" />
+    <HomeView v-if="!gameStarted" :players="players" />
+    <QuestionView v-else-if="questionShown" :question="currentQuestionText" :background-image-url="'TODO'"/>
+    <MainView v-else :players="players" :current-player-index="currentPlayerIndex" />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -13,6 +16,7 @@ import QuestionView from './views/QuestionView.vue';
 import type { Player } from "../../shared/types/Player";
 import { WebsocketType } from '../../shared/enums/WebsocketTypes';
 import type { WebsocketMessage } from '../../shared/types/Websocket';
+import ConsequenceModal from './components/ConsequenceModal.vue';
 
 // game state variables
 let players = ref([] as Player[]);
@@ -21,6 +25,7 @@ let currentQuestionText = ref("");
 let gameStarted = ref(false);
 let questionShown = ref(false);
 let consequenceShown = ref(false);
+let consequenceMessage = ref("");
 
 const messageCallBackId = "App";
 onMounted(() => {
@@ -40,7 +45,8 @@ onMounted(() => {
         questionShown.value = false;
         break;
       case WebsocketType.ConsequenceAck:
-        consequenceShown.value = true; // todo get the consequence data and shoqw in a modal
+        consequenceShown.value = true;
+        consequenceMessage.value = message.data.consequence;
         break;
       case WebsocketType.ConsequenceEndedAck: 
         consequenceShown.value = false;
