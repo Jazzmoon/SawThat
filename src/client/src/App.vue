@@ -28,30 +28,39 @@ onMounted(() => {
       case WebsocketType.Error:
         alert(message.data);
         break;
-      case WebsocketType.TextQuestion: // this or ack?
-      case WebsocketType.MultipleChoiceQuestion: // this or ack?
+      case WebsocketType.TextQuestion:
+      case WebsocketType.MultipleChoiceQuestion:
         answering.value = true;
         currentQuestionText = message.data.questionText; // todo is this correct?
         break;
-      case WebsocketType.QuestionTimeOut: // this or ack?
-      case WebsocketType.QuestionAnswer: // this or ack?
-      case WebsocketType.QuestionEnded: // this or ack?
+      case WebsocketType.QuestionTimeOut:
+      case WebsocketType.QuestionAnswer:
+      case WebsocketType.QuestionEndedAck:
         answering.value = false;
         break;
-      case WebsocketType.Consequence: // this or ack?
+      case WebsocketType.ConsequenceAck:
         consequenceShown.value = true; // todo get the consequence data and shoqw in a modal
         break;
-      case WebsocketType.ConsequenceEnded: // this or ack?
+      case WebsocketType.ConsequenceEndedAck:
         consequenceShown.value = false;
         break;
-      case WebsocketType.GameEnded: // this or ack?
+      case WebsocketType.GameEndedAck:
         joined.value = false; // todo add a leaderboard screen
         break;
-      case WebsocketType.GameJoin: // this or ack?
-        players.value.push(message.data); // todo is this correct?
+      case WebsocketType.GameJoinAck:
+        if (message.data.userType === "Client") {
+          players.value.push({
+            name: message.data.username,
+            position: 0,
+            colour: 'red'
+          }); // todo mark should send this stuff to me instead of I making it randomly here
+        }
         break;
       case WebsocketType.PlayerDisconnectAck:
-        players.value.splice(players.value.findIndex(message.data.userId), 1);
+        const index = players.value.findIndex(message.data.userId);
+        if (index > -1) {
+          players.value.splice(index, 1);
+        }
         break;
       // todo handle timer and the other cases in the views where they are applicable
     }
