@@ -1,9 +1,22 @@
+/**
+ * @file GameController.ts
+ * @author Mark Hutchison
+ * The Game Controller controls the logic for a game.
+ * It handles the modification of the Games within the Models module,
+ * as well as handles the logic for a standard turn in game.
+ */
+
 import { generateJWT } from "./AuthController";
 
 import Game from "../models/Game";
 import User from "../models/User";
 import { FastifyReply, FastifyRequest } from "fastify";
 
+/**
+ * Generates a unique game code that is a minimum of 4 characters long,
+ * but can grow in size if is a conflict with an existing game.
+ * @returns {string} Unique Alpha-Numeric Game Code
+ */
 const generateGameID = async (): Promise<string> => {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
@@ -35,6 +48,12 @@ const generateGameID = async (): Promise<string> => {
   return Promise.resolve(gameID);
 };
 
+/**
+ * Creates a game object from an incoming request.
+ * @param {FastifyRequest} req  Incoming request object from the game node.
+ * @param {FastifyReply} res Outgoing response handler.
+ * @returns {Promise<FastifyReply>} Returns a response wrapped in a promise to be handled by the Fastify router.
+ */
 export const createGame = async (
   req: FastifyRequest<{
     Body: {
@@ -105,4 +124,29 @@ export const createGame = async (
     }
   }
   return Promise.resolve(res);
+};
+
+/**
+ * Given a game id, prepare to start the game. To do so:
+ * 1. Randomize the player array to determine turn order.
+ * 2. Change the boolean in the game model to be True.
+ * 3. Return the username of the first player in the turn order.
+ * @param {string} gameID The Model Game ID within the database.
+ * @return {string} The username of the player first in the rotation.
+ */
+export const startGame = (gameID: string): string => {
+  return "";
+};
+
+/**
+ * Given a game id, prepare to start the game. To do so:
+ * 1. Randomize the player array to determine turn order.
+ * 2. Change the boolean in the game model to be True.
+ * 3. Return the username of the first player in the turn order.
+ * @param {string} gameID The Model Game ID within the database.
+ * @param {string} currentPlayer The username of the player who's turn it just was.
+ * @return {string} The username of the player next in the rotation.
+ */
+export const nextPlayer = (gameID: string, currentPlayer: string): string => {
+  return "";
 };
