@@ -65,8 +65,10 @@ services:
       - ./src/shared/.env.dev
     volumes:
       - ./src/shared:/shared
-      - ./database:/data/db
+      - mongodb:/data/db
     networks:
       - vlan
 networks:
   vlan:
+volumes:
+  mongodb:
