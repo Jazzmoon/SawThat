@@ -8,31 +8,44 @@ const emit = defineEmits(['joined']);
 let gameCode = "";
 let playerName = "";
 
-// TODO TEST THESE METHODS
 async function submit() {
   const joinGameRequest = await HTTP_API.sendJoinRequest(playerName, gameCode);
 
+  console.log("1")
+  
   if (joinGameRequest.hasOwnProperty('error')) {
     alert(`Failed to join the game.\n${JSON.stringify(joinGameRequest)}`);
     return;
   }
-
+  
+  console.log("2")
+  
   WS_API.setUserToken(joinGameRequest.token);
-
+  
+  console.log("3")
+  
   const connectResponse = await WS_API.setupWebSocketConnection(gameCode);
-
+  
+  console.log("4")
+  
   if (!connectResponse) {
     alert("Failed to establish connection with the server");
     return;
   }
 
+  console.log("5")
+  
   const joinWSResponse = await WS_API.sendJoinRequest();
-
+  
+  console.log("6")
+  
   if (!joinWSResponse) {
     alert("Failed to join the server");
     return;
   }
-
+  
+  console.log("7")
+  
   emit('joined');
 }
 
