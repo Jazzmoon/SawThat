@@ -122,6 +122,7 @@ export default class Base_WS_API {
 
         // assign the requestId and token to the payload
         let data = {
+            type: type,
             ...payload, 
             requestId: requestId, 
             token: Base_WS_API.token 
