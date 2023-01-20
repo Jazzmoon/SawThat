@@ -46,8 +46,10 @@ function copyCode() {
 async function nextSetupStep() {
   if (!isGameCreated()) {
     await createGame();
+    console.log("game created")
   } else {
     await startGame();
+    console.log("game started")
   }
 }
 
@@ -57,7 +59,7 @@ async function nextSetupStep() {
 async function createGame() {
   const requestResult = await HTTP_API.sendCreate("disney"); // todo let the user decide this
   if (requestResult.hasOwnProperty('error')) {
-    alert(`Failed to create a new game.\n${requestResult.message}`);
+    alert(`Failed to create a new game.\n${JSON.stringify(requestResult)}`);
   } else {
     gameCode.value = requestResult.gameID;
   }

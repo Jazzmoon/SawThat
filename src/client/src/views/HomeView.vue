@@ -13,7 +13,7 @@ async function submit() {
   const joinGameRequest = await HTTP_API.sendJoinRequest(playerName, gameCode);
 
   if (joinGameRequest.hasOwnProperty('error')) {
-    alert(`Failed to join the game.\n${joinGameRequest.message}`);
+    alert(`Failed to join the game.\n${JSON.stringify(joinGameRequest)}`);
     return;
   }
 
@@ -33,7 +33,6 @@ async function submit() {
     return;
   }
 
-  console.log("done joining")
   emit('joined');
 }
 

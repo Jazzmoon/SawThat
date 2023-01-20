@@ -97,6 +97,8 @@ export default class Base_WS_API {
             delete Base_WS_API.pendingRequests[data.requestId];
         }
         
+        console.log("received: ", data);
+
         for (const callback of Object.values(Base_WS_API.incomingMessageCallbacks)) {
             callback(data);
         }
@@ -126,6 +128,8 @@ export default class Base_WS_API {
             requestId: requestId, 
             token: Base_WS_API.token 
         };
+
+        console.log("sending: ", payload);
 
         Base_WS_API.socket.send(JSON.stringify(data));
 
