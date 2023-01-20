@@ -157,6 +157,7 @@ export const startGame = async (gameID: string): Promise<string> => {
         .sort((a, b) => a.sort - b.sort)
         .map(({ value }) => value)
     );
+    game.started = true;
     await game.save();
     const player = await User.findById(game.players[0].player);
     return Promise.resolve(player!.username);

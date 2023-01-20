@@ -1,11 +1,11 @@
 import { ConsequenceType } from "../enums/ConsequenceType";
 
-type Timed = {
+export type TimedData = {
   timer_start: Date;
   timer_length: number;
 };
 
-type MultipleChoice = {
+export type MultipleChoiceData = {
   id: number;
   category: string;
   question_type: "Multiple Choice";
@@ -13,30 +13,30 @@ type MultipleChoice = {
   options: string[];
   media_type?: "image" | "video" | null;
   media_url?: string | null;
-} & Timed;
+} & TimedData;
 
-type TextQuestion = {
+export type TextQuestionData = {
   id: number;
   category: string;
   question_type: "Text";
   question: string;
-} & Timed;
+} & TimedData;
 
-type Consequence = {
+export type ConsequenceData = {
   id: number;
   consequence_type: ConsequenceType;
   story: string;
   spaces?: number;
-} & Timed;
+} & TimedData;
 
-type GameEndAck = {
+export type GameEndAckData = {
   ranking: {
     username: string;
     final_ranking: number;
   }[];
 };
 
-type QuestionEnded = {
+export type QuestionEndedData = {
   players: {
     username: string;
     color: string;
@@ -44,7 +44,15 @@ type QuestionEnded = {
   }[];
 };
 
-type QuestionAnswer = {
+export type QuestionAnswerData = {
   id: number;
   answer: string;
+};
+
+export type GameJoinAckData = {
+  username: string;
+};
+
+export type NextPlayerData = {
+  username: string;
 };

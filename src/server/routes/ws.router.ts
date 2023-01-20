@@ -16,6 +16,11 @@ import {
   WebsocketRequest,
   WebsocketResponse,
 } from "../../shared/types/Websocket";
+import {
+  GameJoinAckData,
+  NextPlayerData,
+} from "../../shared/apis/WebSocketAPIType";
+import { nextPlayer, startGame } from "../controllers/GameController";
 
 // Create Record to match WS to GameID
 type GameID = string;
@@ -137,6 +142,12 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     host: { username: username, conn: conn },
                     clients: [],
                   };
+                  conn.socket.send(
+                    JSON.stringify({
+                      type: WebsocketType.GameJoinAck,
+                      data: { username: username } as GameJoinAckData,
+                    } as WebsocketResponse)
+                  );
                 } else if (userType !== "Game") {
                   conn.socket.send(
                     JSON.stringify({
@@ -165,6 +176,21 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     username: username,
                     conn: conn,
                   });
+                  // Ping all players in game that player has joined
+                  connections[gameID].host.conn.socket.send(
+                    JSON.stringify({
+                      type: WebsocketType.GameJoinAck,
+                      data: { username: username } as GameJoinAckData,
+                    } as WebsocketResponse)
+                  );
+                  connections[gameID].clients.forEach((c) => {
+                    c.conn.socket.send(
+                      JSON.stringify({
+                        type: WebsocketType.GameJoinAck,
+                        data: { username: username } as GameJoinAckData,
+                      } as WebsocketResponse)
+                    );
+                  });
                 } else if (userType !== "Client") {
                   conn.socket.send(
                     JSON.stringify({
@@ -184,6 +210,88 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     } as WebsocketResponse)
                   );
                 }
+                break;
+              }
+              case WebsocketType.GameStart: {
+                startGame(gameCode)
+                  .then((first_player) => {
+                    // Notify all players that the game has started and who the first player is
+                    connections[gameID].host.conn.socket.send(
+                      JSON.stringify({
+                        type: WebsocketType.GameStartAck,
+                        data: {
+                          username: first_player,
+                        } as NextPlayerData,
+                      } as WebsocketResponse)
+                    );
+                    connections[gameID].clients.forEach((c) => {
+                      c.conn.socket.send(
+                        JSON.stringify({
+                          type: WebsocketType.GameStartAck,
+                          data: {
+                            username: first_player,
+                          } as NextPlayerData,
+                        } as WebsocketResponse)
+                      );
+                    });
+                  })
+                  .catch((err) => {
+                    conn.socket.send(
+                      JSON.stringify({
+                        type: WebsocketType.Error,
+                        data:
+                          typeof err === "string"
+                            ? {
+                                message: err,
+                              }
+                            : {
+                                error: err,
+                                message: "[WS] Error while starting game.",
+                              },
+                      } as WebsocketResponse)
+                    );
+                  });
+                break;
+              }
+              case WebsocketType.NextPlayer: {
+                nextPlayer(gameCode, data.data.current_player)
+                  .then((next_player) => {
+                    // Notify all players that the game has started and who the first player is
+                    connections[gameID].host.conn.socket.send(
+                      JSON.stringify({
+                        type: WebsocketType.NextPlayerAck,
+                        data: {
+                          username: next_player,
+                        } as NextPlayerData,
+                      } as WebsocketResponse)
+                    );
+                    connections[gameID].clients.forEach((c) => {
+                      c.conn.socket.send(
+                        JSON.stringify({
+                          type: WebsocketType.NextPlayerAck,
+                          data: {
+                            username: next_player,
+                          } as NextPlayerData,
+                        } as WebsocketResponse)
+                      );
+                    });
+                  })
+                  .catch((err) => {
+                    conn.socket.send(
+                      JSON.stringify({
+                        type: WebsocketType.Error,
+                        data:
+                          typeof err === "string"
+                            ? {
+                                message: err,
+                              }
+                            : {
+                                error: err,
+                                message: "[WS] Error while starting game.",
+                              },
+                      } as WebsocketResponse)
+                    );
+                  });
                 break;
               }
               case WebsocketType.Ping:
