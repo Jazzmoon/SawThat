@@ -11,6 +11,7 @@ import { generateJWT } from "./AuthController";
 import Game from "../models/Game";
 import User from "../models/User";
 import { FastifyReply, FastifyRequest } from "fastify";
+import mongoose from "mongoose";
 
 /**
  * Generates a unique game code that is a minimum of 4 characters long,
@@ -134,8 +135,35 @@ export const createGame = async (
  * @param {string} gameID The Model Game ID within the database.
  * @return {string} The username of the player first in the rotation.
  */
-export const startGame = (gameID: string): string => {
-  return "";
+export const startGame = async (gameID: string): Promise<string> => {
+  // Look-Up the game in the database
+  const game = await Game.findOne({ game_code: gameID });
+  // If no game exists, reject with custom error.
+  if (!game) return Promise.reject("There is no game with this game id.");
+  // Verify that the game isn't already started
+  if (!game!.started) {
+    // Check if there are enough players to start the game
+    if (game.players.length < 2)
+      return Promise.reject(
+        "The game doesn't have enough players to start yet."
+      );
+    // Randomize the players array and save it
+    game.players = new mongoose.Types.DocumentArray(
+      game!.players
+        .map((value) => ({
+          value,
+          sort: Math.random(),
+        }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ value }) => value)
+    );
+    await game.save();
+    const player = await User.findById(game.players[0].player);
+    return Promise.resolve(player!.username);
+  } else {
+    // Return custom error
+    return Promise.reject("The game has already started.");
+  }
 };
 
 /**
@@ -147,6 +175,31 @@ export const startGame = (gameID: string): string => {
  * @param {string} currentPlayer The username of the player who's turn it just was.
  * @return {string} The username of the player next in the rotation.
  */
-export const nextPlayer = (gameID: string, currentPlayer: string): string => {
-  return "";
+export const nextPlayer = async (
+  gameID: string,
+  currentPlayer: string
+): Promise<string> => {
+  // Look-Up the game in the database
+  const game = await Game.findOne({ game_code: gameID });
+  // If no game exists, reject with custom error.
+  if (!game) return Promise.reject("There is no game with this game id.");
+  // Verify that the game isn't already started
+  if (game!.started) {
+    // Get a list of player usernames
+    let players: string[] = [];
+    for (let i = 0; i < game.players.length; i++) {
+      const user = await User.findById(game.players[i].player);
+      players.push(user!.username);
+    }
+    // Find the index of the username provided
+    const user_index = players.indexOf(currentPlayer);
+    if (user_index === -1)
+      return Promise.reject(
+        "There is no user with that name playing the game."
+      );
+    return Promise.resolve(players[(user_index + 1) % players.length]);
+  } else {
+    // Return custom error
+    return Promise.reject("The game hasn't started yet.");
+  }
 };
