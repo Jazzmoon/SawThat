@@ -6,25 +6,13 @@ import { WS_API } from "@/middleware/WS_API";
 import { computed, ref, onMounted, onUnmounted } from "vue";
 import type { Player } from "../../../shared/types/Player";
 
+const props = defineProps<{
+  players: Player[]
+}>();
+
 const emit = defineEmits(['gameStarted']);
 
 const gameCode = ref("");
-
-let players: Player[] = [];
-
-onMounted(() => {
-  WS_API.addIncomingMessageCallback("JoiningGame", (data) => {
-    switch(data.type) {
-      // case "Player added": // TODO WHEN MARK FINALIZES PLAYER JOIN NOTIFICATIONS, FIX AND UNCOMMENT
-      //   players.push(data.player);
-      //   break;
-    }
-  });
-});
-
-onUnmounted(() => {
-  WS_API.removeIncomingMessageCallback("JoiningGame");
-});
 
 /**
  * Helper function to decide what text to show on the button that
@@ -124,7 +112,7 @@ async function startGame() {
       </div>
       <div id="right" v-if="gameCode">
         <h2>Who's already here:</h2>
-        <PlayersListVue id="players" :players="players" :currentPlayer="null" />
+        <PlayersListVue id="players" :players="props.players" :currentPlayer="null" />
       </div>
     </div>
   </main>

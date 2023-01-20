@@ -33,6 +33,7 @@ async function submit() {
     return;
   }
 
+  console.log("done joining")
   emit('joined');
 }
 

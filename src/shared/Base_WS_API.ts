@@ -121,7 +121,8 @@ export default class Base_WS_API {
         const requestId = Base_WS_API.createRequestId(type);
 
         // assign the requestId and token to the payload
-        let data = { ...payload, 
+        let data = {
+            ...payload, 
             requestId: requestId, 
             token: Base_WS_API.token 
         };

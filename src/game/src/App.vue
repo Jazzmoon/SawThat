@@ -1,6 +1,6 @@
 <template>
-  <HomeView v-if="!gameStarted" />
-  <QuestionView v-else-if="questionShown" :question="questionText" :background-image-url="'TODO'"/>
+  <HomeView v-if="!gameStarted" :players="players" />
+  <QuestionView v-else-if="questionShown" :question="currentQuestionText" :background-image-url="'TODO'"/>
   <MainView v-else :players="players" :current-player-index="currentPlayerIndex" />
 </template>
 
@@ -11,24 +11,50 @@ import HomeView from './views/HomeView.vue';
 import MainView from './views/MainView.vue';
 import QuestionView from './views/QuestionView.vue';
 import type { Player } from "../../shared/types/Player";
+import { WebsocketType } from '../../shared/enums/WebsocketTypes';
+import type { WebsocketMessage } from '../../shared/types/Websocket';
 
+// game state variables
+let players = ref([] as Player[]);
+let currentPlayerIndex = ref(0);
+let currentQuestionText = ref("");
 let gameStarted = ref(false);
 let questionShown = ref(false);
+let consequenceShown = ref(false);
 
 const messageCallBackId = "App";
 onMounted(() => {
-  // TODO UPDATE THIS TYPES TO BE CONSISTENT WITH SERVER
-  WS_API.addIncomingMessageCallback(messageCallBackId, (data: any) => {
-    switch (data.type) {
-      case "error":
-        alert(data.message); // TODO EXIT IF CONNECTION LOST (THIS IS A HARDCODED MESSAGE FROM WS_API)
+  WS_API.addIncomingMessageCallback(messageCallBackId, (message: WebsocketMessage) => {
+    switch (message.type) {
+      case WebsocketType.Error:
+        alert(message.data);
         break;
-      case "question":
-        questionShown.value = true; // todo get the question data and pass to QuestionView
+      case WebsocketType.TextQuestion: // this or ack?
+      case WebsocketType.MultipleChoiceQuestion: // this or ack?
+        questionShown.value = true;
+        currentQuestionText = message.data.questionText; // todo is this correct?
         break;
-      case "answered":
-        questionShown.value = false; // todo update the board in MainView with new player positions
+      case WebsocketType.QuestionTimeOut: // this or ack?
+      case WebsocketType.QuestionAnswer: // this or ack?
+      case WebsocketType.QuestionEnded: // this or ack?
+        questionShown.value = false;
         break;
+      case WebsocketType.Consequence: // this or ack?
+        consequenceShown.value = true; // todo get the consequence data and shoqw in a modal
+        break;
+      case WebsocketType.ConsequenceEnded: // this or ack?
+        consequenceShown.value = false;
+        break;
+      case WebsocketType.GameEnded: // this or ack?
+        gameStarted.value = false; // todo add a leaderboard screen
+        break;
+      case WebsocketType.GameJoin: // this or ack?
+        players.value.push(message.data); // todo is this correct?
+        break;
+      case WebsocketType.PlayerDisconnectAck:
+        players.value.splice(players.value.findIndex(message.data.userId), 1);
+        break;
+      // todo handle timer and the other cases in the views where they are applicable
     }
   });
 });
@@ -36,52 +62,6 @@ onMounted(() => {
 onUnmounted(() => {
   WS_API.removeIncomingMessageCallback(messageCallBackId);
 });
-
-// TODO REMOVE THIS. IT IS FOR DUMMY DATA FOR TESTING
-let players: Player[] = [
-  {
-    name: "Player 1",
-    colour: "#003FA3",
-    position: 1,
-  },
-  {
-    name: "Player 2",
-    colour: "#00A324",
-    position: 7,
-  },
-  {
-    name: "Player 3",
-    colour: "#A30000",
-    position: 2,
-  },
-  {
-    name: "Player 4",
-    colour: "#A39C00",
-    position: 2,
-  },
-  {
-    name: "Player 5",
-    colour: "#A39C00",
-    position: 2,
-  },
-  {
-    name: "Player 6",
-    colour: "#A30000",
-    position: 2,
-  },
-  {
-    name: "Player 7",
-    colour: "#A39C00",
-    position: 2,
-  },
-  {
-    name: "Player 8",
-    colour: "#A39C00",
-    position: 2,
-  }
-];
-let currentPlayerIndex = 0;
-let questionText = "A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines.A very long question goes here that can span a couple lines";
 
 </script>
 
