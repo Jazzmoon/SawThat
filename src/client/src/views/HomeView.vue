@@ -11,7 +11,7 @@ let playerName = "";
 async function submit() {
   const joinGameRequest = await HTTP_API.sendJoinRequest(playerName, gameCode);
   
-  if (joinGameRequest.hasOwnProperty('error')) {
+  if (!joinGameRequest || joinGameRequest.hasOwnProperty('error')) {
     alert(`Failed to join the game.\n${JSON.stringify(joinGameRequest)}`);
     return;
   }
@@ -27,7 +27,7 @@ async function submit() {
   
   const joinWSResponse = await WS_API.sendJoinRequest();
   
-  if (joinWSResponse.hasOwnProperty('error')) {
+  if (!joinWSResponse || joinWSResponse.hasOwnProperty('error')) {
     alert("Failed to join the server");
     return;
   }
