@@ -5,7 +5,7 @@
  * websocket connection.
  */
 import { ConsequenceType } from "../enums/ConsequenceType";
-import { Color } from "../enums/Color";
+import { Player } from "../types/Player";
 
 export type TimedData = {
   timer_start: Date;
@@ -44,11 +44,7 @@ export type GameEndAckData = {
 };
 
 export type QuestionEndedData = {
-  players: {
-    username: string;
-    color: string;
-    position: number;
-  }[];
+  players: Player[];
 };
 
 export type QuestionAnswerData = {
@@ -65,12 +61,9 @@ export type ConnectionEstablished = {
 };
 
 export type GameJoinAckData = {
-  username: string;
-  color: Color;
-  position: number;
-  players: string[];
+  players: Player[];
 };
 
 export type NextPlayerData = {
-  username: string;
+  player: Player;
 };
