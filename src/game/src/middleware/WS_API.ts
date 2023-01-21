@@ -39,6 +39,6 @@ export class WS_API extends Base_WS_API {
      * @returns true if the game was started. False if some error occured.
      */
     public static async sendStartGameRequest(): Promise<WebsocketMessage> {
-        return await WS_API.sendRequest(WebsocketType.GameSetup, {});
+        return await WS_API.sendRequest(WebsocketType.GameStart, {});
     }
 }

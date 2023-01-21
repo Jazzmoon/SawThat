@@ -51,7 +51,7 @@ onMounted(() => {
         players.value.push(message.data);
         break;
       case WebsocketType.PlayerDisconnectAck:
-        const index = players.value.findIndex(message.data.userId);
+        const index = players.value.findIndex(message.data.username);
         if (index > -1) {
           players.value.splice(index, 1);
         }
