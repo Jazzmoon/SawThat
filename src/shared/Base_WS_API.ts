@@ -1,13 +1,14 @@
 import { WebsocketType } from "./enums/WebsocketTypes";
-import type { WebsocketMessage } from "./types/Websocket";
-/**
+import type { WebsocketMessage, WebsocketRequest, WebsocketResponse } from "./types/Websocket";
+import type { AllowedPayloads, WebSocketError } from "./apis/WebSocketAPIType";
+/*
  * class that wraps websockets to facilitate communication with the server
  * during the game.
  */
 export default class Base_WS_API {
     private static socket: WebSocket | null = null;
     private static pendingRequests: Record<string, {success: Function, fail: Function}> = {};
-    private static incomingMessageCallbacks: Record<string, ((data: WebsocketMessage) => void)> = {};
+    private static incomingMessageCallbacks: Record<string, ((data: WebsocketResponse<AllowedPayloads>) => void)> = {};
     private static token = "";
 
     /**
@@ -25,7 +26,7 @@ export default class Base_WS_API {
      * @param id the id of the callback that can then be used to unassign it
      * @param incomingMessageCallback the callback function
      */
-    public static addIncomingMessageCallback(id: string, incomingMessageCallback: (data: WebsocketMessage) => void): void {
+    public static addIncomingMessageCallback(id: string, incomingMessageCallback: (message: WebsocketResponse<AllowedPayloads>) => void): void {
         Base_WS_API.incomingMessageCallbacks[id] = incomingMessageCallback;
     }
 
@@ -109,7 +110,7 @@ export default class Base_WS_API {
      * @param payload the data to send
      * @returns an awaitable promise that resolves once the request finishes
      */
-    protected static async sendRequest(type: WebsocketType, payload: object): Promise<WebsocketMessage> {
+    protected static async sendRequest<T extends AllowedPayloads>(type: WebsocketType, payload: AllowedPayloads): Promise<WebsocketResponse<T | WebSocketError>> {
         const requestId = Base_WS_API.createRequestId(type);
 
         if (Base_WS_API.socket == null || Base_WS_API.socket.readyState !== WebSocket.OPEN) {
@@ -117,7 +118,8 @@ export default class Base_WS_API {
                 type: WebsocketType.Error,
                 requestId: requestId,
                 data: {
-                    message: "Attempted to send a message over a non-open socket"
+                    error: "Attempted to send a message over a non-open socket",
+                    token: Base_WS_API.token
                 }
             };
         }
@@ -139,10 +141,11 @@ export default class Base_WS_API {
     /**
      * Create a new promise that is pending the return of a request
      * @param requestId id of the request 
+     * @type T the type of the response message that is returned
      * @returns the awaitable promise that will resolve when the request is filled
      */
-    private static addRequestToQueue(requestId: string): Promise<WebsocketMessage> {
-        const connectedPromise = new Promise<WebsocketMessage>((pass, fail) => {
+    private static addRequestToQueue<T extends WebsocketResponse<any>>(requestId: string): Promise<T> {
+        const connectedPromise = new Promise<T>((pass, fail) => {
             Base_WS_API.pendingRequests[requestId] = {success: pass, fail: fail};
         });
         return connectedPromise;

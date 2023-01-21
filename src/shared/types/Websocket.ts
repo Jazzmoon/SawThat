@@ -4,21 +4,22 @@
  * An file that details the typing information for all Websocket
  * requests and responses sent over the stream.
  */
+import type { AllowedPayloads } from "../apis/WebSocketAPIType";
 import type { WebsocketType } from "../enums/WebsocketTypes";
 
-export type WebsocketMessage = {
+export type WebsocketMessage<T extends AllowedPayloads> = {
   type: WebsocketType;
   requestId?: string;
-  data: any;
+  data: T;
 };
 
-export type WebsocketRequest = WebsocketMessage & {
+export type WebsocketRequest<T extends AllowedPayloads> = WebsocketMessage<T> & {
   type:
     | WebsocketType.GameSetup
     | WebsocketType.GameJoin
     | WebsocketType.GameStart
     | WebsocketType.GameEnded
-    | WebsocketType.TextQuestion
+    | WebsocketType.TextQuestion // todo this is a message that the server sends to the client why is it a request and not a response? (there are other examples of this as well)
     | WebsocketType.MultipleChoiceQuestion
     | WebsocketType.QuestionTimerTick
     | WebsocketType.QuestionEnded
@@ -30,7 +31,7 @@ export type WebsocketRequest = WebsocketMessage & {
   token: string;
 };
 
-export type WebsocketResponse = WebsocketMessage & {
+export type WebsocketResponse<T extends AllowedPayloads> = WebsocketMessage<T> & {
   type:
     | WebsocketType.Error
     | WebsocketType.GameSetupAck

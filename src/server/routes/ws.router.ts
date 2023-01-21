@@ -17,9 +17,12 @@ import {
   WebsocketResponse,
 } from "../../shared/types/Websocket";
 import {
-  ConnectionEstablished,
+  WebSocketError,
   GameJoinAckData,
   NextPlayerData,
+  WebSocketPong,
+  GameEndAckData,
+  PlayerDisconnectAckData,
 } from "../../shared/apis/WebSocketAPIType";
 import { nextPlayer, startGame } from "../controllers/GameController";
 import User from "../models/User";
@@ -62,7 +65,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
       */
       conn.socket.on("message", (stream) => {
         // Validate data stream contains required information about user
-        const data = JSON.parse(stream.toString()) as WebsocketRequest;
+        const data = JSON.parse(stream.toString()) as WebsocketRequest<any>;
         // Verify user JWT
         jwt.verify(
           data.token,
@@ -76,7 +79,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     type: WebsocketType.Error,
                     requestId: data.requestId,
                     data: { error: err, token: token },
-                  } as WebsocketResponse)
+                  } as WebsocketResponse<WebSocketError>)
                 );
               } else {
                 conn.socket.send(
@@ -87,7 +90,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       error: "[WS] Token sent is undefined.",
                       token: token,
                     },
-                  } as WebsocketResponse)
+                  } as WebsocketResponse<WebSocketError>)
                 );
               }
               conn.end();
@@ -102,10 +105,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                   type: WebsocketType.Error,
                   requestId: data.requestId,
                   data: {
-                    message: "[WS] Game ID and JWT mismatch.",
-                    data: `You requested game with ID ${gameID} but have a JWT for game ${gameCode}.`,
+                    error: `[WS] Game ID and JWT mismatch. You requested game with ID ${gameID} but have a JWT for game ${gameCode}.`,
+                    token: token
                   },
-                } as WebsocketResponse)
+                } as WebsocketResponse<WebSocketError>)
               );
               conn.end();
               return;
@@ -125,12 +128,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       type: WebsocketType.Error,
                       requestId: data.requestId,
                       data: {
-                        error: new Error(
-                          "[WS] No user found with this information in the database."
-                        ),
-                        message: "[WS] Error while connecting to websocket.",
+                        error: "[WS] No user found with this information in the database.",
+                        token: token
                       },
-                    } as WebsocketResponse)
+                    } as WebsocketResponse<WebSocketError>)
                   );
                   return;
                 }
@@ -154,8 +155,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                             ),
                             color: user!.color,
                             position: user!.position,
-                          } as GameJoinAckData,
-                        } as WebsocketResponse)
+                          },
+                        } as WebsocketResponse<GameJoinAckData>)
                       );
                     } else if (userType !== "Game") {
                       conn.socket.send(
@@ -163,9 +164,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           type: WebsocketType.Error,
                           requestId: data.requestId,
                           data: {
-                            message: `[WS] Only the game node can set-up a game.`,
+                            error: `[WS] Only the game node can set-up a game.`,
+                            token: token
                           },
-                        } as WebsocketResponse)
+                        } as WebsocketResponse<WebSocketError>)
                       );
                     } else {
                       conn.socket.send(
@@ -173,9 +175,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           type: WebsocketType.Error,
                           requestId: data.requestId,
                           data: {
-                            message: `[WS] A user has already connected to this game as the host.`,
+                            error: `[WS] A user has already connected to this game as the host.`,
+                            token: token
                           },
-                        } as WebsocketResponse)
+                        } as WebsocketResponse<WebSocketError>)
                       );
                     }
                     break;
@@ -199,8 +202,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                             ),
                             color: user!.color,
                             position: user!.position,
-                          } as GameJoinAckData,
-                        } as WebsocketResponse)
+                          }
+                        } as WebsocketResponse<GameJoinAckData>)
                       );
                       connections[gameID].clients.forEach((c) => {
                         c.conn.socket.send(
@@ -211,8 +214,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                               username: username,
                               color: user!.color,
                               position: user!.position,
-                            } as GameJoinAckData,
-                          } as WebsocketResponse)
+                            }
+                          } as WebsocketResponse<GameJoinAckData>)
                         );
                       });
                     } else if (userType !== "Client") {
@@ -221,9 +224,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           type: WebsocketType.Error,
                           requestId: data.requestId,
                           data: {
-                            message: `[WS] Game nodes cannot connect as players.`,
+                            error: `[WS] Game nodes cannot connect as players.`,
+                            token: token
                           },
-                        } as WebsocketResponse)
+                        } as WebsocketResponse<WebSocketError>)
                       );
                     } else {
                       conn.socket.send(
@@ -231,9 +235,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           type: WebsocketType.Error,
                           requestId: data.requestId,
                           data: {
-                            message: `[WS] The host has not yet connected to the game. Please try again later.`,
+                            error: `[WS] The host has not yet connected to the game. Please try again later.`,
+                            token: token
                           },
-                        } as WebsocketResponse)
+                        } as WebsocketResponse<WebSocketError>)
                       );
                     }
                     break;
@@ -251,8 +256,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                               players: connections[gameID].clients.map(
                                 (c) => c.username
                               ),
-                            } as NextPlayerData,
-                          } as WebsocketResponse)
+                            },
+                          } as WebsocketResponse<NextPlayerData>)
                         );
                         connections[gameID].clients.forEach((c) => {
                           c.conn.socket.send(
@@ -261,8 +266,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                               requestId: data.requestId,
                               data: {
                                 username: first_player,
-                              } as NextPlayerData,
-                            } as WebsocketResponse)
+                              },
+                            } as WebsocketResponse<NextPlayerData>)
                           );
                         });
                       })
@@ -271,16 +276,11 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           JSON.stringify({
                             type: WebsocketType.Error,
                             requestId: data.requestId,
-                            data:
-                              typeof err === "string"
-                                ? {
-                                    message: err,
-                                  }
-                                : {
-                                    error: err,
-                                    message: "[WS] Error while starting game.",
-                                  },
-                          } as WebsocketResponse)
+                            data: {
+                              error: `[WS] Error while starting the game: ${err}`,
+                              token: token,
+                            },
+                          } as WebsocketResponse<WebSocketError>)
                         );
                       });
                     break;
@@ -295,8 +295,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                             requestId: data.requestId,
                             data: {
                               username: next_player,
-                            } as NextPlayerData,
-                          } as WebsocketResponse)
+                            }
+                          } as WebsocketResponse<NextPlayerData>)
                         );
                         connections[gameID].clients.forEach((c) => {
                           c.conn.socket.send(
@@ -305,8 +305,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                               requestId: data.requestId,
                               data: {
                                 username: next_player,
-                              } as NextPlayerData,
-                            } as WebsocketResponse)
+                              }
+                            } as WebsocketResponse<NextPlayerData>)
                           );
                         });
                       })
@@ -315,16 +315,11 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           JSON.stringify({
                             type: WebsocketType.Error,
                             requestId: data.requestId,
-                            data:
-                              typeof err === "string"
-                                ? {
-                                    message: err,
-                                  }
-                                : {
-                                    error: err,
-                                    message: "[WS] Error while starting game.",
-                                  },
-                          } as WebsocketResponse)
+                            data: {
+                              error: `[WS] Error while starting the game: ${err}`,
+                              token: token,
+                            },
+                          } as WebsocketResponse<WebSocketError>)
                         );
                       });
                     break;
@@ -339,7 +334,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                         data: {
                           message: "[WS] Pong!",
                         },
-                      } as WebsocketResponse)
+                      } as WebsocketResponse<WebSocketPong>)
                     );
                     break;
                   }
@@ -351,10 +346,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     type: WebsocketType.Error,
                     requestId: data.requestId,
                     data: {
-                      error: err,
-                      message: "[WS] Error while connecting to websocket.",
+                      error: `[WS] Error while connecting to websocket. ${err}`,
+                      token: token,
                     },
-                  } as WebsocketResponse)
+                  } as WebsocketResponse<WebSocketError>)
                 );
               });
           }
@@ -373,10 +368,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
               type: WebsocketType.Error,
               requestId: undefined,
               data: {
-                message:
-                  "[WS] This connection was never associated with a game.",
+                error: "[WS] This connection was never associated with a game.",
+                token: ""
               },
-            } as WebsocketResponse)
+            } as WebsocketResponse<WebSocketError>)
           );
           return;
         }
@@ -387,14 +382,20 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
             JSON.stringify({
               type: WebsocketType.GameEndedAck,
               requestId: undefined,
-            } as WebsocketResponse)
+              data: {
+                ranking: [] // todo
+              }
+            } as WebsocketResponse<GameEndAckData>)
           );
           connections[gameID].clients.forEach((c) => {
             c.conn.socket.send(
               JSON.stringify({
                 type: WebsocketType.GameEndedAck,
                 requestId: undefined,
-              } as WebsocketResponse)
+                data: {
+                  ranking: [] // todo
+                }
+              } as WebsocketResponse<GameEndAckData>)
             );
             c.conn.end();
           });
@@ -409,7 +410,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
               data: {
                 username: connections[gameID].host.username,
               },
-            } as WebsocketResponse)
+            } as WebsocketResponse<PlayerDisconnectAckData)
           );
           connections[gameID].clients.forEach((c) => {
             c.conn.socket.send(
@@ -419,7 +420,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                 data: {
                   username: c.username,
                 },
-              } as WebsocketResponse)
+              } as WebsocketResponse<PlayerDisconnectAckData)
             );
           });
           connections[gameID].clients = connections[gameID].clients.filter(

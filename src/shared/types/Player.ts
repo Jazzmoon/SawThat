@@ -1,5 +1,5 @@
 export type Player = {
-  colour: string;
+  color: string;
   position: number;
   username: string;
 };

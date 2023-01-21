@@ -6,6 +6,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
+import type { AllowedPayloads } from '../../shared/apis/WebSocketAPIType';
 import { WebsocketType } from '../../shared/enums/WebsocketTypes';
 import type { Player } from '../../shared/types/Player';
 import type { WebsocketMessage } from '../../shared/types/Websocket';
@@ -23,7 +24,7 @@ let currentPlayerIndex = ref(0);
 
 const messageCallBackId = "App";
 onMounted(() => {
-  WS_API.addIncomingMessageCallback(messageCallBackId, (message: WebsocketMessage) => {
+  WS_API.addIncomingMessageCallback(messageCallBackId, (message: WebsocketMessage<AllowedPayloads>) => { // TODO CHANGE THIS TO WebSocketResponse once mark updates the types to be categorized properly
     switch (message.type) {
       case WebsocketType.Error:
         alert(JSON.stringify(message.data));
@@ -31,14 +32,15 @@ onMounted(() => {
       case WebsocketType.TextQuestion:
       case WebsocketType.MultipleChoiceQuestion:
         answering.value = true;
-        currentQuestionText = message.data.questionText; // todo is this correct?
+        //@ts-ignore TODO REMOVE THIS IGNORE
+        currentQuestionText = message.data.questionText;
         break;
-      case WebsocketType.QuestionTimeOut:
-      case WebsocketType.QuestionAnswer:
-      case WebsocketType.QuestionEndedAck:
-        answering.value = false;
+        case WebsocketType.QuestionTimeOut:
+          case WebsocketType.QuestionAnswer:
+            case WebsocketType.QuestionEndedAck:
+              answering.value = false;
         break;
-      case WebsocketType.ConsequenceAck:
+        case WebsocketType.ConsequenceAck:
         consequenceShown.value = true; // todo get the consequence data and shoqw in a modal
         break;
       case WebsocketType.ConsequenceEndedAck:
@@ -47,11 +49,13 @@ onMounted(() => {
       case WebsocketType.GameEndedAck:
         joined.value = false; // todo add a leaderboard screen
         break;
-      case WebsocketType.GameJoinAck:
+        case WebsocketType.GameJoinAck:
+        //@ts-ignore TODO REMOVE THIS IGNORE
         players.value.push(message.data);
         break;
-      case WebsocketType.PlayerDisconnectAck:
-        const index = players.value.findIndex(message.data.username);
+        case WebsocketType.PlayerDisconnectAck:
+        //@ts-ignore TODO REMOVE THIS IGNORE
+        const index = players.value.findIndex((player) => player.username === message.data.username);
         if (index > -1) {
           players.value.splice(index, 1);
         }

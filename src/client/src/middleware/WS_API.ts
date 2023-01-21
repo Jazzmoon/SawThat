@@ -1,3 +1,4 @@
+import type { GameJoinAckData, WebSocketError } from "../../../shared/apis/WebSocketAPIType";
 import Base_WS_API from "../../../shared/Base_WS_API";
 import { WebsocketType } from "../../../shared/enums/WebsocketTypes";
 import type { WebsocketMessage } from "../../../shared/types/Websocket";
@@ -29,7 +30,7 @@ export class WS_API extends Base_WS_API {
     /**
      * Sends a request to join a game
      */
-    public static async sendJoinRequest(): Promise<WebsocketMessage> {
+    public static async sendJoinRequest(): Promise<WebsocketMessage<GameJoinAckData | WebSocketError>> {
         return await WS_API.sendRequest(WebsocketType.GameJoin, {});
     }
 }

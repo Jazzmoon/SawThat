@@ -17,6 +17,7 @@ import type { Player } from "../../shared/types/Player";
 import { WebsocketType } from '../../shared/enums/WebsocketTypes';
 import type { WebsocketMessage } from '../../shared/types/Websocket';
 import ConsequenceModal from './components/ConsequenceModal.vue';
+import type { AllowedPayloads } from '../../shared/apis/WebSocketAPIType';
 
 // game state variables
 let players = ref([] as Player[]);
@@ -29,7 +30,7 @@ let consequenceMessage = ref("");
 
 const messageCallBackId = "App";
 onMounted(() => {
-  WS_API.addIncomingMessageCallback(messageCallBackId, (message: WebsocketMessage) => {
+  WS_API.addIncomingMessageCallback(messageCallBackId, (message: WebsocketMessage<AllowedPayloads>) => { // TODO CHANGE THIS TO WebSocketResponse once mark updates the types to be categorized properly
     switch (message.type) {
       case WebsocketType.Error:
         alert(JSON.stringify(message.data));
@@ -37,7 +38,8 @@ onMounted(() => {
       case WebsocketType.TextQuestion:
       case WebsocketType.MultipleChoiceQuestion:
         questionShown.value = true;
-        currentQuestionText = message.data.questionText; // todo is this correct?
+        //@ts-ignore TODO REMOVE THIS IGNORE
+        currentQuestionText = message.data.questionText;
         break;
       case WebsocketType.QuestionTimeOut:
       case WebsocketType.QuestionAnswer:
@@ -46,6 +48,7 @@ onMounted(() => {
         break;
       case WebsocketType.ConsequenceAck:
         consequenceShown.value = true;
+        //@ts-ignore TODO REMOVE THIS IGNORE
         consequenceMessage.value = message.data.consequence;
         break;
       case WebsocketType.ConsequenceEndedAck: 
@@ -55,10 +58,11 @@ onMounted(() => {
         gameStarted.value = false; // todo add a leaderboard screen
         break;
       case WebsocketType.GameJoinAck:
-        players.value.push(message.data);
+        players.value.push(message.data as Player);
         break;
       case WebsocketType.PlayerDisconnectAck:
-        const index = players.value.findIndex(message.data.username);
+        //@ts-ignore TODO REMOVE THIS IGNORE
+        const index = players.value.findIndex((player) => player.username === message.data.username);
         if (index > -1) {
           players.value.splice(index, 1);
         }

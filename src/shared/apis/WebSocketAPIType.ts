@@ -1,16 +1,24 @@
 /**
  * @file WebSocketAPIType.ts
- * @author Mark Hutchison
  * Details the structure of data that will be transferred over the
  * websocket connection.
  */
-import { ConsequenceType } from "../enums/ConsequenceType";
-import { Color } from "../enums/Color";
+import type { ConsequenceType } from "../enums/ConsequenceType";
+import type { Color } from "../enums/Color";
 
 export type TimedData = {
   timer_start: Date;
   timer_length: number;
 };
+
+export type WebSocketError = {
+  error: Error | string,
+  token: string
+}
+
+export type WebSocketPong = {
+  message: string,
+}
 
 export type MultipleChoiceData = {
   id: number;
@@ -74,3 +82,11 @@ export type GameJoinAckData = {
 export type NextPlayerData = {
   username: string;
 };
+
+export type PlayerDisconnectAckData = {
+  username: string
+}
+
+// TODO SPLIT INTO FROM SERVER AND TO SERVER. THIS WILL ENSURE THAT ALL PAYLOADS ARE LEGAL
+// TODO ALSO FIGURE OUT A WAY TO MAP TYPE TO PAYLOAD. ALTHOUGH THIS IS LESS IMPORTANT
+export type AllowedPayloads = {} | TimedData | WebSocketError | WebSocketPong | MultipleChoiceData | TextQuestionData | ConsequenceData | GameEndAckData | QuestionEndedData | QuestionAnswerData | ConnectionEstablished | GameJoinAckData | NextPlayerData | PlayerDisconnectAckData;

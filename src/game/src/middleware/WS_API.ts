@@ -1,6 +1,7 @@
+import type { GameJoinAckData, WebSocketError } from "../../../shared/apis/WebSocketAPIType";
 import Base_WS_API from "../../../shared/Base_WS_API";
 import { WebsocketType } from "../../../shared/enums/WebsocketTypes";
-import type { WebsocketMessage } from "../../../shared/types/Websocket";
+import type { WebsocketResponse } from "../../../shared/types/Websocket";
 /**
  * Static class that wraps websockets to facilitate communication with the server
  * during the game.
@@ -30,7 +31,7 @@ export class WS_API extends Base_WS_API {
      * Attempts to create a new game with the server
      * @returns the game code if the game was created. undefined if some error occured.
      */
-    public static async sendCreateGameRequest(): Promise<WebsocketMessage> {
+    public static async sendCreateGameRequest(): Promise<WebsocketResponse<GameJoinAckData | WebSocketError>> {
         return await WS_API.sendRequest(WebsocketType.GameSetup, {});
     }
 
@@ -38,7 +39,7 @@ export class WS_API extends Base_WS_API {
      * Attempts to start the game with the server
      * @returns true if the game was started. False if some error occured.
      */
-    public static async sendStartGameRequest(): Promise<WebsocketMessage> {
+    public static async sendStartGameRequest(): Promise<WebsocketResponse<GameJoinAckData | WebSocketError>> {
         return await WS_API.sendRequest(WebsocketType.GameStart, {});
     }
 }
