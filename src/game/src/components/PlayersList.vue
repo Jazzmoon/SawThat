@@ -49,4 +49,9 @@ const props = defineProps<{
     margin: 0;
     margin-left: 12px;
 }
+
+.player.chosen {
+    border-radius: 15px;
+    border: 5px solid #003fa3;
+}
 </style>

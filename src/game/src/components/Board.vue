@@ -23,7 +23,7 @@ let playerPosition: Record<string, number> = {};
 let playersOnTile: Record<number, number> = {};
 
 onMounted(() => {
-    // create the player pieces for each player and position at starting location
+    // create the player pieces for each player and position at starting location - we eed to delete all pieces and call this again if players join after game starts
     const startingSpot = document.getElementById("spot1");
     playersOnTile[0] = 0;
     for (const player of props.players) {
