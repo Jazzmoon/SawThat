@@ -72,6 +72,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                 conn.socket.send(
                   JSON.stringify({
                     type: WebsocketType.Error,
+                    requestId: data.requestId,
                     data: { error: err, token: token },
                   } as WebsocketResponse)
                 );
@@ -79,6 +80,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                 conn.socket.send(
                   JSON.stringify({
                     type: WebsocketType.Error,
+                    requestId: data.requestId,
                     data: {
                       error: "[WS] Token sent is undefined.",
                       token: token,
@@ -96,6 +98,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
               conn.socket.send(
                 JSON.stringify({
                   type: WebsocketType.Error,
+                  requestId: data.requestId,
                   data: {
                     message: "[WS] Game ID and JWT mismatch.",
                     data: `You requested game with ID ${gameID} but have a JWT for game ${gameCode}.`,
@@ -109,6 +112,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
             conn.socket.send(
               JSON.stringify({
                 type: WebsocketType.GameJoinAck,
+                requestId: data.requestId,
                 data: {
                   message: `[WS] Game with ID ${gameID} joined successfully.`,
                   username: username,
@@ -123,6 +127,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
               c.conn.socket.send(
                 JSON.stringify({
                   type: WebsocketType.GameJoinAck,
+                  requestId: data.requestId,
                   data: {
                     message: `[WS] Player has joined game ${gameID}.`,
                     username: username,
@@ -145,13 +150,20 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                   conn.socket.send(
                     JSON.stringify({
                       type: WebsocketType.GameJoinAck,
-                      data: { username: username } as GameJoinAckData,
+                      requestId: data.requestId,
+                      data: {
+                        username: username,
+                        players: connections[gameID].clients.map(
+                          (c) => c.username
+                        ),
+                      } as GameJoinAckData,
                     } as WebsocketResponse)
                   );
                 } else if (userType !== "Game") {
                   conn.socket.send(
                     JSON.stringify({
                       type: WebsocketType.Error,
+                      requestId: data.requestId,
                       data: {
                         message: `[WS] Only the game node can set-up a game.`,
                       },
@@ -161,6 +173,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                   conn.socket.send(
                     JSON.stringify({
                       type: WebsocketType.Error,
+                      requestId: data.requestId,
                       data: {
                         message: `[WS] A user has already connected to this game as the host.`,
                       },
@@ -180,13 +193,20 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                   connections[gameID].host.conn.socket.send(
                     JSON.stringify({
                       type: WebsocketType.GameJoinAck,
-                      data: { username: username } as GameJoinAckData,
+                      requestId: data.requestId,
+                      data: {
+                        username: username,
+                        players: connections[gameID].clients.map(
+                          (c) => c.username
+                        ),
+                      } as GameJoinAckData,
                     } as WebsocketResponse)
                   );
                   connections[gameID].clients.forEach((c) => {
                     c.conn.socket.send(
                       JSON.stringify({
                         type: WebsocketType.GameJoinAck,
+                        requestId: data.requestId,
                         data: { username: username } as GameJoinAckData,
                       } as WebsocketResponse)
                     );
@@ -195,6 +215,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                   conn.socket.send(
                     JSON.stringify({
                       type: WebsocketType.Error,
+                      requestId: data.requestId,
                       data: {
                         message: `[WS] Game nodes cannot connect as players.`,
                       },
@@ -204,6 +225,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                   conn.socket.send(
                     JSON.stringify({
                       type: WebsocketType.Error,
+                      requestId: data.requestId,
                       data: {
                         message: `[WS] The host has not yet connected to the game. Please try again later.`,
                       },
@@ -219,8 +241,12 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     connections[gameID].host.conn.socket.send(
                       JSON.stringify({
                         type: WebsocketType.GameStartAck,
+                        requestId: data.requestId,
                         data: {
                           username: first_player,
+                          players: connections[gameID].clients.map(
+                            (c) => c.username
+                          ),
                         } as NextPlayerData,
                       } as WebsocketResponse)
                     );
@@ -228,6 +254,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       c.conn.socket.send(
                         JSON.stringify({
                           type: WebsocketType.GameStartAck,
+                          requestId: data.requestId,
                           data: {
                             username: first_player,
                           } as NextPlayerData,
@@ -239,6 +266,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     conn.socket.send(
                       JSON.stringify({
                         type: WebsocketType.Error,
+                        requestId: data.requestId,
                         data:
                           typeof err === "string"
                             ? {
@@ -260,6 +288,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     connections[gameID].host.conn.socket.send(
                       JSON.stringify({
                         type: WebsocketType.NextPlayerAck,
+                        requestId: data.requestId,
                         data: {
                           username: next_player,
                         } as NextPlayerData,
@@ -269,6 +298,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       c.conn.socket.send(
                         JSON.stringify({
                           type: WebsocketType.NextPlayerAck,
+                          requestId: data.requestId,
                           data: {
                             username: next_player,
                           } as NextPlayerData,
@@ -280,6 +310,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     conn.socket.send(
                       JSON.stringify({
                         type: WebsocketType.Error,
+                        requestId: data.requestId,
                         data:
                           typeof err === "string"
                             ? {
@@ -300,6 +331,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                 conn.socket.send(
                   JSON.stringify({
                     type: WebsocketType.Pong,
+                    requestId: data.requestId,
                     data: {
                       message: "[WS] Pong!",
                     },
