@@ -8,6 +8,7 @@ import type { WebsocketType } from "../enums/WebsocketTypes";
 
 export type WebsocketMessage = {
   type: WebsocketType;
+  requestId: string;
   data: any;
 };
 
