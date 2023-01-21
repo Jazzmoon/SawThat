@@ -145,7 +145,12 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                   conn.socket.send(
                     JSON.stringify({
                       type: WebsocketType.GameJoinAck,
-                      data: { username: username } as GameJoinAckData,
+                      data: {
+                        username: username,
+                        players: connections[gameID].clients.map(
+                          (c) => c.username
+                        ),
+                      } as GameJoinAckData,
                     } as WebsocketResponse)
                   );
                 } else if (userType !== "Game") {
@@ -180,7 +185,12 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                   connections[gameID].host.conn.socket.send(
                     JSON.stringify({
                       type: WebsocketType.GameJoinAck,
-                      data: { username: username } as GameJoinAckData,
+                      data: {
+                        username: username,
+                        players: connections[gameID].clients.map(
+                          (c) => c.username
+                        ),
+                      } as GameJoinAckData,
                     } as WebsocketResponse)
                   );
                   connections[gameID].clients.forEach((c) => {
@@ -221,6 +231,9 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                         type: WebsocketType.GameStartAck,
                         data: {
                           username: first_player,
+                          players: connections[gameID].clients.map(
+                            (c) => c.username
+                          ),
                         } as NextPlayerData,
                       } as WebsocketResponse)
                     );

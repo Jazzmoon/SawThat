@@ -57,6 +57,7 @@ export type QuestionAnswerData = {
 
 export type GameJoinAckData = {
   username: string;
+  players: string[];
 };
 
 export type NextPlayerData = {
