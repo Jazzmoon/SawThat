@@ -1,8 +1,8 @@
 <template>
     <div id="players">
-        <div v-for="(player, index) in props.players" :key="player.name" :class="['player', (props.currentPlayer !== null && props.currentPlayer === index) ? 'chosen' : '']">
+        <div v-for="(player, index) in props.players" :key="player.username" :class="['player', (props.currentPlayer !== null && props.currentPlayer === index) ? 'chosen' : '']">
             <div class="colorIndicator" :style="`border-color: ${player.colour}`"></div>
-            <p class="playerName">{{player.name}}</p>
+            <p class="playerName">{{player.username}}</p>
         </div>
     </div>
 </template>

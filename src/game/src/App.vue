@@ -55,11 +55,7 @@ onMounted(() => {
         gameStarted.value = false; // todo add a leaderboard screen
         break;
       case WebsocketType.GameJoinAck:
-        players.value.push({
-          name: message.data.username,
-          position: 0,
-          colour: 'red'
-        }); // todo mark should send this stuff to me instead of I making it randomly here
+        players.value.push(message.data);
         break;
       case WebsocketType.PlayerDisconnectAck:
         const index = players.value.findIndex(message.data.userId);

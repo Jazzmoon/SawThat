@@ -72,6 +72,7 @@ export default class Base_WS_API {
             for (const callback of Object.values(Base_WS_API.incomingMessageCallbacks)) {
                 callback({
                     type: WebsocketType.Error,
+                    requestId: requestId,
                     data: {
                         error: exception,
                         message: "An error occured with the connection to the server"
@@ -109,16 +110,18 @@ export default class Base_WS_API {
      * @returns an awaitable promise that resolves once the request finishes
      */
     protected static async sendRequest(type: WebsocketType, payload: object): Promise<WebsocketMessage> {
+        const requestId = Base_WS_API.createRequestId(type);
+
         if (Base_WS_API.socket == null || Base_WS_API.socket.readyState !== WebSocket.OPEN) {
             return {
                 type: WebsocketType.Error,
+                requestId: requestId,
                 data: {
                     message: "Attempted to send a message over a non-open socket"
                 }
             };
         }
         
-        const requestId = Base_WS_API.createRequestId(type);
 
         // assign the requestId and token to the payload
         let data = {

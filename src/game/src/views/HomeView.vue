@@ -46,10 +46,8 @@ function copyCode() {
 async function nextSetupStep() {
   if (!isGameCreated()) {
     await createGame();
-    console.log("game created")
   } else {
     await startGame();
-    console.log("game started")
   }
 }
 
@@ -76,7 +74,7 @@ async function createGame() {
 
   const request2Success = await WS_API.sendCreateGameRequest();
 
-  if (!request2Success) {
+  if (!request2Success.hasOwnProperty('error')) {
     alert("An error occured while trying to start the game.");
     return;
   }

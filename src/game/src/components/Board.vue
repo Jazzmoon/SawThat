@@ -32,7 +32,7 @@ onMounted(() => {
         piece.setAttribute('stroke', "black");
         piece.setAttribute('stroke-width', "7px");
         piece.setAttribute('fill', player.colour);
-        playerPieces[player.name] = piece;
+        playerPieces[player.username] = piece;
         startingSpot?.parentElement?.append(piece);
 
         updatePiecePosition(player);
@@ -44,7 +44,7 @@ onMounted(() => {
  */
 function updatePlayerPositions() {
     for (const player of props.players) {
-        if (playerPosition[player.name] !== player.position) {
+        if (playerPosition[player.username] !== player.position) {
             updatePiecePosition(player);
         }
     }
@@ -52,14 +52,14 @@ function updatePlayerPositions() {
 
 function updatePiecePosition(player: Player) : void {
     // remove player from previous tile and add them to the new one
-    playersOnTile[playerPosition[player.name]]--;
+    playersOnTile[playerPosition[player.username]]--;
     playersOnTile[player.position] = (playersOnTile[player.position] ?? 0) + 1;
-    playerPosition[player.name] = player.position;
+    playerPosition[player.username] = player.position;
 
     // move the player's piece on the board. Note that if there are already players on this tile, we stack them up
     const newSpot = document.getElementById(`spot${player.position+1}`);
-    playerPieces[player.name].setAttribute('cy', String(parseInt(newSpot?.getAttribute('cy')!) - 50 * (playersOnTile[player.position] - 1)));
-    playerPieces[player.name].setAttribute('cx', newSpot?.getAttribute('cx')!);
+    playerPieces[player.username].setAttribute('cy', String(parseInt(newSpot?.getAttribute('cy')!) - 50 * (playersOnTile[player.position] - 1)));
+    playerPieces[player.username].setAttribute('cx', newSpot?.getAttribute('cx')!);
 }
 </script>
 

@@ -27,7 +27,7 @@ async function submit() {
   
   const joinWSResponse = await WS_API.sendJoinRequest();
   
-  if (!joinWSResponse) {
+  if (joinWSResponse.hasOwnProperty('error')) {
     alert("Failed to join the server");
     return;
   }
