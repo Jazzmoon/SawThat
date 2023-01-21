@@ -26,7 +26,7 @@ onMounted(() => {
   WS_API.addIncomingMessageCallback(messageCallBackId, (message: WebsocketMessage) => {
     switch (message.type) {
       case WebsocketType.Error:
-        alert(message.data);
+        alert(JSON.stringify(message.data));
         break;
       case WebsocketType.TextQuestion:
       case WebsocketType.MultipleChoiceQuestion:
