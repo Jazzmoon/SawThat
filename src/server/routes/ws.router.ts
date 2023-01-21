@@ -354,6 +354,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
           conn.socket.send(
             JSON.stringify({
               type: WebsocketType.Error,
+              requestId: undefined,
               data: {
                 message:
                   "[WS] This connection was never associated with a game.",
@@ -368,12 +369,14 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
           connections[gameID].host.conn.socket.send(
             JSON.stringify({
               type: WebsocketType.GameEndedAck,
+              requestId: undefined,
             } as WebsocketResponse)
           );
           connections[gameID].clients.forEach((c) => {
             c.conn.socket.send(
               JSON.stringify({
                 type: WebsocketType.GameEndedAck,
+                requestId: undefined,
               } as WebsocketResponse)
             );
             c.conn.end();
@@ -385,6 +388,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
           connections[gameID].host.conn.socket.send(
             JSON.stringify({
               type: WebsocketType.PlayerDisconnectAck,
+              requestId: undefined,
               data: {
                 username: connections[gameID].host.username,
               },
@@ -394,6 +398,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
             c.conn.socket.send(
               JSON.stringify({
                 type: WebsocketType.PlayerDisconnectAck,
+                requestId: undefined,
                 data: {
                   username: c.username,
                 },
