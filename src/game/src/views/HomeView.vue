@@ -56,7 +56,7 @@ async function nextSetupStep() {
  */
 async function createGame() {
   const requestResult = await HTTP_API.sendCreate("disney"); // todo let the user decide this
-  if (requestResult.hasOwnProperty('error')) {
+  if (!requestResult || requestResult.hasOwnProperty('error')) {
     alert(`Failed to create a new game.\n${JSON.stringify(requestResult)}`);
   } else {
     gameCode.value = requestResult.gameID;
@@ -74,7 +74,7 @@ async function createGame() {
 
   const request2Success = await WS_API.sendCreateGameRequest();
 
-  if (!request2Success.hasOwnProperty('error')) {
+  if (!request2Success || request2Success.hasOwnProperty('error')) {
     alert("An error occured while trying to start the game.");
     return;
   }
@@ -87,7 +87,7 @@ async function createGame() {
 async function startGame() {
   const request2Success = await WS_API.sendStartGameRequest();
 
-  if (!request2Success) {
+  if (!request2Success || request2Success.hasOwnProperty('error')) {
     alert("An error occured while trying to start the game.");
     return;
   }
