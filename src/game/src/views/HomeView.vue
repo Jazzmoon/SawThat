@@ -3,7 +3,7 @@ import LogoSVG from "@/assets/logo.svg?component";
 import PlayersListVue from "@/components/PlayersList.vue";
 import { HTTP_API } from "@/middleware/HTTP_API";
 import { WS_API } from "@/middleware/WS_API";
-import { computed, ref, onMounted, onUnmounted } from "vue";
+import { computed, ref } from "vue";
 import type { Player } from "../../../shared/types/Player";
 
 const props = defineProps<{
