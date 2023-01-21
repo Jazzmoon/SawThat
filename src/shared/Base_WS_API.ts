@@ -123,14 +123,14 @@ export default class Base_WS_API {
         // assign the requestId and token to the payload
         let data = {
             type: type,
-            ...payload,
+            data: payload,
             requestId: requestId, 
             token: Base_WS_API.token 
         };
 
         Base_WS_API.socket.send(JSON.stringify(data));
 
-        return Base_WS_API.addRequestToQueue(requestId);
+        return await Base_WS_API.addRequestToQueue(requestId);
     }
 
     /**
