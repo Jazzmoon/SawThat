@@ -159,7 +159,7 @@ export const startGame = async (gameID: string): Promise<string> => {
     );
     game.started = true;
     await game.save();
-    const player = await User.findById(game.players[0].player);
+    const player = await User.findById(game.players[0]);
     return Promise.resolve(player!.username);
   } else {
     // Return custom error
@@ -189,7 +189,7 @@ export const nextPlayer = async (
     // Get a list of player usernames
     let players: string[] = [];
     for (let i = 0; i < game.players.length; i++) {
-      const user = await User.findById(game.players[i].player);
+      const user = await User.findById(game.players[i]);
       players.push(user!.username);
     }
     // Find the index of the username provided

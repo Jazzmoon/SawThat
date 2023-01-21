@@ -5,9 +5,12 @@
  */
 import { generateJWT } from "./AuthController";
 
+import { Color } from "../../shared/enums/Color";
+
 import Game from "../models/Game";
 import User from "../models/User";
 import { FastifyReply, FastifyRequest } from "fastify";
+import mongoose from "mongoose";
 
 /**
  * Allow user to join a game assuming they provide
@@ -70,17 +73,77 @@ export const joinGame = async (
     return Promise.resolve(res);
   }
 
-  // Create a user and link them to the game
+  // Create a user
   // Note: Generating a JWT will create a user, so no need to do it here.
   const accessToken = await generateJWT({
     username: username,
     gameCode: game_code,
     userType: "Client",
   });
-  res.code(200).type("application/json").send({
+
+  // Link user to the game and update their information accordingly
+  let color: Color = Color.RED;
+  switch (players!.length) {
+    case 0:
+    default:
+      color = Color.RED;
+      break;
+    case 1:
+      color = Color.ORANGE;
+      break;
+    case 2:
+      color = Color.YELLOW;
+      break;
+    case 3:
+      color = Color.GREEN;
+      break;
+    case 4:
+      color = Color.BLUE;
+      break;
+    case 5:
+      color = Color.PINK;
+      break;
+    case 6:
+      color = Color.PURPLE;
+      break;
+    case 7:
+      color = Color.BROWN;
+      break;
+  }
+
+  User.findOne({
     username: username,
+    userType: "Client",
     token: accessToken,
-  });
+  })
+    .exec()
+    .then((user) => {
+      user!.updateOne({ color: color, position: 0 }).exec();
+      game.players.push(user!._id);
+      Game.findOneAndUpdate(
+        {
+          game_code: game_code,
+        },
+        {
+          players: game.players,
+        }
+      ).exec();
+      res.code(200).type("application/json").send({
+        username: username,
+        token: accessToken,
+      });
+    })
+    .catch((err) => {
+      res
+        .code(400)
+        .type("application/json")
+        .send({
+          data: {
+            err: err,
+            message: "An error occurred while connecting the user to the game.",
+          },
+        });
+    });
 
   // Return relevant information to the user
   return Promise.resolve(res);
