@@ -80,14 +80,6 @@ export const joinGame = async (
 
   // Create a user
   // Note: Generating a JWT will create a user, so no need to do it here.
-  const accessToken = await generateJWT({
-    username: username,
-    gameCode: game_code,
-    userType: "Client",
-  });
-  console.log(`[CR] Access token generated: ${accessToken}`);
-
-  // Link user to the game and update their information accordingly
   let color: Color = Color.RED;
   switch (players!.length) {
     case 0:
@@ -118,10 +110,20 @@ export const joinGame = async (
   }
   console.log(`[CR] Color Generated: ${color}`);
 
-  const user = await User.findOne({
+  const accessToken = await generateJWT({
     username: username,
-    userType: "Client",
     gameCode: game_code,
+    userType: "Client",
+    color: color,
+  });
+  console.log(`[CR] Access token generated: ${accessToken}`);
+
+  // Link user to the game and update their information accordingly
+  const user = await User.findOne({
+    userType: "Client",
+    username: username,
+    game: game._id,
+    token: accessToken,
   }).exec();
   console.log(`[CR] User Fetched: ${user}`);
 
@@ -145,15 +147,10 @@ export const joinGame = async (
     });
   } else {
     console.log(`[CR] User not found.`);
-    res
-      .code(400)
-      .type("application/json")
-      .send({
-        data: {
-          error: user,
-          message: "An error occurred while connecting the user to the game.",
-        },
-      });
+    res.code(400).type("application/json").send({
+      error: user,
+      message: "An error occurred while connecting the user to the game.",
+    });
   }
   return Promise.resolve(res);
 };

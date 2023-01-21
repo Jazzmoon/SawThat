@@ -7,6 +7,7 @@ import * as dotenv from "dotenv";
 import jwt, { Secret } from "jsonwebtoken";
 import Game from "../models/Game";
 import User from "../models/User";
+import { Color } from "../../shared/enums/Color";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ export const generateJWT = async (requestData: {
   username: string;
   gameCode: string;
   userType: "Game" | "Client";
+  color?: Color;
 }): Promise<string> => {
   // Create JWT
   const accessToken = jwt.sign(
@@ -58,6 +60,8 @@ export const generateJWT = async (requestData: {
         userType: requestData.userType,
         token: accessToken,
         game: game._id,
+        color: requestData.color,
+        position: 0,
       });
 
       try {
