@@ -122,15 +122,11 @@ export const joinGame = async (
   const user = await User.findOne({
     userType: "Client",
     username: username,
-    game: game._id,
     token: accessToken,
   }).exec();
   console.log(`[CR] User Fetched: ${user}`);
 
   if (user) {
-    console.log(`[CR] Updating User`);
-    user!.color = color;
-    user!.position = 0;
     game.players.push(user!._id);
     console.log(`[CR] New Player List: ${game.players}`);
     Game.findOneAndUpdate(

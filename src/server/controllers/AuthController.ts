@@ -45,11 +45,11 @@ export const generateJWT = async (requestData: {
     });
 
     try {
-      const newUser = user.save();
+      const newUser = await user.save();
+      return Promise.resolve(accessToken);
     } catch (e) {
       return Promise.reject(`User could not be created: ${e}`);
     }
-    return Promise.resolve(accessToken);
   } else {
     // Find the Game in the database to link to user
     const game = await Game.findOne({ game_code: requestData.gameCode }).lean();
@@ -65,11 +65,11 @@ export const generateJWT = async (requestData: {
       });
 
       try {
-        const newUser = user.save();
+        const newUser = await user.save();
+        return Promise.resolve(accessToken);
       } catch (e) {
         return Promise.reject(`User could not be created: ${e}`);
       }
-      return Promise.resolve(accessToken);
     } else {
       return Promise.reject("Game with that ID doesn't exist to join.");
     }
