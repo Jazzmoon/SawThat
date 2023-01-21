@@ -17,9 +17,10 @@
 
 <script lang="ts" setup>
 import LogoSVG from "@/assets/logo.svg";
+import type { Player } from "../../../shared/types/Player";
 
 const props = defineProps<{
-    players: any[],
+    players: Player[],
     currentPlayerIndex: number
 }>();
 

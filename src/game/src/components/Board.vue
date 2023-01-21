@@ -31,7 +31,7 @@ onMounted(() => {
         piece.setAttribute('r', startingSpot?.getAttribute('r')!);
         piece.setAttribute('stroke', "black");
         piece.setAttribute('stroke-width', "7px");
-        piece.setAttribute('fill', player.colour);
+        piece.setAttribute('fill', player.color);
         playerPieces[player.username] = piece;
         startingSpot?.parentElement?.append(piece);
 

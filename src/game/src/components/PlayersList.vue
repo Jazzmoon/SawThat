@@ -1,7 +1,7 @@
 <template>
     <div id="players">
         <div v-for="(player, index) in props.players" :key="player.username" :class="['player', (props.currentPlayer !== null && props.currentPlayer === index) ? 'chosen' : '']">
-            <div class="colorIndicator" :style="`border-color: ${player.colour}`"></div>
+            <div class="colorIndicator" :style="`border-color: ${player.color}`"></div>
             <p class="playerName">{{player.username}}</p>
         </div>
     </div>
@@ -31,7 +31,6 @@ const props = defineProps<{
     flex-direction: row;
     padding: 6px;
 }
-
 
 .colorIndicator {
     border: 10px solid #fff;
