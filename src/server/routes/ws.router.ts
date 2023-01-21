@@ -134,36 +134,6 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                   );
                   return;
                 }
-                // Send confirmation to current socket that they have joined:
-                conn.socket.send(
-                  JSON.stringify({
-                    type: WebsocketType.GameJoinAck,
-                    requestId: data.requestId,
-                    data: {
-                      message: `[WS] Game with ID ${gameID} joined successfully.`,
-                      username: username,
-                      userType: userType,
-                      gameCode: gameCode,
-                      JWT: token,
-                    } as ConnectionEstablished,
-                  } as WebsocketResponse)
-                );
-                // Send message to everyone in game to confirm user has joined:
-                connections[gameID]?.clients.forEach((c) => {
-                  c.conn.socket.send(
-                    JSON.stringify({
-                      type: WebsocketType.GameJoinAck,
-                      requestId: data.requestId,
-                      data: {
-                        message: `[WS] Player has joined game ${gameID}.`,
-                        username: username,
-                        userType: userType,
-                        gameCode: gameCode,
-                        JWT: token,
-                      },
-                    } as WebsocketResponse)
-                  );
-                });
                 // Handle message
                 switch (data.type) {
                   case WebsocketType.GameSetup: {

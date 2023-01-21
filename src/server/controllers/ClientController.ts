@@ -38,7 +38,7 @@ export const joinGame = async (
       .code(400)
       .type("application/json")
       .send({
-        err: new Error("A game with that game code cannot be found."),
+        error: new Error("A game with that game code cannot be found."),
         message: "A game with that game code cannot be found.",
       });
     return Promise.resolve(res);
@@ -55,7 +55,7 @@ export const joinGame = async (
       .code(400)
       .type("application/json")
       .send({
-        err: new Error("A user with that username is already in game."),
+        error: new Error("A user with that username is already in game."),
         message: "A user with that username is already in game.",
       });
     return Promise.resolve(res);
@@ -67,7 +67,7 @@ export const joinGame = async (
       .code(400)
       .type("application/json")
       .send({
-        err: new Error("This game already has the maximum players allowed."),
+        error: new Error("This game already has the maximum players allowed."),
         message: "This game already has the maximum players allowed.",
       });
     return Promise.resolve(res);
@@ -111,40 +111,42 @@ export const joinGame = async (
       break;
   }
 
-  User.findOne({
-    username: username,
-    userType: "Client",
-    token: accessToken,
-  })
-    .exec()
-    .then((user) => {
-      user!.updateOne({ color: color, position: 0 }).exec();
-      game.players.push(user!._id);
-      Game.findOneAndUpdate(
-        {
-          game_code: game_code,
-        },
-        {
-          players: game.players,
-        }
-      ).exec();
-      res.code(200).type("application/json").send({
-        username: username,
-        token: accessToken,
-      });
+  return Promise.resolve(
+    User.findOne({
+      username: username,
+      userType: "Client",
+      token: accessToken,
     })
-    .catch((err) => {
-      res
-        .code(400)
-        .type("application/json")
-        .send({
-          data: {
-            err: err,
-            message: "An error occurred while connecting the user to the game.",
+      .exec()
+      .then((user) => {
+        user!.updateOne({ color: color, position: 0 }).exec();
+        game.players.push(user!._id);
+        Game.findOneAndUpdate(
+          {
+            game_code: game_code,
           },
+          {
+            players: game.players,
+          }
+        ).exec();
+        res.code(200).type("application/json").send({
+          username: username,
+          token: accessToken,
         });
-    });
-
-  // Return relevant information to the user
-  return Promise.resolve(res);
+        return res;
+      })
+      .catch((err) => {
+        res
+          .code(400)
+          .type("application/json")
+          .send({
+            data: {
+              error: err,
+              message:
+                "An error occurred while connecting the user to the game.",
+            },
+          });
+        return res;
+      })
+  );
 };
