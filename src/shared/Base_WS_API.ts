@@ -94,7 +94,7 @@ export default class Base_WS_API {
 
         // if the request was initiated by the game node, end the promise that is waiting for it
         if (Base_WS_API.pendingRequests[data.requestId]) {
-            Base_WS_API.pendingRequests[data.requestId].success();
+            Base_WS_API.pendingRequests[data.requestId].success(data);
             delete Base_WS_API.pendingRequests[data.requestId];
         }
 
