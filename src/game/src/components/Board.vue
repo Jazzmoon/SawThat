@@ -9,7 +9,7 @@
 
 <script lang="ts" setup>
 import BoardSVG from "@/assets/board.svg?skipsvgo"; // load svg but don't optimize away id fields
-import { onMounted } from 'vue';
+import { onMounted, watch } from 'vue';
 import type { Player } from "../../../shared/types/Player";
 import PlayersListVue from "./PlayersList.vue";
 
@@ -39,16 +39,13 @@ onMounted(() => {
     }
 });
 
-/**
- * Call this method to refresh the player pieces on the board
- */
-function updatePlayerPositions() {
+watch(props.players, async (n, o) => {
     for (const player of props.players) {
         if (playerPosition[player.username] !== player.position) {
             updatePiecePosition(player);
         }
     }
-}
+});
 
 function updatePiecePosition(player: Player) : void {
     // remove player from previous tile and add them to the new one

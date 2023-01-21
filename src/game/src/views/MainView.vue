@@ -1,3 +1,9 @@
+<template>
+  <main>
+     <BoardVue id="gameBoard" :players="props.players" :current-player-index="props.currentPlayerIndex"/>
+  </main>
+</template>
+
 <script lang="ts" setup>
 import BoardVue from '@/components/Board.vue';
 import type { Player } from '../../../shared/types/Player';
@@ -7,12 +13,6 @@ const props = defineProps<{
   currentPlayerIndex: number,
 }>();
 </script>
-
-<template>
-    <main>
-       <BoardVue id="gameBoard" :players="props.players" :current-player-index="props.currentPlayerIndex"/>
-    </main>
-</template>
 
 <style scoped>
 #gameBoard {
