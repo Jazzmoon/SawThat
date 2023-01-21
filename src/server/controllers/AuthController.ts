@@ -1,3 +1,8 @@
+/**
+ * @file AuthController.ts
+ * @author Mark Hutchison
+ * Handles any logic for generating user authentication tokens.
+ */
 import * as dotenv from "dotenv";
 import jwt, { Secret } from "jsonwebtoken";
 import Game from "../models/Game";
@@ -5,11 +10,16 @@ import User from "../models/User";
 
 dotenv.config();
 
+/**
+ * Generate the user access token that identifies each connected user.
+ * @param requestData The username, game code, and type of user in which is generating their authentication token.
+ * @returns {Promise<string>} Resolution code with JWT embedded.
+ */
 export const generateJWT = async (requestData: {
   username: string;
   gameCode: string;
   userType: "Game" | "Client";
-}) => {
+}): Promise<string> => {
   // Create JWT
   const accessToken = jwt.sign(
     {
@@ -31,12 +41,11 @@ export const generateJWT = async (requestData: {
       token: accessToken,
       game: null,
     });
-    console.log(user);
 
     try {
       const newUser = user.save();
     } catch (e) {
-      console.error(e);
+      return Promise.reject(`User could not be created: ${e}`);
     }
     return Promise.resolve(accessToken);
   } else {
@@ -54,7 +63,7 @@ export const generateJWT = async (requestData: {
       try {
         const newUser = user.save();
       } catch (e) {
-        console.error(e);
+        return Promise.reject(`User could not be created: ${e}`);
       }
       return Promise.resolve(accessToken);
     } else {

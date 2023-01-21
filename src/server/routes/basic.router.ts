@@ -1,3 +1,8 @@
+/**
+ * @file ws.router.ts
+ * @author Mark Hutchison
+ * Router dedicated to handling non-node specific interactions.
+ */
 import {
   FastifyInstance,
   FastifyPluginCallback,
@@ -5,6 +10,12 @@ import {
   FastifyRequest,
 } from "fastify";
 
+/**
+ * A universal router meant for handling requests that are non-node specific.
+ * @param {FastifyInstance} fastify The root fastify instance that the router is attaching itself to.
+ * @param {Record} opts Configuration options relevant to only this specific sub-router.
+ * @param done Function that indicates the end of definitions.
+ */
 const BasicRouter: FastifyPluginCallback = async (
   fastify: FastifyInstance,
   opts,

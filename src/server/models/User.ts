@@ -1,3 +1,8 @@
+/**
+ * @file User.ts
+ * @author Mark Hutchison
+ * The structure for the User object stored in the database, as well as ORM logic.
+ */
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 

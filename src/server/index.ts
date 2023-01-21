@@ -1,3 +1,8 @@
+/**
+ * @file index.ts
+ * @author Mark Hutchison
+ * Server Node set-up and configuration for server node.
+ */
 import * as dotenv from "dotenv";
 
 // Import Fastify Requirements

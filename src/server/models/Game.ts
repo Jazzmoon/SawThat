@@ -1,3 +1,8 @@
+/**
+ * @file Game.ts
+ * @author Mark Hutchison
+ * The structure for the Game object stored in the database, as well as ORM logic.
+ */
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
