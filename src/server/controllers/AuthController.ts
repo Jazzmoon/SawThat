@@ -7,6 +7,7 @@ import * as dotenv from "dotenv";
 import jwt, { Secret } from "jsonwebtoken";
 import Game from "../models/Game";
 import User from "../models/User";
+import { Color } from "../../shared/enums/Color";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ export const generateJWT = async (requestData: {
   username: string;
   gameCode: string;
   userType: "Game" | "Client";
+  color?: Color;
 }): Promise<string> => {
   // Create JWT
   const accessToken = jwt.sign(
@@ -43,11 +45,11 @@ export const generateJWT = async (requestData: {
     });
 
     try {
-      const newUser = user.save();
+      const newUser = await user.save();
+      return Promise.resolve(accessToken);
     } catch (e) {
       return Promise.reject(`User could not be created: ${e}`);
     }
-    return Promise.resolve(accessToken);
   } else {
     // Find the Game in the database to link to user
     const game = await Game.findOne({ game_code: requestData.gameCode }).lean();
@@ -58,14 +60,16 @@ export const generateJWT = async (requestData: {
         userType: requestData.userType,
         token: accessToken,
         game: game._id,
+        color: requestData.color,
+        position: 0,
       });
 
       try {
-        const newUser = user.save();
+        const newUser = await user.save();
+        return Promise.resolve(accessToken);
       } catch (e) {
         return Promise.reject(`User could not be created: ${e}`);
       }
-      return Promise.resolve(accessToken);
     } else {
       return Promise.reject("Game with that ID doesn't exist to join.");
     }

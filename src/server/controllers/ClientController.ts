@@ -32,8 +32,11 @@ export const joinGame = async (
   const { game_code, username } = req.body;
   // Verify that a game with the game code exists
   const game = await Game.findOne({ game_code: game_code }).lean();
-  console.log(`Checking if game exists with game code ${game_code}: ${game}`);
+  console.log(
+    `[CR] Checking if game exists with game code ${game_code}: ${game}`
+  );
   if (!game) {
+    console.log(`[CR] Game with game code ${game_code} not found.`);
     res
       .code(400)
       .type("application/json")
@@ -51,6 +54,7 @@ export const joinGame = async (
   });
 
   if (players.map((rec) => rec.username).includes(username)) {
+    console.log(`[CR] Game already contains user ${username}`);
     res
       .code(400)
       .type("application/json")
@@ -63,6 +67,7 @@ export const joinGame = async (
 
   // Verify that the game is not full
   if (players?.length >= 8) {
+    console.log(`[CR] Game already contains maximum amount of users`);
     res
       .code(400)
       .type("application/json")
@@ -75,13 +80,6 @@ export const joinGame = async (
 
   // Create a user
   // Note: Generating a JWT will create a user, so no need to do it here.
-  const accessToken = await generateJWT({
-    username: username,
-    gameCode: game_code,
-    userType: "Client",
-  });
-
-  // Link user to the game and update their information accordingly
   let color: Color = Color.RED;
   switch (players!.length) {
     case 0:
@@ -110,43 +108,45 @@ export const joinGame = async (
       color = Color.BROWN;
       break;
   }
+  console.log(`[CR] Color Generated: ${color}`);
 
-  return Promise.resolve(
-    User.findOne({
+  const accessToken = await generateJWT({
+    username: username,
+    gameCode: game_code,
+    userType: "Client",
+    color: color,
+  });
+  console.log(`[CR] Access token generated: ${accessToken}`);
+
+  // Link user to the game and update their information accordingly
+  const user = await User.findOne({
+    userType: "Client",
+    username: username,
+    token: accessToken,
+  }).exec();
+  console.log(`[CR] User Fetched: ${user}`);
+
+  if (user) {
+    game.players.push(user!._id);
+    console.log(`[CR] New Player List: ${game.players}`);
+    Game.findOneAndUpdate(
+      {
+        game_code: game_code,
+      },
+      {
+        players: game.players,
+      }
+    ).exec();
+    res.code(200).type("application/json").send({
       username: username,
-      userType: "Client",
       token: accessToken,
-    })
-      .exec()
-      .then((user) => {
-        user!.updateOne({ color: color, position: 0 }).exec();
-        game.players.push(user!._id);
-        Game.findOneAndUpdate(
-          {
-            game_code: game_code,
-          },
-          {
-            players: game.players,
-          }
-        ).exec();
-        res.code(200).type("application/json").send({
-          username: username,
-          token: accessToken,
-        });
-        return res;
-      })
-      .catch((err) => {
-        res
-          .code(400)
-          .type("application/json")
-          .send({
-            data: {
-              error: err,
-              message:
-                "An error occurred while connecting the user to the game.",
-            },
-          });
-        return res;
-      })
-  );
+    });
+  } else {
+    console.log(`[CR] User not found.`);
+    res.code(400).type("application/json").send({
+      error: user,
+      message: "An error occurred while connecting the user to the game.",
+    });
+  }
+  return Promise.resolve(res);
 };
