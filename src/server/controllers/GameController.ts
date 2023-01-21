@@ -141,11 +141,11 @@ export const startGame = async (gameID: string): Promise<string> => {
   // If no game exists, reject with custom error.
   if (!game) return Promise.reject("There is no game with this game id.");
   // Verify that the game isn't already started
-  if (!game!.started) {
+  if (game!.started === false) {
     // Check if there are enough players to start the game
     if (game.players.length < 2)
       return Promise.reject(
-        "The game doesn't have enough players to start yet."
+        `The game doesn't have enough players to start yet. ${game.players.length}/2 connected.`
       );
     // Randomize the players array and save it
     game.players = new mongoose.Types.DocumentArray(
