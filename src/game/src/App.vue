@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div id="root">
     <ConsequenceModal v-if="consequenceShown" :message="consequenceMessage" />
     <HomeView v-if="!gameStarted" :players="players" />
-    <QuestionView v-else-if="questionShown" :question="currentQuestionText" :background-image-url="'TODO'"/>
+    <QuestionView v-else-if="questionShown" :question="currentQuestionText" :background-image-url="'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.bwallpaperhd.com%2Fwp-content%2Fuploads%2F2019%2F06%2FWestDam.jpg&f=1&nofb=1&ipt=797b6bf5e9cb70fd5f4f9bb602c60d10fccc3aa35e5d09dc0a62e5a3dfd5c14c&ipo=images'"/>
     <MainView v-else :players="players" :current-player-index="currentPlayerIndex" />
   </div>
 </template>
@@ -75,5 +75,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-
+#root {
+  height: 100%;
+  width: 100%
+}
 </style>

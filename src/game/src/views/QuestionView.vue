@@ -3,48 +3,42 @@ const props = defineProps<{
   question: string,
   backgroundImageUrl: string
 }>();
-
 </script>
 
 <template>
-  <main id="backgroundImage" :style="`background-image: url(${props.backgroundImageUrl});`">
-    <p id="questiontext">{{props.question}}</p>
+  <main id="parent">
+    <div id="gradient">
+      <p id="questiontext">{{props.question}}</p>
+    </div>
+    <img id="background" :src="props.backgroundImageUrl"/>
   </main>
 </template>
 
 <style scoped>
+#parent {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
 #questiontext {
-  margin-bottom: 24px;
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  right: 24px;
+  text-align: start;
+  font-size: 65px;
 }
-#choices {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5%;
+#gradient {
+  background: linear-gradient(180.92deg, rgba(0, 0, 0, 0) 0.79%, rgba(23, 23, 23, 0.65) 25%, #171717 58.42%);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 75%;
 }
-
-button {
-  padding: 12px;
-  border-radius: 15px;
-  color: white;
-  font-weight: 600;
-  font-size: 3rem;
-  aspect-ratio: 1;
-}
-
-.btnBlue {
-  background: rgba(6, 86, 211, 0.5);
-  border: 8px solid #0356DA;
-}
-.btnRed {
-  background: rgba(218, 3, 3, 0.5);
-  border: 8px solid #DA0303;
-}
-.btnYellow {
-  background: rgba(218, 209, 3, 0.5);
-  border: 8px solid #DAD103;
-}
-.btnGreen {
-  background: rgba(46, 218, 3, 0.5);
-  border: 8px solid #2EDA03;
+#background {
+  height: 100%;
+  width: 100%;
 }
 </style>

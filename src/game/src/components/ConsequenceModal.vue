@@ -20,7 +20,7 @@ const props = defineProps<{
     bottom: 0;
     left: 0;
     right: 0;
-    background-color: #00000024;
+    background-color: #00000066;
     display: flex;
     justify-content: center;
     align-items: center;
