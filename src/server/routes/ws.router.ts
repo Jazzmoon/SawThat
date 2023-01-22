@@ -133,20 +133,21 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                 }
 
                 // Find all user data related to the game
-                User.find({
-                  game: game._id,
-                  userType: "Client",
-                })
+                User.find({ game: game._id })
                   .exec()
                   .then((users) => {
                     const user = users.find((u) => u.token === token);
+                    const player_list = users.filter(
+                      (u) => u.userType === "Client"
+                    );
                     if (!user) {
                       conn.socket.send(
                         JSON.stringify({
                           type: WebsocketType.Error,
                           requestId: data.requestId,
                           data: {
-                            error: "[WS] No users found with this information in the database.",
+                            error:
+                              "[WS] No users found with this information in the database.",
                             token: token,
                           },
                         } as WebsocketResponse)
@@ -167,7 +168,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                               type: WebsocketType.GameJoinAck,
                               requestId: data.requestId,
                               data: {
-                                players: users.map((u) => {
+                                players: player_list.map((u) => {
                                   return {
                                     username: u.username,
                                     color: u.color,
@@ -215,7 +216,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                               type: WebsocketType.GameJoinAck,
                               requestId: data.requestId,
                               data: {
-                                players: users.map((u) => {
+                                players: player_list.map((u) => {
                                   return {
                                     username: u.username,
                                     color: u.color,
@@ -231,7 +232,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                                 type: WebsocketType.GameJoinAck,
                                 requestId: data.requestId,
                                 data: {
-                                  players: users.map((u) => {
+                                  players: player_list.map((u) => {
                                     return {
                                       username: u.username,
                                       color: u.color,
@@ -311,7 +312,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                                 data: {
                                   error: err,
                                   token: token,
-                                }
+                                },
                               } as WebsocketResponse)
                             );
                           });
@@ -361,7 +362,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                                 data: {
                                   error: err,
                                   token: token,
-                                }
+                                },
                               } as WebsocketResponse)
                             );
                           });
@@ -390,7 +391,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                         requestId: data.requestId,
                         data: {
                           error: `[WS] Error occurred while fetching players.`,
-                          token: token
+                          token: token,
                         },
                       } as WebsocketResponse)
                     );
@@ -403,8 +404,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     type: WebsocketType.Error,
                     requestId: data.requestId,
                     data: {
-                      error: `[WS] error occured while fetching game with code ${gameCode}.${JSON.stringify(err)}`,
-                      token: token
+                      error: `[WS] error occured while fetching game with code ${gameCode}.${JSON.stringify(
+                        err
+                      )}`,
+                      token: token,
                     },
                   } as WebsocketResponse)
                 );
@@ -440,8 +443,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
               type: WebsocketType.GameEndedAck,
               requestId: undefined,
               data: {
-                ranking: [] // todo
-              }
+                ranking: [], // todo
+              },
             } as WebsocketResponse)
           );
           connections[gameID].clients.forEach((c) => {
@@ -450,8 +453,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                 type: WebsocketType.GameEndedAck,
                 requestId: undefined,
                 data: {
-                  ranking: [] // todo
-                }
+                  ranking: [], // todo
+                },
               } as WebsocketResponse)
             );
             c.conn.end();
