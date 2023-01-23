@@ -58,6 +58,7 @@ async function createGame() {
   const requestResult = await HTTP_API.sendCreate("disney"); // todo let the user decide this
   if (!requestResult || requestResult.hasOwnProperty('error')) {
     alert(`Failed to create a new game.\n${JSON.stringify(requestResult)}`);
+    return;
   } else {
     gameCode.value = requestResult.gameID;
   }
