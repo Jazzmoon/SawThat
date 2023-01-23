@@ -6,6 +6,16 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
+export type GameType = {
+  hostId: mongoose.Types.ObjectId;
+  game_code: string;
+  theme_pack: string;
+  used_questions: Array<number>;
+  used_consequences: Array<number>;
+  players: Array<mongoose.Types.ObjectId>;
+  started: boolean;
+};
+
 const GameSchema = new Schema({
   hostId: {
     type: Schema.Types.ObjectId,
@@ -26,5 +36,5 @@ const GameSchema = new Schema({
   started: { type: Boolean, require: true, default: false },
 });
 
-const Game = mongoose.model("Game", GameSchema);
+const Game = mongoose.model<GameType>("Game", GameSchema);
 export default Game;

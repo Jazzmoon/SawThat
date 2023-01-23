@@ -6,6 +6,15 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
+export type UserType = {
+  userType: string;
+  username: string;
+  game: mongoose.Types.ObjectId;
+  token: string;
+  color: string;
+  position: number;
+};
+
 const UserSchema = new Schema({
   userType: {
     type: String,
@@ -25,5 +34,5 @@ const UserSchema = new Schema({
 
 UserSchema.index({ username: 1, game: 1 }, { unique: true });
 
-const User = mongoose.model("User", UserSchema);
+const User = mongoose.model<UserType>("User", UserSchema);
 export default User;
