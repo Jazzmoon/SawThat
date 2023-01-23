@@ -48,7 +48,7 @@ onMounted(() => {
         joined.value = false; // todo add a leaderboard screen
         break;
       case WebsocketType.GameJoinAck:
-        players.value.push(message.data);
+        players.value = message.data.players;
         break;
       case WebsocketType.PlayerDisconnectAck:
       const index = players.value.findIndex((player) => player.username === message.data.username);
