@@ -4,8 +4,8 @@
  * Details the structure of data that will be transferred over the
  * websocket connection.
  */
-import { ConsequenceType } from "../enums/ConsequenceType";
-import { Player } from "../types/Player";
+import type { ConsequenceType } from "../enums/ConsequenceType";
+import type { Player } from "../types/Player";
 
 export type TimedData = {
   timer_start: Date;
