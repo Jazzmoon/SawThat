@@ -21,7 +21,7 @@ export const validateAnswer = async (
   themePackName: string,
   questionID: number,
   userAnswer: string
-) => {
+): Promise<boolean> => {
   try {
     var themePack = JSON.parse(
       await readFile(`../themes/${themePackName}.json`, "utf-8")
@@ -52,7 +52,12 @@ export const validateAnswer = async (
 export const formatQuestion = async (
   themePackName: string,
   questionType: string
-) => {
+): Promise<{
+  question: string;
+  options: string[];
+  media_type?: string;
+  media_url?: string;
+}> => {
   try {
     var themePack = JSON.parse(
       await readFile(`../themes/${themePackName}.json`, "utf-8")
@@ -94,7 +99,7 @@ export const formatQuestion = async (
 
   return Promise.resolve({
     question: prompt,
-    prompt: clues,
+    options: clues,
     media_type: questionData.media_type,
     media_url: questionData.media_url,
   });

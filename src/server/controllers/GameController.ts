@@ -9,7 +9,7 @@
 import { generateJWT } from "./AuthController";
 
 import Game from "../models/Game";
-import User from "../models/User";
+import User, { UserType } from "../models/User";
 import { FastifyReply, FastifyRequest } from "fastify";
 import mongoose from "mongoose";
 
@@ -58,12 +58,26 @@ const generateGameID = async (): Promise<string> => {
 export const createGame = async (
   req: FastifyRequest<{
     Body: {
-      themePack: string;
+      theme_pack: string;
     };
   }>,
   res: FastifyReply
 ) => {
-  const { themePack } = req.body;
+  const { theme_pack } = req.body;
+
+  if (!theme_pack || typeof theme_pack !== "string") {
+    res
+      .code(400)
+      .type("application/json")
+      .send({
+        error: new Error(
+          "Request Body missing parameter `theme_pack`. Please ensure this value exists and is a string."
+        ),
+        message:
+          "Request Body missing parameter `theme_pack`. Please ensure this value exists and is a string.",
+      });
+    return Promise.resolve(res);
+  }
   const gameCode: string = await generateGameID(),
     accessToken = await generateJWT({
       username: `game${gameCode}`,
@@ -75,7 +89,7 @@ export const createGame = async (
   const game = new Game({
     hostID: null,
     game_code: gameCode,
-    themePack: themePack,
+    theme_pack: theme_pack,
     players: [],
     used_questions: [],
     used_consequences: [],
@@ -137,34 +151,39 @@ export const createGame = async (
  */
 export const startGame = async (gameID: string): Promise<string> => {
   // Look-Up the game in the database
-  const game = await Game.findOne({ game_code: gameID });
-  // If no game exists, reject with custom error.
-  if (!game) return Promise.reject("There is no game with this game id.");
-  // Verify that the game isn't already started
-  if (game!.started === false) {
-    // Check if there are enough players to start the game
-    if (game.players.length < 2)
-      return Promise.reject(
+  let game = await Game.findOne({ game_code: gameID })
+    .populate<{ hostId: UserType }>("hostId")
+    .populate<{ players: UserType[] }>("players")
+    .exec();
+  // Perform Error Checking
+  if (!game)
+    return Promise.reject(new Error("There is no game with this game id."));
+  if (game!.started === true)
+    return Promise.reject(new Error("The game has already started."));
+  if (
+    game!.players[0] instanceof mongoose.Types.ObjectId ||
+    game!.players[0] === null
+  )
+    return Promise.reject(new Error("The players didn't populate"));
+  if (game.players.length < 2)
+    return Promise.reject(
+      new Error(
         `The game doesn't have enough players to start yet. ${game.players.length}/2 connected.`
-      );
-    // Randomize the players array and save it
-    game.players = new mongoose.Types.DocumentArray(
-      game!.players
-        .map((value) => ({
-          value,
-          sort: Math.random(),
-        }))
-        .sort((a, b) => a.sort - b.sort)
-        .map(({ value }) => value)
+      )
     );
-    game.started = true;
-    await game.save();
-    const player = await User.findById(game.players[0]);
-    return Promise.resolve(player!.username);
-  } else {
-    // Return custom error
-    return Promise.reject("The game has already started.");
-  }
+  // Randomize the players array and save it
+  game.players = game!.players
+    .map((value) => ({
+      value,
+      sort: Math.random(),
+    }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ value }) => value);
+  game.started = true;
+  return game
+    .save()
+    .then(() => Promise.resolve(game!.players[0].username))
+    .catch((e) => Promise.reject(e));
 };
 
 /**
@@ -173,34 +192,42 @@ export const startGame = async (gameID: string): Promise<string> => {
  * 2. Change the boolean in the game model to be True.
  * 3. Return the username of the first player in the turn order.
  * @param {string} gameID - The Model Game ID within the database.
- * @param {string} currentPlayer - The username of the player who's turn it just was.
  * @return {Promise<string>} The username of the player next in the rotation.
  */
 export const nextPlayer = async (
-  gameID: string,
-  currentPlayer: string
-): Promise<string> => {
+  gameID: string
+): Promise<string | undefined> => {
   // Look-Up the game in the database
-  const game = await Game.findOne({ game_code: gameID });
-  // If no game exists, reject with custom error.
-  if (!game) return Promise.reject("There is no game with this game id.");
-  // Verify that the game isn't already started
-  if (game!.started) {
-    // Get a list of player usernames
-    let players: string[] = [];
-    for (let i = 0; i < game.players.length; i++) {
-      const user = await User.findById(game.players[i]);
-      players.push(user!.username);
-    }
-    // Find the index of the username provided
-    const user_index = players.indexOf(currentPlayer);
-    if (user_index === -1)
-      return Promise.reject(
-        "There is no user with that name playing the game."
-      );
-    return Promise.resolve(players[(user_index + 1) % players.length]);
-  } else {
-    // Return custom error
-    return Promise.reject("The game hasn't started yet.");
-  }
+  return Game.findOne({ game_code: gameID })
+    .populate<{ hostId: UserType }>("hostId")
+    .populate<{ players: UserType[] }>("players")
+    .exec()
+    .then((game) => {
+      // Perform error checks.
+      if (!game)
+        return Promise.reject(new Error("There is no game with this game id."));
+      if (!game!.started)
+        return Promise.reject(new Error("The game has not yet started."));
+      if (game.players.length < 2)
+        return Promise.reject(
+          new Error("There is not enough players to perform this task.")
+        );
+      if (
+        game!.players[0] instanceof mongoose.Types.ObjectId ||
+        game!.players[0] === null
+      )
+        return Promise.reject(new Error("The players didn't populate"));
+
+      // Verify that the game isn't already started
+      // Shift the player list left
+      let current_player = game.players.shift();
+      game.players.push(current_player!);
+      return game
+        .save()
+        .then(() => Promise.resolve(game.players[0].username))
+        .catch((e) => Promise.reject(e));
+    })
+    .catch((e) => {
+      return Promise.reject(e);
+    });
 };
