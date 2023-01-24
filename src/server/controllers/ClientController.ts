@@ -10,14 +10,13 @@ import { Color } from "../../shared/enums/Color";
 import Game from "../models/Game";
 import User from "../models/User";
 import { FastifyReply, FastifyRequest } from "fastify";
-import mongoose from "mongoose";
 
 /**
  * Allow user to join a game assuming they provide
  * their username and the game code.
- * @param {FastifyRequest} req The user request containing their username and the game id.
- * @param {FastifyResponse} res The response to indicate to the user whether that their request succeeded.
- * @returns A resolution, or rejection, to indicate if the request was successful.
+ * @param {FastifyRequest} req - The user request containing their username and the game id.
+ * @param {FastifyResponse} res - The response to indicate to the user whether that their request succeeded.
+ * @returns {Promise<FastifyResponse>} A resolution, or rejection, to indicate if the request was successful.
  */
 export const joinGame = async (
   req: FastifyRequest<{

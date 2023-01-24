@@ -6,6 +6,9 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
+/**
+ * The definition of what a user looks like within the database.
+ */
 export type UserType = {
   userType: string;
   username: string;
@@ -15,6 +18,9 @@ export type UserType = {
   position: number;
 };
 
+/**
+ * The UserSchema in which mongoose uses to generate rows in the database.
+ */
 const UserSchema = new Schema({
   userType: {
     type: String,

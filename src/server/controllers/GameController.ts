@@ -51,8 +51,8 @@ const generateGameID = async (): Promise<string> => {
 
 /**
  * Creates a game object from an incoming request.
- * @param {FastifyRequest} req  Incoming request object from the game node.
- * @param {FastifyReply} res Outgoing response handler.
+ * @param {FastifyRequest} req - Incoming request object from the game node.
+ * @param {FastifyReply} res - Outgoing response handler.
  * @returns {Promise<FastifyReply>} Returns a response wrapped in a promise to be handled by the Fastify router.
  */
 export const createGame = async (
@@ -132,7 +132,7 @@ export const createGame = async (
  * 1. Randomize the player array to determine turn order.
  * 2. Change the boolean in the game model to be True.
  * 3. Return the username of the first player in the turn order.
- * @param {string} gameID The Model Game ID within the database.
+ * @param {string} gameID - The Model Game ID within the database.
  * @return {Promise<string>} The username of the player first in the rotation.
  */
 export const startGame = async (gameID: string): Promise<string> => {
@@ -172,9 +172,9 @@ export const startGame = async (gameID: string): Promise<string> => {
  * 1. Randomize the player array to determine turn order.
  * 2. Change the boolean in the game model to be True.
  * 3. Return the username of the first player in the turn order.
- * @param {string} gameID The Model Game ID within the database.
- * @param {string} currentPlayer The username of the player who's turn it just was.
- * @return {string} The username of the player next in the rotation.
+ * @param {string} gameID - The Model Game ID within the database.
+ * @param {string} currentPlayer - The username of the player who's turn it just was.
+ * @return {Promise<string>} The username of the player next in the rotation.
  */
 export const nextPlayer = async (
   gameID: string,

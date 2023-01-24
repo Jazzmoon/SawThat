@@ -5,20 +5,17 @@
  * This module handles the interaction between the Themes module
  * and the remainder of the system.
  */
-import { generateJWT } from "./AuthController";
 import { readFile } from "node:fs/promises";
 
-import Game from "../models/Game";
-import User from "../models/User";
 import StringUtil from "../../shared/util/StringUtil";
 import MathUtil from "../../shared/util/MathUtil";
 
 /**
  * Returns whether or not a user's answer to a question is correct.
- * @param themePackName
- * @param questionID
- * @param userAnswer
- * @returns
+ * @param {string} themePackName - Name of the Theme Pack file in which a question needs to be validated against.
+ * @param {string} questionID - The specific question id within that question file.
+ * @param {string} userAnswer - The user answer to the question, in which needs to be validated.
+ * @returns {Promise<boolean>}
  */
 export const validateAnswer = async (
   themePackName: string,
@@ -30,27 +27,27 @@ export const validateAnswer = async (
       await readFile(`../themes/${themePackName}.json`, "utf-8")
     );
   } catch (error) {
-    console.error(`Theme pack not found: ${error}`);
-    return false;
+    return Promise.reject(new Error(`Theme pack not found: ${error}`));
   }
   var potentialQuestions = themePack.questions.filter((q: any) => {
     return q.id == questionID;
   });
   if (potentialQuestions.length < 1) {
-    console.error(
-      `The specified question does not exist in the ${themePackName} theme pack.`
+    return Promise.reject(
+      new Error(
+        `The specified question does not exist in the ${themePackName} theme pack.`
+      )
     );
-    return false;
   }
   // Might be sketchy depending on whether the questions are always multiple choice.
-  return userAnswer == potentialQuestions[0].answer;
+  return Promise.resolve(userAnswer == potentialQuestions[0].answer);
 };
 
 /**
  * Fetches a random question from the given theme pack, formatted for display.
- * @param themePackName
- * @param questionType
- * @returns
+ * @param {string} themePackName - Name of the Theme Pack file in which a question is being generated for.
+ * @param {string} questionType - The name of the category that the question must belong to.
+ * @returns {Promise<{ question: string, prompt: string[], media_type: string, media_url: string }>} Formatted question data, loaded from file.
  */
 export const formatQuestion = async (
   themePackName: string,
@@ -61,26 +58,24 @@ export const formatQuestion = async (
       await readFile(`../themes/${themePackName}.json`, "utf-8")
     );
   } catch (error) {
-    console.error(`Theme pack not found: ${error}`);
-    return;
+    return Promise.reject(new Error(`Theme pack not found: ${error}`));
   }
   if (
     !themePack.questions[questionType] ||
     themePack.questions[questionType].length < 1
   ) {
-    console.error(
-      "The desired theme pack/category combination has no questions."
+    return Promise.reject(
+      new Error("The desired theme pack/category combination has no questions.")
     );
-    return;
   }
-  var questionList = themePack.questions[questionType];
-  var questionIndex: number = MathUtil.randInt(0, questionList.length);
-  var questionData = questionList[questionIndex];
-  var numClues: number = StringUtil.occurrences(questionData.question, "<_>");
-  var ansPosition: number = MathUtil.randInt(0, numClues);
-  var prompt: string = questionData.question;
-  var clues: Array<string> = [];
-  for (var i = 0; i < numClues; i++) {
+  var questionList = themePack.questions[questionType],
+    questionIndex: number = MathUtil.randInt(0, questionList.length),
+    questionData = questionList[questionIndex],
+    numClues: number = StringUtil.occurrences(questionData.question, "<_>"),
+    ansPosition: number = MathUtil.randInt(0, numClues),
+    prompt: string = questionData.question,
+    clues: Array<string> = [];
+  for (let i = 0; i < numClues; i++) {
     var chosenClue: string;
     if (questionData.clues.includes(questionData.answer)) {
       chosenClue =
@@ -97,10 +92,10 @@ export const formatQuestion = async (
     clues.push(chosenClue);
   }
 
-  return {
-    prompt,
-    clues,
+  return Promise.resolve({
+    question: prompt,
+    prompt: clues,
     media_type: questionData.media_type,
     media_url: questionData.media_url,
-  };
+  });
 };
