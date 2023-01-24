@@ -6,6 +6,9 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
+/**
+ * The definition of what a game looks like within the database.
+ */
 export type GameType = {
   hostId: mongoose.Types.ObjectId;
   game_code: string;
@@ -16,6 +19,9 @@ export type GameType = {
   started: boolean;
 };
 
+/**
+ * The GameSchema in which mongoose uses to generate rows in the database.
+ */
 const GameSchema = new Schema({
   hostId: {
     type: Schema.Types.ObjectId,

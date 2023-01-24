@@ -3,6 +3,10 @@
  * @author Mark Hutchison
  * An enum that details the exact options allowed within the websocket "type" field.
  */
+
+/**
+ * An enum detailing the exact options for websocket message types.
+ */
 export enum WebsocketType {
   // Requests
   GameSetup = 1,

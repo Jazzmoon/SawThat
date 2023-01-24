@@ -3,6 +3,10 @@
  * @author Mark Hutchison
  * An enum that details the exact options for player colors.
  */
+
+/**
+ * An enum detailing the exact color codes that the server is allowed to choose from.
+ */
 export enum Color {
   RED = "#FF0000",
   ORANGE = "#FFA500",

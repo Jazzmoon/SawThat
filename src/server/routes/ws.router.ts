@@ -19,11 +19,14 @@ import {
 import {
   ConnectionEstablished,
   GameJoinAckData,
+  MultipleChoiceData,
   NextPlayerData,
 } from "../../shared/apis/WebSocketAPIType";
 import { nextPlayer, startGame } from "../controllers/GameController";
 import Game, { GameType } from "../models/Game";
 import User, { UserType } from "../models/User";
+import MathUtil from "../../shared/util/MathUtil";
+import { formatQuestion } from "../controllers/QuizController";
 
 // Create Record to match WS to GameID
 type GameID = string;
@@ -36,15 +39,19 @@ let connections: Record<
   {
     host: ClientConn;
     clients: Array<ClientConn>;
+    turn?: {
+      answer_index: number;
+      turn_timer: Date;
+    };
   }
 > = {};
 
 /**
  * The handling function for the websocket router.
  * It receives a request and various parameters, and handles it appropriately.
- * @param {FastifyInstance} fastify The root fastify instance that the router is attaching itself to.
- * @param {Record} opts Configuration options relevant to only this specific sub-router.
- * @param done Function that indicates the end of definitions.
+ * @param {FastifyInstance} fastify - The root fastify instance that the router is attaching itself to.
+ * @param {Record} opts - Configuration options relevant to only this specific sub-router.
+ * @param done - Function that indicates the end of definitions.
  */
 const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
   fastify.get(
@@ -114,7 +121,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
 
             // Fetch the game id to find players
             Game.findOne({ game_code: gameCode })
-              .populate<{ hostId: GameType }>("hostId")
+              .populate<{ hostId: UserType }>("hostId")
               .populate<{ players: UserType[] }>("players")
               .exec()
               .then((game) => {
@@ -124,8 +131,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       type: WebsocketType.Error,
                       requestId: data.requestId,
                       data: {
-                        error: `[WS] No game found with id ${gameCode}.`,
-                        token: token,
+                        error: new Error(
+                          `[WS] No game found with id ${gameCode}.`
+                        ),
+                        message: `[WS] No game found with id ${gameCode}.`,
                       },
                     } as WebsocketResponse)
                   );
@@ -139,12 +148,31 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                 const user =
                   userType === "Game"
                     ? game.hostId
-                    : game.players.find((u) => u.token === token);
-                const player_list = game.players;
+                    : game.players.find((u) => u.token === data.token);
+
+                // Respond that user is not a part of the game or doesn't exist.
+                if (
+                  !user ||
+                  (userType === "Game" && game.hostId.token !== data.token)
+                ) {
+                  conn.socket.send(
+                    JSON.stringify({
+                      type: WebsocketType.Error,
+                      requestId: data.requestId,
+                      data: {
+                        error: new Error(
+                          `[WS] User is not a part of game ${gameID}.`
+                        ),
+                        message: `[WS] User is not a part of game ${gameID}.`,
+                      },
+                    } as WebsocketResponse)
+                  );
+                  return;
+                }
 
                 // Handle message
                 switch (data.type) {
-                  case WebsocketType.GameSetup: {
+                  case WebsocketType.GameSetup:
                     if (userType === "Game" && !connections[gameID]) {
                       // Create spot in the connections array for players
                       connections[gameID] = {
@@ -156,7 +184,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           type: WebsocketType.GameJoinAck,
                           requestId: data.requestId,
                           data: {
-                            players: player_list.map((u) => {
+                            players: game.players.map((u) => {
                               return {
                                 username: u.username,
                                 color: u.color,
@@ -190,8 +218,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       );
                     }
                     break;
-                  }
-                  case WebsocketType.GameJoin: {
+                  case WebsocketType.GameJoin:
                     if (userType === "Client" && connections[gameID]) {
                       // Add connection socket to array
                       connections[gameID].clients.push({
@@ -204,7 +231,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           type: WebsocketType.GameJoinAck,
                           requestId: data.requestId,
                           data: {
-                            players: player_list.map((u) => {
+                            players: game.players.map((u) => {
                               return {
                                 username: u.username,
                                 color: u.color,
@@ -220,7 +247,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                             type: WebsocketType.GameJoinAck,
                             requestId: data.requestId,
                             data: {
-                              players: player_list.map((u) => {
+                              players: game.players.map((u) => {
                                 return {
                                   username: u.username,
                                   color: u.color,
@@ -255,12 +282,11 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       );
                     }
                     break;
-                  }
-                  case WebsocketType.GameStart: {
+                  case WebsocketType.GameStart:
                     startGame(gameCode)
                       .then((first_player) => {
                         // Notify all players that the game has started and who the first player is
-                        const player = player_list.find(
+                        const player = game.players.find(
                           (u) => u.username === first_player
                         );
                         connections[gameID].host.conn.socket.send(
@@ -305,12 +331,11 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                         );
                       });
                     break;
-                  }
-                  case WebsocketType.NextPlayer: {
-                    nextPlayer(gameCode, data.data.current_player)
+                  case WebsocketType.NextPlayer:
+                    nextPlayer(gameCode)
                       .then((next_player) => {
                         // Notify all players that the game has started and who the next player is
-                        const player = player_list.find(
+                        const player = game.players.find(
                           (u) => u.username === next_player
                         );
                         connections[gameID].host.conn.socket.send(
@@ -355,9 +380,61 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                         );
                       });
                     break;
-                  }
+                  case WebsocketType.MultipleChoiceQuestion:
+                    // Generate dice values for the game node:
+                    // generate random integer between 1 and 6
+                    const movement_die = MathUtil.randInt(1, 6),
+                      challenge_die = MathUtil.randInt(1, 8),
+                      challenge: string = [1, 5].includes(challenge_die)
+                        ? "Take Three"
+                        : [2, 6].includes(challenge_die)
+                        ? "Musical"
+                        : [3, 7].includes(challenge_die)
+                        ? "Miscellaneous"
+                        : "Consequence";
+                    formatQuestion(
+                      game.theme_pack,
+                      challenge,
+                      game.used_questions
+                    )
+                      .then((res) => {
+                        conn.socket.send(
+                          JSON.stringify({
+                            type: WebsocketType.QuestionAck,
+                            requestId: data.requestId,
+                            data: {
+                              id: 0,
+                              category: challenge,
+                              question_type: "Multiple Choice",
+                              question: res.question,
+                              options: res.options,
+                              media_type: res.media_type,
+                              media_url: res.media_url,
+                            } as MultipleChoiceData,
+                          } as WebsocketResponse)
+                        );
+                      })
+                      .catch((err) => {
+                        console.log(
+                          `[WS] Error fetching question for request id ${data.requestId}:`,
+                          err
+                        );
+                        conn.socket.send(
+                          JSON.stringify({
+                            type: WebsocketType.Error,
+                            requestId: data.requestId,
+                            data: {
+                              error: err,
+                              message: `[WS] Fetch challenge error: ${JSON.stringify(
+                                err
+                              )}`,
+                            },
+                          } as WebsocketResponse)
+                        );
+                      });
+                    break;
                   case WebsocketType.Ping:
-                  default: {
+                  default:
                     // Handle Pong Response
                     conn.socket.send(
                       JSON.stringify({
@@ -369,7 +446,6 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       } as WebsocketResponse)
                     );
                     break;
-                  }
                 }
               })
               .catch((err) => {
@@ -378,7 +454,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     type: WebsocketType.Error,
                     requestId: data.requestId,
                     data: {
-                      error: `[WS] error occured while fetching game with code ${gameCode}.${JSON.stringify(
+                      error: `[WS] error occurred while fetching game with code ${gameCode}.${JSON.stringify(
                         err
                       )}`,
                       token: token,
