@@ -51,9 +51,9 @@
     "Miscellaneous": [
       {
         "id": 3,
-        "question": "Where does Disney's 101 Dalmatians take place: A: <_>, B: <_>, or C: <_>?.",
+        "question": "Where does Disney's 101 Dalmatians take place?",
         "answer": "England",
-        "clue_list": ["England", "America", "France", "Germany", "Spain"],
+        "clue_list": [],
         "fake_answers": ["America", "France", "Germany", "Spain"],
         "media_type": "image",
         "media_url": "https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/A7985D9BF379DE15F82293F034CFC045A17B88449EE56DB9770BD7AE5AA69825/scale?width=1200&aspectRatio=1.78&format=jpeg"
