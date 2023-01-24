@@ -12,8 +12,7 @@ export enum WebsocketType {
   GameSetup = 1,
   GameJoin = 3,
   GameEnded = 5,
-  TextQuestion = 7,
-  MultipleChoiceQuestion = 8,
+  QuestionRequest = 8,
   QuestionTimerTick = 10,
   QuestionEnded = 12,
   QuestionAnswer = 14,
@@ -36,6 +35,6 @@ export enum WebsocketType {
   ConsequenceEndedAck = 18,
   QuestionTimeOut = 19,
   PlayerDisconnectAck = 22,
-  NextPlayerAck = 25,
+  NextPlayerAck = 7,
   Pong = 21,
 }

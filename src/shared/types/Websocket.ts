@@ -18,8 +18,7 @@ export type WebsocketRequest = WebsocketMessage & {
     | WebsocketType.GameJoin
     | WebsocketType.GameStart
     | WebsocketType.GameEnded
-    | WebsocketType.TextQuestion
-    | WebsocketType.MultipleChoiceQuestion // todo this is a message that the server sends to the client why is it a request and not a response? (there are other examples of this as well)
+    | WebsocketType.QuestionRequest
     | WebsocketType.QuestionTimerTick
     | WebsocketType.QuestionEnded
     | WebsocketType.QuestionAnswer

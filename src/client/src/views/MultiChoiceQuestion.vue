@@ -12,11 +12,11 @@
 
 <script setup lang="ts">
 import { WS_API } from '@/middleware/WS_API';
-import type { MultipleChoiceData } from '../../../shared/apis/WebSocketAPIType';
+import type { QuestionData } from '../../../shared/apis/WebSocketAPIType';
 import { WebsocketType } from '../../../shared/enums/WebsocketTypes';
 
 const props = defineProps<{
-  data: MultipleChoiceData
+  data: QuestionData
 }>();
 
 const emit = defineEmits(['answered']);

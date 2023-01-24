@@ -36,7 +36,7 @@ export const validateAnswer = async (
   try {
     var themePack = JSON.parse(await readFile(theme_path, "utf-8"));
   } catch (error) {
-    return Promise.reject(new Error(`Theme pack not found: ${error}`));
+    return Promise.reject(`Theme pack not found: ${error}`);
   }
   var potentialQuestions = themePack.questions.filter((q: any) => {
     return q.id == questionID;
@@ -62,8 +62,10 @@ export const validateAnswer = async (
 export const formatQuestion = async (
   theme_pack_name: string,
   category: string,
+  question_type: "Multiple Choice" | "Text Question",
   used_questions: number[]
 ): Promise<{
+  id: number;
   question: string;
   options: string[];
   media_type: "image" | "video" | null;
@@ -92,12 +94,17 @@ export const formatQuestion = async (
 
       // Prepare a list of legal questions that can be asked
       let question_ids: number[] = themePack.questions[category]
-        .map((q: Question) => q.id)
-        .filter((q: Question) => !used_questions.includes(q.id));
+        .filter(
+          (q: Question) =>
+            !used_questions.includes(q.id) && q.question_type === question_type
+        )
+        .map((q: Question) => q.id);
 
       // All questions asked, allow repeats.
       if (question_ids.length === 0)
-        question_ids = themePack.questions[category].map((q: Question) => q.id);
+        question_ids = themePack.questions[category]
+          .filter((q: Question) => q.question_type === question_type)
+          .map((q: Question) => q.id);
 
       // Choose random question from list to ask:
       let question: Question = themePack.questions[category].find(
@@ -133,6 +140,7 @@ export const formatQuestion = async (
       );
 
       return Promise.resolve({
+        id: question.id,
         question: question_text,
         options: answers,
         media_type: question.media_type,

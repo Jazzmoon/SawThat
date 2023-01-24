@@ -28,6 +28,7 @@
     "Musical": [
       {
         "id": 2,
+        "question_type": "Multiple Choice",
         "question": "What classic character muses that things are getting \"<_>\".",
         "answer": "Alice",
         "clue_list": ["Curiouser and curiouser"],
@@ -51,6 +52,7 @@
     "Miscellaneous": [
       {
         "id": 3,
+        "question_type": "Multiple Choice",
         "question": "Where does Disney's 101 Dalmatians take place?",
         "answer": "England",
         "clue_list": [],

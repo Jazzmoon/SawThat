@@ -17,12 +17,12 @@ import type { Player } from "../../shared/types/Player";
 import { WebsocketType } from '../../shared/enums/WebsocketTypes';
 import type { WebsocketMessage } from '../../shared/types/Websocket';
 import ConsequenceModal from './components/ConsequenceModal.vue';
-import type { MultipleChoiceData } from '../../shared/apis/WebSocketAPIType';
+import type { QuestionData } from '../../shared/apis/WebSocketAPIType';
 
 // game state variables
 let players = ref([] as Player[]);
 let currentPlayerIndex = ref(0);
-let currentQuestionData = ref({} as MultipleChoiceData);
+let currentQuestionData = ref({} as QuestionData);
 let gameStarted = ref(false);
 let questionShown = ref(false);
 let consequenceShown = ref(false);
@@ -35,8 +35,7 @@ onMounted(() => {
       case WebsocketType.Error:
         alert(JSON.stringify(message.data));
         break;
-      case WebsocketType.TextQuestion:
-      case WebsocketType.MultipleChoiceQuestion:
+      case WebsocketType.QuestionRequest:
         questionShown.value = true;
         currentQuestionData = message.data;
         break;
@@ -49,7 +48,7 @@ onMounted(() => {
         consequenceShown.value = true;
         consequenceMessage.value = message.data.consequence;
         break;
-      case WebsocketType.ConsequenceEndedAck: 
+      case WebsocketType.ConsequenceEndedAck:
         consequenceShown.value = false;
         break;
       case WebsocketType.GameEndedAck:

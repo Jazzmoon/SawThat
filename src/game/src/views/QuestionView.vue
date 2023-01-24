@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { MultipleChoiceData } from "../../../shared/apis/WebSocketAPIType"
+import type { QuestionData } from "../../../shared/apis/WebSocketAPIType"
 const props = defineProps<{
-  data: MultipleChoiceData
+  data: QuestionData
 }>();
 </script>
 

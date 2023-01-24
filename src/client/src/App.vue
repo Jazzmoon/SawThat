@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MultipleChoiceData } from "../../shared/apis/WebSocketAPIType"
+import type { QuestionData } from "../../shared/apis/WebSocketAPIType"
 import { ref, onMounted, onUnmounted } from 'vue';
 import { WebsocketType } from '../../shared/enums/WebsocketTypes';
 import type { Player } from '../../shared/types/Player';
@@ -17,7 +17,7 @@ import MultiChoiceQuestion from './views/MultiChoiceQuestion.vue';
 
 let joined = ref(false);
 let answering = ref(false);
-let currentQuestionData = ref({} as MultipleChoiceData);
+let currentQuestionData = ref({} as QuestionData);
 let consequenceShown = ref(false);
 let players = ref([] as Player[]);
 let currentPlayerIndex = ref(0);
@@ -29,8 +29,7 @@ onMounted(() => {
       case WebsocketType.Error:
         alert(JSON.stringify(message.data));
         break;
-      case WebsocketType.TextQuestion:
-      case WebsocketType.MultipleChoiceQuestion:
+      case WebsocketType.QuestionRequest:
         answering.value = true;
         currentQuestionData = message.data;
         break;

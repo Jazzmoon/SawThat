@@ -17,25 +17,24 @@ import {
   WebsocketResponse,
 } from "../../shared/types/Websocket";
 import {
-  ConnectionEstablished,
   GameJoinAckData,
-  MultipleChoiceData,
   NextPlayerData,
 } from "../../shared/apis/WebSocketAPIType";
-import { nextPlayer, startGame } from "../controllers/GameController";
-import Game, { GameType } from "../models/Game";
-import User, { UserType } from "../models/User";
-import MathUtil from "../../shared/util/MathUtil";
+
+import Game from "../models/Game";
+import { UserType } from "../models/User";
+
+import { nextPlayer, startGame, turn } from "../controllers/GameController";
 import { formatQuestion } from "../controllers/QuizController";
 
 // Create Record to match WS to GameID
-type GameID = string;
 type ClientConn = {
   username: string;
   conn: SocketStream;
 };
+
 let connections: Record<
-  GameID,
+  string,
   {
     host: ClientConn;
     clients: Array<ClientConn>;
@@ -333,10 +332,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     break;
                   case WebsocketType.NextPlayer:
                     nextPlayer(gameCode)
-                      .then((next_player) => {
+                      .then((res) => {
                         // Notify all players that the game has started and who the next player is
                         const player = game.players.find(
-                          (u) => u.username === next_player
+                          (u) => u.username === res
                         );
                         connections[gameID].host.conn.socket.send(
                           JSON.stringify({
@@ -380,54 +379,27 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                         );
                       });
                     break;
-                  case WebsocketType.MultipleChoiceQuestion:
-                    // Generate dice values for the game node:
-                    // generate random integer between 1 and 6
-                    const movement_die = MathUtil.randInt(1, 6),
-                      challenge_die = MathUtil.randInt(1, 8),
-                      challenge: string = [1, 5].includes(challenge_die)
-                        ? "Take Three"
-                        : [2, 6].includes(challenge_die)
-                        ? "Musical"
-                        : [3, 7].includes(challenge_die)
-                        ? "Miscellaneous"
-                        : "Consequence";
-                    formatQuestion(
-                      game.theme_pack,
-                      challenge,
-                      game.used_questions
-                    )
+                  case WebsocketType.QuestionRequest:
+                    turn(connections[gameID], data, game)
                       .then((res) => {
                         conn.socket.send(
                           JSON.stringify({
                             type: WebsocketType.QuestionAck,
                             requestId: data.requestId,
                             data: {
-                              id: 0,
-                              category: challenge,
-                              question_type: "Multiple Choice",
-                              question: res.question,
-                              options: res.options,
-                              media_type: res.media_type,
-                              media_url: res.media_url,
-                            } as MultipleChoiceData,
+                              success: res,
+                            },
                           } as WebsocketResponse)
                         );
                       })
                       .catch((err) => {
-                        console.log(
-                          `[WS] Error fetching question for request id ${data.requestId}:`,
-                          err
-                        );
                         conn.socket.send(
                           JSON.stringify({
                             type: WebsocketType.Error,
                             requestId: data.requestId,
                             data: {
-                              error: err,
-                              message: `[WS] Fetch challenge error: ${JSON.stringify(
-                                err
-                              )}`,
+                              err: err,
+                              message: "[WS] Turn has failed.",
                             },
                           } as WebsocketResponse)
                         );
