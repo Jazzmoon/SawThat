@@ -2,6 +2,7 @@
 import LogoSVG from "@/assets/logo.svg";
 import { HTTP_API } from "@/middleware/HTTP_API";
 import { WS_API } from "@/middleware/WS_API";
+import { WebsocketType } from "../../../shared/enums/WebsocketTypes";
 
 const emit = defineEmits(['joined']);
 
@@ -27,8 +28,8 @@ async function submit() {
   
   const joinWSResponse = await WS_API.sendJoinRequest();
   
-  if (!joinWSResponse || joinWSResponse.hasOwnProperty('error')) {
-    alert("Failed to join the server");
+  if (!joinWSResponse || joinWSResponse.type === WebsocketType.Error) {
+    alert(`Failed to join the server.\n${joinWSResponse.data.error}`);
     return;
   }
 

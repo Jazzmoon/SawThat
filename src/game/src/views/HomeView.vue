@@ -4,6 +4,7 @@ import PlayersListVue from "@/components/PlayersList.vue";
 import { HTTP_API } from "@/middleware/HTTP_API";
 import { WS_API } from "@/middleware/WS_API";
 import { computed, ref } from "vue";
+import { WebsocketType } from "../../../shared/enums/WebsocketTypes";
 import type { Player } from "../../../shared/types/Player";
 
 const props = defineProps<{
@@ -75,8 +76,8 @@ async function createGame() {
 
   const request2Success = await WS_API.sendCreateGameRequest();
 
-  if (!request2Success || request2Success.hasOwnProperty('error')) {
-    alert("An error occured while trying to start the game.");
+  if (!request2Success || request2Success.type === WebsocketType.Error) {
+    alert(`An error occured while trying to create the game.${request2Success.data}`);
     return;
   }
 }
@@ -88,8 +89,8 @@ async function createGame() {
 async function startGame() {
   const request2Success = await WS_API.sendStartGameRequest();
 
-  if (!request2Success || request2Success.hasOwnProperty('error')) {
-    alert("An error occured while trying to start the game.");
+  if (!request2Success || request2Success.type === WebsocketType.Error) {
+    alert(`An error occured while trying to start the game.${request2Success.data}`);
     return;
   }
 
