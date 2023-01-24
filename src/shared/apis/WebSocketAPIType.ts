@@ -49,6 +49,8 @@ export type QuestionEndedData = {
 
 export type QuestionAnswerData = {
   id: number;
+  category: string;
+  question_type?: string;
   answer: string;
 };
 
