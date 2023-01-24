@@ -392,7 +392,11 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                         : [3, 7].includes(challenge_die)
                         ? "Miscellaneous"
                         : "Consequence";
-                    formatQuestion(game.theme_pack, challenge)
+                    formatQuestion(
+                      game.theme_pack,
+                      challenge,
+                      game.used_questions
+                    )
                       .then((res) => {
                         conn.socket.send(
                           JSON.stringify({

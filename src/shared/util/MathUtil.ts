@@ -14,12 +14,23 @@ export default class MathUtil {
     return Math.floor(Math.random() * (max - min)) + min;
   }
 
+  public static shuffle<T>(arr: Array<T>): Array<T> {
+    return arr
+      .map((value) => ({
+        value,
+        sort: Math.random(),
+      }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ value }) => value);
+  }
+
   /**
    * Return random entity from an array of choices.
    * @param {Array<T>} choices - Options to choose from.
    * @returns {T} The randomly selected option from the array.
    */
-  public static choice<T>(choices: Array<T>): T {
-    return choices[this.randInt(0, choices.length - 1)];
+  public static choice<T>(choices: Array<T>, amount: number = 1): Array<T> | T {
+    let randomized_arr = this.shuffle(choices);
+    return amount === 1 ? randomized_arr[0] : choices.splice(0, amount);
   }
 }

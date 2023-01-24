@@ -5,9 +5,22 @@
         "id": 1,
         "question_type": "Multiple Choice",
         "question": "What is the last name of the superhero family whose kids are named <_>, <_>, and <_>.",
-        "answer": "Parr (Disney • Pixar's The Incredibles)",
+        "answer": "Parr",
         "clue_list": ["Violet", "Dashiel", "Jack Jack"],
-        "fake_answers": [],
+        "fake_answers": [
+          "Peterson",
+          "Phillips",
+          "Parker",
+          "Perry",
+          "Powell",
+          "Patterson",
+          "Porter",
+          "Palmer",
+          "Peters",
+          "Price",
+          "Pierce",
+          "Payne"
+        ],
         "media_type": "image",
         "media_url": "https://d2j1wkp1bavyfs.cloudfront.net/wp-content/legacy/posts/82bd36d7-0027-4666-921c-f74928785e04.jpg?q=80"
       }
@@ -16,9 +29,21 @@
       {
         "id": 2,
         "question": "What classic character muses that things are getting \"<_>\".",
-        "answer": "Alice (Disney's Alice in Wonderland)",
+        "answer": "Alice",
         "clue_list": ["Curiouser and curiouser"],
-        "fake_answers": [],
+        "fake_answers": [
+          "Anna",
+          "Ariel",
+          "Aurora",
+          "Belle",
+          "Cinderella",
+          "Dot",
+          "Elsa",
+          "Merida",
+          "Mulan",
+          "Snow White",
+          "Tiana"
+        ],
         "media_type": null,
         "media_url": null
       }

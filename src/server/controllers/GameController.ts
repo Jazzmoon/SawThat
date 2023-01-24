@@ -12,6 +12,7 @@ import Game from "../models/Game";
 import User, { UserType } from "../models/User";
 import { FastifyReply, FastifyRequest } from "fastify";
 import mongoose from "mongoose";
+import MathUtil from "../../shared/util/MathUtil";
 
 /**
  * Generates a unique game code that is a minimum of 4 characters long,
@@ -172,13 +173,7 @@ export const startGame = async (gameID: string): Promise<string> => {
       )
     );
   // Randomize the players array and save it
-  game.players = game!.players
-    .map((value) => ({
-      value,
-      sort: Math.random(),
-    }))
-    .sort((a, b) => a.sort - b.sort)
-    .map(({ value }) => value);
+  game.players = MathUtil.shuffle(game!.players);
   game.started = true;
   return game
     .save()
