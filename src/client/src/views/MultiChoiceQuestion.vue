@@ -1,23 +1,34 @@
 <template>
   <main id="backgroundImage">
-    <p id="questiontext">{{props.question}}</p>
+    <p id="questiontext">{{props.data.question}}</p>
     <div id="choices">
-      <button class="btnBlue" @click="submit(1)">A</button>
-      <button class="btnRed" @click="submit(2)">B</button>
-      <button class="btnYellow" @click="submit(3)">C</button>
-      <button class="btnGreen" @click="submit(4)">D</button>
+      <button class="btnBlue" @click="submit(1)">{{ props.data.options[0] }}</button>
+      <button class="btnRed" @click="submit(2)">{{ props.data.options[1] }}</button>
+      <button class="btnYellow" @click="submit(3)">{{ props.data.options[2] }}</button>
+      <button class="btnGreen" @click="submit(4)">{{ props.data.options[3] }}</button>
     </div>
   </main>
 </template>
 
 <script setup lang="ts">
+import { WS_API } from '@/middleware/WS_API';
+import type { MultipleChoiceData } from '../../../shared/apis/WebSocketAPIType';
+import { WebsocketType } from '../../../shared/enums/WebsocketTypes';
+
 const props = defineProps<{
-  question: string
+  data: MultipleChoiceData
 }>();
 
-function submit(choice: number){
-  alert("clicked button: " + choice);
-  // TODO SEND BACK TO THE SERVER (APP WILL HANDLE RETURNING TO THE LEADERBOARD SCREEN)
+const emit = defineEmits(['answered']);
+
+async function submit(choice: number){
+  const response = await WS_API.sendMultipleChoiceAnswer(props.data.options[choice], props.data);
+  if (!response || response.type === WebsocketType.Error) {
+    alert(`Failed to send response to the server the game.\n${JSON.stringify(response)}`);
+    return;
+  }
+
+  emit('answered');
 }
 </script>
 

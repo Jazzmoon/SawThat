@@ -2,7 +2,7 @@
   <div id="root">
     <ConsequenceModal v-if="consequenceShown" :message="consequenceMessage" />
     <HomeView v-if="!gameStarted" :players="players" @game-started="gameStarted = true" />
-    <QuestionView v-else-if="questionShown" :question="currentQuestionText" :background-image-url="'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.bwallpaperhd.com%2Fwp-content%2Fuploads%2F2019%2F06%2FWestDam.jpg&f=1&nofb=1&ipt=797b6bf5e9cb70fd5f4f9bb602c60d10fccc3aa35e5d09dc0a62e5a3dfd5c14c&ipo=images'"/>
+    <QuestionView v-else-if="questionShown" :data="currentQuestionData" />
     <MainView v-else :players="players" :current-player-index="currentPlayerIndex" />
   </div>
 </template>
@@ -17,11 +17,12 @@ import type { Player } from "../../shared/types/Player";
 import { WebsocketType } from '../../shared/enums/WebsocketTypes';
 import type { WebsocketMessage } from '../../shared/types/Websocket';
 import ConsequenceModal from './components/ConsequenceModal.vue';
+import type { MultipleChoiceData } from '../../shared/apis/WebSocketAPIType';
 
 // game state variables
 let players = ref([] as Player[]);
 let currentPlayerIndex = ref(0);
-let currentQuestionText = ref("");
+let currentQuestionData = ref({} as MultipleChoiceData);
 let gameStarted = ref(false);
 let questionShown = ref(false);
 let consequenceShown = ref(false);
@@ -37,7 +38,7 @@ onMounted(() => {
       case WebsocketType.TextQuestion:
       case WebsocketType.MultipleChoiceQuestion:
         questionShown.value = true;
-        currentQuestionText = message.data.questionText; // todo is this correct?
+        currentQuestionData = message.data;
         break;
       case WebsocketType.QuestionTimeOut:
       case WebsocketType.QuestionAnswer:

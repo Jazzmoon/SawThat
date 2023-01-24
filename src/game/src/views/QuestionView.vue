@@ -1,16 +1,16 @@
 <script setup lang="ts">
+import type { MultipleChoiceData } from "../../../shared/apis/WebSocketAPIType"
 const props = defineProps<{
-  question: string,
-  backgroundImageUrl: string
+  data: MultipleChoiceData
 }>();
 </script>
 
 <template>
   <main id="parent">
     <div id="gradient">
-      <p id="questiontext">{{props.question}}</p>
+      <p id="questiontext">{{props.data.question}}</p>
     </div>
-    <img id="background" :src="props.backgroundImageUrl"/>
+    <img id="background" v-if="props.data.media_type === 'image'" :src="props.data.media_url ?? ''"/>
   </main>
 </template>
 

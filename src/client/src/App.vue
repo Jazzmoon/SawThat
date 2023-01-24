@@ -1,10 +1,11 @@
 <template>
   <HomeView v-if="!joined" @joined="joined = true" />
-  <MultiChoiceQuestion v-else-if="answering" :question="currentQuestionText"/>
+  <MultiChoiceQuestion v-else-if="answering" @answered="answering = false" :data="currentQuestionData"/>
   <MainView v-else :players="players" :current-player-index="currentPlayerIndex"/>
 </template>
 
 <script setup lang="ts">
+import type { MultipleChoiceData } from "../../shared/apis/WebSocketAPIType"
 import { ref, onMounted, onUnmounted } from 'vue';
 import { WebsocketType } from '../../shared/enums/WebsocketTypes';
 import type { Player } from '../../shared/types/Player';
@@ -16,7 +17,7 @@ import MultiChoiceQuestion from './views/MultiChoiceQuestion.vue';
 
 let joined = ref(false);
 let answering = ref(false);
-let currentQuestionText = ref("");
+let currentQuestionData = ref({} as MultipleChoiceData);
 let consequenceShown = ref(false);
 let players = ref([] as Player[]);
 let currentPlayerIndex = ref(0);
@@ -31,7 +32,7 @@ onMounted(() => {
       case WebsocketType.TextQuestion:
       case WebsocketType.MultipleChoiceQuestion:
         answering.value = true;
-        currentQuestionText = message.data.questionText; // todo is this correct?
+        currentQuestionData = message.data;
         break;
       case WebsocketType.QuestionTimeOut:
       case WebsocketType.QuestionAnswer:
