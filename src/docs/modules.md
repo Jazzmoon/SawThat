@@ -1,6 +1,6 @@
-[backend](README.md) / Modules
+[server](README.md) / Modules
 
-# backend
+# Server Node
 
 ## Table of contents
 

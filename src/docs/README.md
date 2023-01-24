@@ -1,150 +1,120 @@
-backend / [Modules](modules.md)
+# frontend API (contained in Middleware folder) docs
 
-# Saw That?
+## HTTP_API.ts
+This class is used throughout the project to send HTTP requests (ex: the initial request to join a game).
 
-As a kid, Mark and his sister were obsessed with Screenlife's DVD Trivia game called [**Scene It?**][SceneIt]. Sadly, those games are no longer being produced anymore, as the medium of DVD game isn't very popular anymore. However, especially due to the recent pandemic, remote games, such as those featured in [Jackbox Party Packs][JPP], that you can play with friends have become more and more valued.
+This class is static and cannot be manually instantiated. This ensures consistency with the `WS_API` (discussed later) and avoids potential confusion with multiple sources of transmitting HTTP requests and responses.
 
-**Saw That?** is intended to bring the DVD trivia game genre that **Scene It?** revolutionized into a more modernized medium, in the hopes that it will become a popular game if the rights can be obtained to the different themes you want to make.
+This class extends from the `Base_HTTP_API.ts` class which is located in the `src/shared/` folder. This base class defines all the underlying framework for HTTP communication for both the client and game nodes. The `HTTP_API.ts` file that is then stored in the individual nodes implements the actual requests that are relevant to each node.
 
-If you wanted to play a [**Disney**][Disney] themed **Saw That?** game, all you would need to do is download the source code, make an asset pack, and make the questions for it.
+For a detailed explanation of each function, please see the inline JSDoc-formatted comments that are placed before each method.
 
-Because we don't own the rights to any media snippets, we can't release a version of the game that is already populated with Trivia questions. The most we can do is make the infrastructure in the hopes that you guys will make fun content packs and maybe find a way of sharing those.
+## WS_API.ts
+This class is used throughout the project to manage the WebSocket connection that is maintained with the server as well as transmit and receive game state data. WebSockets are the primary method of bidirectional communication in this project, so each client node maintains a persistent connection with the server.
 
-## Plans
+This class is static and cannot be manually instantiated. This ensures that there is never more than one WebSocket connection with the server at any time.
 
-### The Game
+This class extends from the `Base_WS_API.ts` class which is located in the `src/shared/` folder. This base class defines all the underlying framework for setting up, maintaining, using, and destroying the WebSocket connection for both the client and game nodes. The `WS_API.ts` file that is then stored in the individual nodes implements the actual requests that are relevant to each node.
 
-**Scene It?** consists of a series of player pieces, a board (start, 34/46 spaces, and a stop), a deck of trivia cards, consequence cards, and the game disc with mini-games that have been sorted into 2 categories (all-play and my-play). For the sake of this project, all components would need to be digitalized and controlled by the master node. Below is a detailed description of what each component does within **SceneIt?**
+### Some important notes about using this class
+- Although the WebSocket API does not support async/await calling paradigm, we have retrofitted it and so all the methods in the class can be used with `await` to await completion before continuing.
+- Before you can send or receive data, you must call the `setupWebSocketConnection` method to establish a connection to the server. After the returned promise completes, the connection will be ready for data transmission.
+- You can register a listener that will be called when a message is received from the server via the `addIncomingMessageCallback` method.
+    - The system allows for multiple callbacks and thus allows us to split the handling of messages to their respective views. Thereby preserving Separation of Concerns.
+    - It is important to unregister the callbacks via the `removeIncomingMessageCallback` method before closing the view though to avoid sending data to non-existant places.
+- Each request originating from the client or game nodes will have a `requestId` this is used to associate requests with their responses. Therefore, we can handle out of order messages as well as many duplicate requests without issue.
 
-#### Game Play
+For a detailed explanation of each function, please see the inline JSDoc-formatted comments that are placed before each method.
 
-The basic premise of the game is that 2-8 players are attempting to race around the board, answering trivia questions to ensure they move forward. 2 dice are rolled at the beginning of each turn:
+# File Structure of frontend nodes
+## Views
+The views folder contains individual "screens" that are displayed throughout the webapp. For example, the game join screen or the answer a multiple-choice question screen.
 
-- The movement die, a D6, and
-- The challenge die, a D8
+Each view is composed of:
+- A script - used for handling the logic (in TypeScript)
+- A template - HTML that does the layout of the view
+- A style - CSS that does micro-adjustments to the layout to make a more visually appealing view.
 
-The value of the movement die determines how many spaces you move forward IF you manage to complete the challenge chosen by the value of the challenge die. If you fail the challenge, you do not move forward, and your turn is forfeit.
+Each view is self-contained inside a single `.vue` file although it can reference components, middleware, and assets.
 
-#### The Game Board
+## Components
+The components folder contains views that are used in several places as part of a larger view. For example, a timer UI adornment.
 
-The game board comes with 2 primary play options:
+Components follow the exact same pattern as views and have all the same limitations and flexibilities as regular views. Components also have the `.vue` file extension.
 
-- Short Game, which consists of 34 spaces, with a "x2" space at the halfway point,
-- And Long Game, which consists of 46 spaces, with a "x2" space at the quarter, halfway, and three-quarter points.
+## Assets
+The assets folder contains images and other resource files that are used throughout the webapp.
 
-The times two space doubles the die value in which determines movement score.
+## Middleware
+The middleware folder contains all the API-related typescript logic that is references throughout the webapp. The files in this section act as an abstraction layer to abstract the requests and make them all as easy to use as possible. See the frontend API section of this file for specifics about how the files in this folder function.
 
-#### Trivia Cards
+## App.vue
+Both the game and client nodes have an `App.vue` file. This is the main view file that selects which sub-view to show. The `App.vue` file runs throughout the entire execution of the webapp and handles the following items:
+- View selection and navigation
+- Some incoming WebSocket message handling (this is split between the sub-views as well as `App.vue` handles the navigation related ones).
+- game state storage and manipulation (since `App.vue` is always executing, it is a good place to store all the game state)
 
-Trivia cards are divided into 3 categories:
+## Main.ts
+Both the client and game nodes have this file. It is used as an entry point to load the `App.vue` file at runtime. It can also be used to register listeners and other long-running processes that should not be linked to any particular view.
 
-- Take Three, which consists of 3 clues being given that hint to the final answer,
-- Songs, Slogans, and Taglines, which consists of a single clue that hints to the final answer which is related to a song, slogan, or tagline of a film,
-- and Miscellaneous, which consists of a single clue that hints to the final answer which is related to a topic unrelated to the previous categories.
+## ../src/shared
+This folder contains any files that are shared between nodes (client, server. or game). Most of the subfolders contains typing information (since TypeScript separates types from the data) but there is also the `Base_WS_APi.ts` and `Base_HTTP_API.ts` files which handle the communication between frontend nodes and the server (See the frontend API section for more information).
 
-#### Consequence Cards
+# Client Node
+Each run of the game will consist of 2 or more client nodes. Each client node corresponds to one player.
 
-Consequence cards are a fun way to add a bit of spice to the game. They are always a "successful" role, meaning you are guaranteed to move forward the value of your movement die. However, you must also face the consequences of the card. Consequences are not always negative however... Some cards move you forward another few spaces, or even give you a free turn. However, the opposite can also occur, such as moving you back a few spaces, or even losing a turn. Exacts can be discussed by group members, as you are free to assign whatever consequences you want to the cards.
+## Views
+### HomeView.vue
+This view is responsible for collecting user input (in the form of a game code and username) and then transmitting it to the server to join a game. Once a game is joined, this view changes to the `MainView`.
 
-#### Mini-Games
+### MainView.vue
+This view is responsible for showing the current leaderboard standings to the user as well as who is the next player. This view is displayed while it is not the player's turn to answer a question or acknowledge a consequence after they have joined a game.
 
-A full list of the individual mini-games, with video clips, can be found [at the following Google Drive][MG]. The list below is merely a text based list and explanation of each mini-game.
+### MultipleChoiceQuestion.vue
+This view is shown to the player once it is their turn to answer a question. Upon answering a question, the player's response is captured and sent to the server. Then the client node returns to the `MainView`.
 
-##### All-Play
+# Game node
+## Components
 
-- **Anagrams/Riddle Letters**
-  - Time: 15 Seconds
-  - Description: Presented with a prompt of what you are trying to guess, you have 15 seconds to unscramble the letters to guess the answer. Every 5 seconds, you are presented with a new anagram, which may or may not make it clearer to you.
-- **Close-Ups/Feature Attraction**
-  - Time: 10 Seconds
-  - Description: Presented with an extremely zoomed in image, simply give the answer requested by the proceeding prompt (i.e. Character, movie, place, etc...)
-- **Colin's Camera**
-  - Time: 15 Seconds
-  - Description: An image has been turned into a negative, and a black SVG is placed over it. The svg slowly moves out of the way, revealing the image. Be the first to guess the prompt under the image.
-- **Cutouts**
-  - Time: 10 Seconds
-  - Description: Something has been cut out of the image provided, leaving a hole in its place. Be the first to identify what has been cut out.
-- **Did you Hear That/Soundclips**
-  - Time: Soundclip + 2-5 Seconds
-  - Description: Presented with an audio clip, identify the relevant information asked for by the prompt.
-- **Distorted Reality/Divination**
-  - Time: 15 Seconds
-  - Description: Various filters have been applied to an image and are slowly being removed. Be the first to guess the image's contents.
-- **Furious Firsts**
-  - Time: 15 Seconds
-  - Description: Presented with a prompt, be the first to guess the first thing that comes to mind. Some suggestions need to be presented to determine a clear winner.
-- **Grosser than Gross/Definitions**
-  - Time: 15 Seconds
-  - Description: Presented with a word with a difficult to guess definition, be the first to guess the definition. You are provided with images that describe the word's definition.
-- **Misfits**
-  - Time: 15-30 seconds
-  - Description: Presented with a prompt and a series of options, be the first to identify the odd one out.
-- **Polyjuice Potion**
-  - Time: 15 Seconds
-  - Description: Presented with a prompt, be the first to guess the answer that is related to the prompt. You are provided with a series of images that, when combined, will reveal the answer.
-- **Silhouettes/Slime Bucket**
-  - Time: 10-15 Seconds
-  - Description: Presented with a silhouette, be the first to guess the prompt given prior to the question. In regards to slime bucket, the silhouette is simply revealed in pieces and thus has more time.
-- **Sorting Hat/Find the Object**
-  - Time: 15 Seconds
-  - Description: An item is placed under a hat and jumbled around. Be the first to select the number associated with the item. Works well as a my-play as well, but is a chaotic all-play.
-- **Spellbinder**
-  - Time: 10-15 Seconds
-  - Description: Presented with a prompt, be the first to guess the answer that is related to the prompt. You are provided with a series blank spaces that are filled by various letters of the answer. Letters are assigned a rank value that determine when they appear in the time limit, revealing the entire final answer as the clock hits 0.
-- **What's Missing?**
-  - Time: 15 Seconds
-  - Description: Abusing some Photoshop magic, an item is removed from a scene. Guess what it is before the time runs out.
-- **Where in the World/Visual Puzzlers**
-  - Time: 20 Seconds
-  - Description: You are given 4 images, each making it more obvious what the answer is. Simply be the first to give the answer before the time runs out.
-- **Who am I?**
-  - Time: 15 Seconds
-  - Description: You are given a series of clues that hint to the identity of a character. Be the first to guess the character before the time runs out.
+### Board
+Displays the positional of each player as a coloured circle on a virtual board. Once the players reach the last position, they win. Each player's circle color is randomly assigned but is consistent through all the nodes.
 
-##### My-Play
+### Consequence Modal
+This component pops-up when a player must face a consequence. It displays the consequence in textual form and shows a timer. After the timer expires, the component disappears and the game continues.
 
-- **Charms and Spells/Multiple Choice**
-  - Time: Scene + 10 seconds
-  - Description: Presented with a scene from a piece of media, you have 10 seconds to guess the answer from the provided multiple choice. The scene is played in full, but usually with a pause somewhere or with no audio, and you are given 10 seconds to guess the answer from the provided multiple choice.
-- **Cover to Cover/Memory Lane**
-  - Time: 10-15 Seconds
-  - Description: This is a memory challenge. Rapidly flash a selection of 8-12 items across the screen, then ask a question about what the player saw at the end.
-- **Traditional**
-  - Time: Scene + 10 seconds
-  - Description: Presented with a scene from a piece of media, you have 10 seconds to guess the answer to a question that follows, usually related to the scene that just played.
+## PlayersList
+This view lists all the players that are currently in the game as well as highlights the player who is currently answering a question.
 
-### Development and Design
+## Views
 
-#### Frontend Serving
+### HomeView.vue
+This view is responsible for creating and then starting a game, displaying the game code (once a game is created) so that the players can enter the code on the client nodes, listing the already joined players, and configuring the game. After all that is completed, the game node switches to the `MainView`.
 
-After getting aquatinted with [**ReactJS**][ReactJS] over the summer, we plan on using a version of that to host the front-end. Either using [ReactJS][ReactJS] itself, or a minified version of it called [**NextJS**][NextJS]. Communication to the backend API would likely then be done using [Axios][Axios], and a websocket would be established allowing the game to be played synchronously with other players across various devices.
+### MainView.vue
+This is the main view that is displayed throughout the game. It consists of the board (which shows the current location of each player) as well as a player list (which shows the current players and highlights the player whose turn is next).
 
-If **ReactJS** is not used, the back-up framework of choice would be [**VueJS**][VueJS], which is a similar framework to **ReactJS** but with a different syntax.
+### MultipleChoiceQuestion.vue
+This view appears when a client node needs to answer a question. This view shows the question as well as a related or decorational background image as well as a timer while the player is answering. After the player answer, or the timer runs out, the gam enode transitions back to the `MainView`.
 
-#### Backend API
+[server](README.md) / Modules
 
-Due to choice of Typescript supported front-end frameworks, it only makes sense to maintain the TypeScript language base across the entire project. Therefore, the plan is to use NodeJS's [ExpressJS][ExpressJS] framework to create the API. The API would be responsible for handling the game logic, and communicating with the database to store and retrieve data.
+# Server Node
 
-#### Database
+### Modules
 
-The database design will require a lot of planning from the development group, but we know that each game will be assigned a unique join code and store a timeout value in the event of the game becoming fully idle. Players would not be required to make accounts, and thus won't need to be stored in the database. However, the game will need to store the player's name, and the player's score. The game will also need to store the questions and answers for each game, and the game's theme.
+- [controllers/AuthController](modules/controllers_AuthController.md)
+- [controllers/ClientController](modules/controllers_ClientController.md)
+- [controllers/GameController](modules/controllers_GameController.md)
+- [controllers/QuizController](modules/controllers_QuizController.md)
+- [index](modules/index.md)
+- [models/Game](modules/models_Game.md)
+- [models/User](modules/models_User.md)
+- [routes/basic.router](modules/routes_basic_router.md)
+- [routes/client.router](modules/routes_client_router.md)
+- [routes/game.router](modules/routes_game_router.md)
+- [routes/ws.router](modules/routes_ws_router.md)
 
-We will also need to record the Game's state in memory, so that way everyone in the game is seeing the correct game board.
 
-[Axios]: <https://www.npmjs.com/package/axios> "Axios NPM Package"
+# Setup and running
+Please see section 7.1 Building and launching the project of our Software Design Document for details. This node will not function independently, so it is important to setup all the nodes before interacting with any them independently.
 
-[Disney]: <https://www.disney.com/> "Disney - Official Website"
-
-[ExpressJS]: <https://expressjs.com/> "ExpressJS - Official Website"
-
-[JPP]: <https://www.jackboxgames.com/> "Jackbox Party Games - Official Website"
-
-[MG]: <https://drive.google.com/drive/folders/18l2RTZJJPfHBrCZAbdQvA0HxGPU8TmUn> "Mini-Game Drive"
-
-[NextJS]: <https://nextjs.org/> "NextJS - Official Website"
-
-[ReactJS]: <https://reactjs.org/> "ReactJS - Official Website"
-
-[SceneIt]: <https://www.wikiwand.com/en/Scene_It%3F/> "Scene It? - Wikipedia"
-
-[VueJS]: <https://vuejs.org/> "VueJS - Official Website"
