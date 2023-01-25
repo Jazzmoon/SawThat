@@ -387,7 +387,7 @@ export const turn = async (
       }
       // Start the timer async timeout
       setTimeout(() => {
-        questionEnd();
+        questionEnd(connections);
       }, Math.abs(Date.now() - question_data.timer_end));
       return Promise.resolve(true);
     })
@@ -404,7 +404,13 @@ export const turn = async (
 
 const questionAnswer = async () => {};
 
-const questionEnd = async () => {};
+const questionEnd = async (connections: {
+  host: ClientConn;
+  clients: Array<ClientConn>;
+  turn?: Date | number;
+}) => {
+  connections.turn = null;
+};
 
 /**
  * Check if any players are in the winner state.
