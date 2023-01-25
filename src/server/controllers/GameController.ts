@@ -261,10 +261,7 @@ export const turn = async (
   connections: {
     host: ClientConn;
     clients: Array<ClientConn>;
-    turn?: {
-      answer_index: number;
-      turn_timer: Date;
-    };
+    turn?: Date | number;
   },
   data: WebsocketRequest,
   game: PopulatedGame
@@ -297,7 +294,7 @@ export const turn = async (
       break;
   }
   // generate random integer between 1 and 6
-  const movement_die =
+  const movement_die: number =
       turn_modifier === TurnModifier.DoubleFeature
         ? MathUtil.randInt(1, 6) * 2
         : MathUtil.randInt(1, 6),
@@ -327,31 +324,71 @@ export const turn = async (
     question_type,
     game.used_questions
   )
-    .then((res) => {
+    .then(async (res) => {
+      let question_data: QuestionData = {
+        id: res.id,
+        category: category,
+        question_type: question_type,
+        question: res.question,
+        options: res.options,
+        media_type: res.media_type,
+        media_url: res.media_url,
+        all_play: 0 <= challenge_die && challenge_die >= 2,
+        movement_die: movement_die,
+        challenge_die: challenge_die,
+        timer_length: 15,
+      };
+      // Add game to the database, making sure it is appended (so we know which is the most recent question)
+      game.used_questions.push(question_data.id);
+      await game.save();
+
+      // Start timer and send question:
+      connections.turn = question_data.timer_end = Date.now();
       connections.host.conn.socket.send(
         JSON.stringify({
           type: WebsocketType.QuestionAck,
           requestId: data.requestId,
-          data: {
-            id: res.id,
-            category: category,
-            question_type: question_type,
-            question: res.question,
-            options: res.options,
-            media_type: res.media_type,
-            media_url: res.media_url,
-            movement_die: movement_die,
-            challenge_die: challenge_die,
-          } as QuestionData,
+          data: question_data,
         } as WebsocketResponse)
       );
-      if (0 <= challenge_die && challenge_die >= 2) {
+      if (question_data.all_play) {
         // All_play
+        connections.clients.forEach((c) => {
+          c.conn.socket.send(
+            JSON.stringify({
+              type: WebsocketType.QuestionAck,
+              requestId: data.requestId,
+              data: question_data,
+            } as WebsocketResponse)
+          );
+        });
       } else if ([3, 7].includes(challenge_die)) {
         // Consequence Card
+        connections.clients
+          .find((c) => c.username === game.players[0].username)!
+          .conn.socket.send(
+            JSON.stringify({
+              type: WebsocketType.QuestionAck,
+              requestId: data.requestId,
+              data: question_data,
+            } as WebsocketResponse)
+          );
       } else {
         // My Play
+        connections.clients
+          .find((c) => c.username === game.players[0].username)!
+          .conn.socket.send(
+            JSON.stringify({
+              type: WebsocketType.QuestionAck,
+              requestId: data.requestId,
+              data: question_data,
+            } as WebsocketResponse)
+          );
       }
+      // Start the timer async timeout
+      setTimeout(() => {
+        questionEnd();
+      }, Math.abs(Date.now() - question_data.timer_end));
       return Promise.resolve(true);
     })
     .catch((err) => {
@@ -364,6 +401,10 @@ export const turn = async (
       );
     });
 };
+
+const questionAnswer = async () => {};
+
+const questionEnd = async () => {};
 
 /**
  * Check if any players are in the winner state.

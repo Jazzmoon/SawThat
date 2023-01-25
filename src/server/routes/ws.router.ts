@@ -38,10 +38,7 @@ let connections: Record<
   {
     host: ClientConn;
     clients: Array<ClientConn>;
-    turn?: {
-      answer_index: number;
-      turn_timer: Date;
-    };
+    turn?: Date | number;
   }
 > = {};
 

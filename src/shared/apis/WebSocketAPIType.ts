@@ -9,7 +9,7 @@ import type { QuestionCategory } from "../enums/QuestionCategory";
 import type { Player } from "../types/Player";
 
 export type TimedData = {
-  timer_start: Date;
+  timer_end?: Date | number;
   timer_length: number;
 };
 
@@ -21,8 +21,8 @@ export type QuestionData = {
   options: string[];
   media_type?: "image" | "video" | null;
   media_url?: string | null;
-
-  movement_die: 1 | 2 | 3 | 4 | 5 | 6;
+  all_play?: boolean;
+  movement_die: number;
   challenge_die: QuestionCategory;
 } & TimedData;
 
