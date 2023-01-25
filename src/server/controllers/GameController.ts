@@ -409,7 +409,7 @@ const questionEnd = async (connections: {
   clients: Array<ClientConn>;
   turn?: Date | number;
 }) => {
-  connections.turn = null;
+  connections.turn = undefined;
 };
 
 /**
