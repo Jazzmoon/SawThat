@@ -1,14 +1,22 @@
 <template>
   <div id="root">
-    <ConsequenceModal v-if="consequenceShown" :message="consequenceMessage" />
-    <HomeView v-if="!gameStarted" :players="players" @game-started="gameStarted = true" />
-    <QuestionView v-else-if="questionShown" :data="currentQuestionData" />
-    <MainView v-else :players="players" :current-player-index="currentPlayerIndex" />
+    <ConsequenceModal v-if="consequenceShown" 
+      :message="consequenceMessage" />
+    <FinalStandings v-else-if="currentView == FinalStandings.__name" 
+      @close="currentGameState = GameState.NONE" 
+      :top3-players="topPlayers" />
+    <QuestionView v-else-if="currentView == QuestionView.__name" 
+      :data="currentQuestionData" />
+    <MainView v-else-if="currentView == MainView.__name" 
+      :players="players" 
+      :current-player-index="currentPlayerIndex" />
+    <HomeView v-else :players="players" 
+      @game-started="currentGameState = GameState.RUNNING" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { WS_API } from './middleware/WS_API';
 import HomeView from './views/HomeView.vue';
 import MainView from './views/MainView.vue';
@@ -18,15 +26,39 @@ import { WebsocketType } from '../../shared/enums/WebsocketTypes';
 import type { WebsocketMessage } from '../../shared/types/Websocket';
 import ConsequenceModal from './components/ConsequenceModal.vue';
 import type { MultipleChoiceData } from '../../shared/apis/WebSocketAPIType';
+import FinalStandings from './views/FinalStandings.vue';
+
+const topPlayers: Player[] = [
+  {
+    username: "test1",
+    color: '#456732',
+    position: 0
+  },
+  {
+    username: "test2",
+    color: '#15f732',
+    position: 0
+  },
+  {
+    username: "test3",
+    color: '#7567a2',
+    position: 0
+  }
+];
 
 // game state variables
+enum GameState {
+  NONE = 0, // game is not created or started yet
+  RUNNING = 1, // game is running but not currently showing a question or consequence
+  SHOWING_QUESTION = 2, // game is running and showing a question
+  ENDED = 3// game has ended but not yet returned to the home screen
+}
+let currentGameState = ref(GameState.NONE);
 let players = ref([] as Player[]);
 let currentPlayerIndex = ref(0);
 let currentQuestionData = ref({} as MultipleChoiceData);
-let gameStarted = ref(false);
-let questionShown = ref(false);
-let consequenceShown = ref(false);
 let consequenceMessage = ref("");
+let consequenceShown = ref(false);
 
 const messageCallBackId = "App";
 onMounted(() => {
@@ -37,13 +69,13 @@ onMounted(() => {
         break;
       case WebsocketType.TextQuestion:
       case WebsocketType.MultipleChoiceQuestion:
-        questionShown.value = true;
+        currentGameState.value = GameState.SHOWING_QUESTION;
         currentQuestionData = message.data;
         break;
       case WebsocketType.QuestionTimeOut:
       case WebsocketType.QuestionAnswer:
       case WebsocketType.QuestionEndedAck:
-        questionShown.value = false;
+        currentGameState.value = GameState.RUNNING;
         break;
       case WebsocketType.ConsequenceAck:
         consequenceShown.value = true;
@@ -53,7 +85,7 @@ onMounted(() => {
         consequenceShown.value = false;
         break;
       case WebsocketType.GameEndedAck:
-        gameStarted.value = false; // todo add a leaderboard screen
+        currentGameState.value = GameState.ENDED;
         break;
       case WebsocketType.GameJoinAck:
         players.value = message.data.players;
@@ -72,6 +104,21 @@ onMounted(() => {
 onUnmounted(() => {
   WS_API.removeIncomingMessageCallback(messageCallBackId);
 });
+
+
+// determines which view should be currently shown to the user
+const currentView = computed(() => {
+  switch(currentGameState.value) {
+    case GameState.NONE:
+      return HomeView.__name;
+    case GameState.ENDED:
+      return FinalStandings.__name;
+    case GameState.RUNNING:
+      return MainView.__name;
+    case GameState.SHOWING_QUESTION:
+      return QuestionView.__name;
+  }
+})
 
 </script>
 

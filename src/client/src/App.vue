@@ -1,22 +1,33 @@
 <template>
-  <HomeView v-if="!joined" @joined="joined = true" />
-  <MultiChoiceQuestion v-else-if="answering" @answered="answering = false" :data="currentQuestionData"/>
-  <MainView v-else :players="players" :current-player-index="currentPlayerIndex"/>
+  <MultiChoiceQuestionView v-if="currentView == MultiChoiceQuestionView.__name" 
+    @answered="currentGameState = GameState.RUNNING" 
+    :data="currentQuestionData"/>
+  <MainView v-else-if="currentView == MainView.__name" 
+    :players="players" 
+    :current-player-index="currentPlayerIndex"/>
+  <HomeView v-else 
+    @joined="currentGameState = GameState.RUNNING" />
 </template>
 
 <script setup lang="ts">
 import type { MultipleChoiceData } from "../../shared/apis/WebSocketAPIType"
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { WebsocketType } from '../../shared/enums/WebsocketTypes';
 import type { Player } from '../../shared/types/Player';
 import type { WebsocketMessage } from '../../shared/types/Websocket';
 import { WS_API } from './middleware/WS_API';
 import HomeView from './views/HomeView.vue';
 import MainView from './views/MainView.vue';
-import MultiChoiceQuestion from './views/MultiChoiceQuestion.vue';
+import MultiChoiceQuestionView from './views/MultiChoiceQuestion.vue';
 
-let joined = ref(false);
-let answering = ref(false);
+// game state variables
+enum GameState {
+  NONE = 0, // game is not created or started yet
+  RUNNING = 1, // game is running but not currently showing a question or consequence
+  ANSWERING_QUESTION = 2, // game is running and showing a question
+}
+let currentGameState = ref(GameState.NONE);
+
 let currentQuestionData = ref({} as MultipleChoiceData);
 let consequenceShown = ref(false);
 let players = ref([] as Player[]);
@@ -31,13 +42,13 @@ onMounted(() => {
         break;
       case WebsocketType.TextQuestion:
       case WebsocketType.MultipleChoiceQuestion:
-        answering.value = true;
+        currentGameState.value = GameState.ANSWERING_QUESTION;
         currentQuestionData = message.data;
         break;
       case WebsocketType.QuestionTimeOut:
       case WebsocketType.QuestionAnswer:
       case WebsocketType.QuestionEndedAck:
-        answering.value = false;
+      currentGameState.value = GameState.RUNNING;
         break;
       case WebsocketType.ConsequenceAck:
         consequenceShown.value = true; // todo get the consequence data and shoqw in a modal
@@ -46,7 +57,7 @@ onMounted(() => {
         consequenceShown.value = false;
         break;
       case WebsocketType.GameEndedAck:
-        joined.value = false; // todo add a leaderboard screen
+        currentGameState.value = GameState.NONE;
         break;
       case WebsocketType.GameJoinAck:
         players.value = message.data.players;
@@ -65,6 +76,18 @@ onMounted(() => {
 onUnmounted(() => {
   WS_API.removeIncomingMessageCallback(messageCallBackId);
 });
+
+// determines which view should be currently shown to the user
+const currentView = computed(() => {
+  switch(currentGameState.value) {
+    case GameState.NONE:
+      return HomeView.__name;
+    case GameState.RUNNING:
+      return MainView.__name;
+    case GameState.ANSWERING_QUESTION:
+      return MultiChoiceQuestionView.__name;
+  }
+})
 
 </script>
 
