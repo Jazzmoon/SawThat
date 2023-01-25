@@ -1,4 +1,4 @@
-import type { MultipleChoiceData } from "../../../shared/apis/WebSocketAPIType";
+import type { QuestionData } from "../../../shared/apis/WebSocketAPIType";
 import Base_WS_API from "../../../shared/Base_WS_API";
 import { WebsocketType } from "../../../shared/enums/WebsocketTypes";
 import type { WebsocketMessage } from "../../../shared/types/Websocket";
@@ -20,8 +20,8 @@ export class WS_API extends Base_WS_API {
 
     /**
      * Sets up a websocket connection with the server
-     * @param gameCode 
-     * @returns 
+     * @param gameCode
+     * @returns
      */
     public static async setupWebSocketConnection(gameCode: string): Promise<boolean> {
         return super.setupWebSocketConnection(`${WS_API.serverURL}/${gameCode}`);
@@ -38,9 +38,9 @@ export class WS_API extends Base_WS_API {
      * Sends a response to the server containing the answer to a multiple question.
      * @param answer the text corresponding to the answer that the player chose
      * @param questionData the question data that the server sent
-     * @returns 
+     * @returns
      */
-    public static async sendMultipleChoiceAnswer(answer: string, questionData: MultipleChoiceData): Promise<WebsocketMessage> {
+    public static async sendMultipleChoiceAnswer(answer: string, questionData: QuestionData): Promise<WebsocketMessage> {
         return await WS_API.sendRequest(WebsocketType.QuestionAnswer, {
             id: questionData.id,
             category: questionData.category,

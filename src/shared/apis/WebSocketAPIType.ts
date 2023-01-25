@@ -5,6 +5,7 @@
  * websocket connection.
  */
 import type { ConsequenceType } from "../enums/ConsequenceType";
+import type { QuestionCategory } from "../enums/QuestionCategory";
 import type { Player } from "../types/Player";
 
 export type TimedData = {
@@ -12,7 +13,7 @@ export type TimedData = {
   timer_length: number;
 };
 
-export type MultipleChoiceData = {
+export type QuestionData = {
   id: number;
   category: string;
   question_type: "Multiple Choice";
@@ -20,13 +21,9 @@ export type MultipleChoiceData = {
   options: string[];
   media_type?: "image" | "video" | null;
   media_url?: string | null;
-} & TimedData;
 
-export type TextQuestionData = {
-  id: number;
-  category: string;
-  question_type: "Text";
-  question: string;
+  movement_die: 1 | 2 | 3 | 4 | 5 | 6;
+  challenge_die: QuestionCategory;
 } & TimedData;
 
 export type ConsequenceData = {

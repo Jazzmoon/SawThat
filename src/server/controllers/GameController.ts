@@ -6,13 +6,42 @@
  * as well as handles the logic for a standard turn in game.
  */
 
-import { generateJWT } from "./AuthController";
-
-import Game from "../models/Game";
-import User, { UserType } from "../models/User";
 import { FastifyReply, FastifyRequest } from "fastify";
+import { SocketStream } from "@fastify/websocket";
 import mongoose from "mongoose";
+
+import { generateJWT } from "./AuthController";
+import { formatQuestion } from "./QuizController";
+
+import { QuestionData } from "../../shared/apis/WebSocketAPIType";
+import { QuestionCategory } from "../../shared/enums/QuestionCategory";
+import { TurnModifier } from "../../shared/enums/TurnModifier";
+import { WebsocketType } from "../../shared/enums/WebsocketTypes";
+import {
+  WebsocketRequest,
+  WebsocketResponse,
+} from "../../shared/types/Websocket";
+
 import MathUtil from "../../shared/util/MathUtil";
+
+import Game, { GameType } from "../models/Game";
+import User, { UserType } from "../models/User";
+
+type ClientConn = {
+  username: string;
+  conn: SocketStream;
+};
+
+type PopulatedGame = Omit<
+  Omit<
+    mongoose.Document<unknown, any, GameType> &
+      GameType & {
+        _id: mongoose.Types.ObjectId;
+      },
+    "hostId"
+  > & { hostId: UserType },
+  "players"
+> & { players: UserType[] };
 
 /**
  * Generates a unique game code that is a minimum of 4 characters long,
@@ -157,15 +186,14 @@ export const startGame = async (gameID: string): Promise<string> => {
     .populate<{ players: UserType[] }>("players")
     .exec();
   // Perform Error Checking
-  if (!game)
-    return Promise.reject(new Error("There is no game with this game id."));
+  if (!game) return Promise.reject("There is no game with this game id.");
   if (game!.started === true)
-    return Promise.reject(new Error("The game has already started."));
+    return Promise.reject("The game has already started.");
   if (
     game!.players[0] instanceof mongoose.Types.ObjectId ||
     game!.players[0] === null
   )
-    return Promise.reject(new Error("The players didn't populate"));
+    return Promise.reject("The players didn't populate");
   if (game.players.length < 2)
     return Promise.reject(
       new Error(
@@ -189,40 +217,190 @@ export const startGame = async (gameID: string): Promise<string> => {
  * @param {string} gameID - The Model Game ID within the database.
  * @return {Promise<string>} The username of the player next in the rotation.
  */
-export const nextPlayer = async (
-  gameID: string
-): Promise<string | undefined> => {
+export const nextPlayer = async (gameID: string): Promise<string> => {
   // Look-Up the game in the database
-  return Game.findOne({ game_code: gameID })
+  let game = await Game.findOne({ game_code: gameID })
     .populate<{ hostId: UserType }>("hostId")
     .populate<{ players: UserType[] }>("players")
-    .exec()
-    .then((game) => {
-      // Perform error checks.
-      if (!game)
-        return Promise.reject(new Error("There is no game with this game id."));
-      if (!game!.started)
-        return Promise.reject(new Error("The game has not yet started."));
-      if (game.players.length < 2)
-        return Promise.reject(
-          new Error("There is not enough players to perform this task.")
-        );
-      if (
-        game!.players[0] instanceof mongoose.Types.ObjectId ||
-        game!.players[0] === null
-      )
-        return Promise.reject(new Error("The players didn't populate"));
+    .exec();
 
-      // Verify that the game isn't already started
-      // Shift the player list left
-      let current_player = game.players.shift();
-      game.players.push(current_player!);
-      return game
-        .save()
-        .then(() => Promise.resolve(game.players[0].username))
-        .catch((e) => Promise.reject(e));
+  // Perform error checks.
+  if (!game) return Promise.reject("There is no game with this game id.");
+  if (!game!.started) return Promise.reject("The game has not yet started.");
+  if (game.players.length < 2)
+    return Promise.reject(
+      new Error("There is not enough players to perform this task.")
+    );
+  if (
+    game!.players[0] instanceof mongoose.Types.ObjectId ||
+    game!.players[0] === null
+  )
+    return Promise.reject("The players didn't populate");
+
+  // Verify that the game isn't already started
+  // Shift the player list left
+  let current_player = game.players.shift();
+  game.players.push(current_player!);
+
+  const save_state = await game.save();
+
+  return Promise.resolve(game.players[0].username);
+};
+
+/**
+ * Handle the turn logic for a single round of the game, triggered by the game node sending a message.
+ * @param {{
+ *  host: ClientConn;
+ *  clients: Array<ClientConn>;
+ *  turn?: { answer_index: number; turn_timer: Date; };}
+ * } connections - List of all Websockets relevant to the game that this turn is for.
+ * @param {WebsocketRequest} data - Any relevant data that the game node sends across the websocket stream.
+ * @param {GameType} game - The game state. We know that the sender of these messages is the game node.
+ */
+export const turn = async (
+  connections: {
+    host: ClientConn;
+    clients: Array<ClientConn>;
+    turn?: {
+      answer_index: number;
+      turn_timer: Date;
+    };
+  },
+  data: WebsocketRequest,
+  game: PopulatedGame
+): Promise<boolean> => {
+  // Generate dice values for the game node:
+  // Get turn modifier information for player
+  // Return Turn Modifier for Question Generation
+  let turn_modifier: TurnModifier = TurnModifier.Normal;
+  switch (game.players[0].position) {
+    case 9:
+    case 19:
+    case 28:
+      turn_modifier = TurnModifier.DoubleFeature;
+      break;
+    case 37:
+      turn_modifier = TurnModifier.AllPlayToWin;
+      break;
+    case 38:
+      turn_modifier = TurnModifier.FinalCut3;
+      break;
+    case 39:
+      turn_modifier = TurnModifier.FinalCut2;
+      break;
+    case 40:
+      turn_modifier = TurnModifier.FinalCut1;
+      break;
+    case 41:
+    default:
+      turn_modifier = TurnModifier.Winner;
+      break;
+  }
+  // generate random integer between 1 and 6
+  const movement_die =
+      turn_modifier === TurnModifier.DoubleFeature
+        ? MathUtil.randInt(1, 6) * 2
+        : MathUtil.randInt(1, 6),
+    challenge_die = MathUtil.randInt(0, 7),
+    question_type = "Multiple Choice";
+  let category: string = "Consequence";
+  switch (challenge_die) {
+    case QuestionCategory.TakeThreeAllPlay:
+    case QuestionCategory.TakeThreeMyPlay:
+      category = "Take Three";
+      break;
+    case QuestionCategory.MusicalAllPlay:
+    case QuestionCategory.MusicalMyPlay:
+      category = "Musical";
+      break;
+    case QuestionCategory.MiscellaneousAllPlay:
+    case QuestionCategory.MiscellaneousMyPlay:
+      category = "Miscellaneous";
+      break;
+    default:
+      category = "Consequence";
+      break;
+  }
+  return formatQuestion(
+    game.theme_pack,
+    category,
+    question_type,
+    game.used_questions
+  )
+    .then((res) => {
+      connections.host.conn.socket.send(
+        JSON.stringify({
+          type: WebsocketType.QuestionAck,
+          requestId: data.requestId,
+          data: {
+            id: res.id,
+            category: category,
+            question_type: question_type,
+            question: res.question,
+            options: res.options,
+            media_type: res.media_type,
+            media_url: res.media_url,
+            movement_die: movement_die,
+            challenge_die: challenge_die,
+          } as QuestionData,
+        } as WebsocketResponse)
+      );
+      if (0 <= challenge_die && challenge_die >= 2) {
+        // All_play
+      } else if ([3, 7].includes(challenge_die)) {
+        // Consequence Card
+      } else {
+        // My Play
+      }
+      return Promise.resolve(true);
     })
-    .catch((e) => {
-      return Promise.reject(e);
+    .catch((err) => {
+      console.log(
+        `[WS] Error fetching question for request id ${data.requestId}:`,
+        err
+      );
+      return Promise.reject(
+        `[WS] Error fetching question for request id ${data.requestId}: ${err}`
+      );
     });
+};
+
+/**
+ * Check if any players are in the winner state.
+ * @param {string} gameID - The game code string for the game you want to check the winner of.
+ * @returns {Promise<string | boolean>}
+ */
+export const checkWinner = async (
+  gameID: string
+): Promise<string | boolean> => {
+  // Get the game
+  let game = await Game.findOne({ game_code: gameID })
+    .populate<{ hostId: UserType }>("hostId")
+    .populate<{ players: UserType[] }>("players")
+    .exec();
+
+  // Perform error checks.
+  if (!game) return Promise.reject("There is no game with this game id.");
+  if (!game!.started) return Promise.reject("The game has not yet started.");
+  if (game.players.length < 2)
+    return Promise.reject(
+      new Error("There is not enough players to perform this task.")
+    );
+  if (
+    game!.players[0] instanceof mongoose.Types.ObjectId ||
+    game!.players[0] === null
+  )
+    return Promise.reject("The players didn't populate");
+
+  // Check if any players report a position of 41 (Victory Space)
+  const winners = game.players.filter((p) => p.position < 41);
+  if (winners.length === 0) {
+    // A winner does not exist
+    return Promise.resolve(false);
+  } else if (winners.length === 1) {
+    // A winner was found, return their username
+    return Promise.resolve(winners[0].username);
+  } else {
+    return Promise.reject("[GC] An error state has been detected.");
+  }
 };

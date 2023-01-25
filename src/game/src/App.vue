@@ -16,18 +16,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { WS_API } from './middleware/WS_API';
 import HomeView from './views/HomeView.vue';
 import MainView from './views/MainView.vue';
 import QuestionView from './views/QuestionView.vue';
-import type { Player } from "../../shared/types/Player";
-import { WebsocketType } from '../../shared/enums/WebsocketTypes';
-import type { WebsocketMessage } from '../../shared/types/Websocket';
 import ConsequenceModal from './components/ConsequenceModal.vue';
-import type { MultipleChoiceData } from '../../shared/apis/WebSocketAPIType';
 import FinalStandings from './views/FinalStandings.vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { WS_API } from './middleware/WS_API';
+import { WebsocketType } from '../../shared/enums/WebsocketTypes';
+import type { Player } from "../../shared/types/Player";
+import type { WebsocketMessage } from '../../shared/types/Websocket';
+import type { QuestionData } from '../../shared/apis/WebSocketAPIType';
 
+// todo replace with dat from server
 const topPlayers: Player[] = [
   {
     username: "test1",
@@ -56,7 +57,7 @@ enum GameState {
 let currentGameState = ref(GameState.NONE);
 let players = ref([] as Player[]);
 let currentPlayerIndex = ref(0);
-let currentQuestionData = ref({} as MultipleChoiceData);
+let currentQuestionData = ref({} as QuestionData);
 let consequenceMessage = ref("");
 let consequenceShown = ref(false);
 
@@ -67,8 +68,7 @@ onMounted(() => {
       case WebsocketType.Error:
         alert(JSON.stringify(message.data));
         break;
-      case WebsocketType.TextQuestion:
-      case WebsocketType.MultipleChoiceQuestion:
+      case WebsocketType.QuestionRequest:
         currentGameState.value = GameState.SHOWING_QUESTION;
         currentQuestionData = message.data;
         break;
@@ -81,7 +81,7 @@ onMounted(() => {
         consequenceShown.value = true;
         consequenceMessage.value = message.data.consequence;
         break;
-      case WebsocketType.ConsequenceEndedAck: 
+      case WebsocketType.ConsequenceEndedAck:
         consequenceShown.value = false;
         break;
       case WebsocketType.GameEndedAck:

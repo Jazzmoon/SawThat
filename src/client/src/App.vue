@@ -10,15 +10,15 @@
 </template>
 
 <script setup lang="ts">
-import type { MultipleChoiceData } from "../../shared/apis/WebSocketAPIType"
-import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { WebsocketType } from '../../shared/enums/WebsocketTypes';
-import type { Player } from '../../shared/types/Player';
-import type { WebsocketMessage } from '../../shared/types/Websocket';
-import { WS_API } from './middleware/WS_API';
 import HomeView from './views/HomeView.vue';
 import MainView from './views/MainView.vue';
 import MultiChoiceQuestionView from './views/MultiChoiceQuestion.vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { WebsocketType } from '../../shared/enums/WebsocketTypes';
+import { WS_API } from './middleware/WS_API';
+import type { QuestionData } from "../../shared/apis/WebSocketAPIType"
+import type { Player } from '../../shared/types/Player';
+import type { WebsocketMessage } from '../../shared/types/Websocket';
 
 // game state variables
 enum GameState {
@@ -28,7 +28,7 @@ enum GameState {
 }
 let currentGameState = ref(GameState.NONE);
 
-let currentQuestionData = ref({} as MultipleChoiceData);
+let currentQuestionData = ref({} as QuestionData);
 let consequenceShown = ref(false);
 let players = ref([] as Player[]);
 let currentPlayerIndex = ref(0);
@@ -40,8 +40,7 @@ onMounted(() => {
       case WebsocketType.Error:
         alert(JSON.stringify(message.data));
         break;
-      case WebsocketType.TextQuestion:
-      case WebsocketType.MultipleChoiceQuestion:
+      case WebsocketType.QuestionRequest:
         currentGameState.value = GameState.ANSWERING_QUESTION;
         currentQuestionData = message.data;
         break;
