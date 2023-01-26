@@ -2,10 +2,10 @@
   <main id="backgroundImage">
     <p id="questiontext">{{props.data.question}}</p>
     <div id="choices">
-      <button class="btnBlue" @click="submit(1)">{{ props.data.options[0] }}</button>
-      <button class="btnRed" @click="submit(2)">{{ props.data.options[1] }}</button>
-      <button class="btnYellow" @click="submit(3)">{{ props.data.options[2] }}</button>
-      <button class="btnGreen" @click="submit(4)">{{ props.data.options[3] }}</button>
+      <button class="btnBlue" @click="submit(0)">{{ props.data.options[0] }}</button>
+      <button class="btnRed" @click="submit(1)">{{ props.data.options[1] }}</button>
+      <button class="btnYellow" @click="submit(2)">{{ props.data.options[2] }}</button>
+      <button class="btnGreen" @click="submit(3)">{{ props.data.options[3] }}</button>
     </div>
   </main>
 </template>
