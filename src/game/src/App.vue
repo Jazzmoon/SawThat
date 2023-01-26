@@ -1,7 +1,7 @@
 <template>
   <div id="root">
     <ConsequenceModal v-if="consequenceShown" 
-      :message="consequenceMessage" />
+      :data="consequenceData" />
     <FinalStandings v-else-if="currentView == FinalStandings.__name" 
       @close="currentGameState = GameState.NONE" 
       :top3-players="topPlayers" />
@@ -26,7 +26,7 @@ import { WS_API } from './middleware/WS_API';
 import { WebsocketType } from '../../shared/enums/WebsocketTypes';
 import type { Player } from "../../shared/types/Player";
 import type { WebsocketMessage } from '../../shared/types/Websocket';
-import type { QuestionData } from '../../shared/apis/WebSocketAPIType';
+import type { ConsequenceData, QuestionData } from '../../shared/apis/WebSocketAPIType';
 
 // todo replace with dat from server
 const topPlayers: Player[] = [
@@ -58,8 +58,8 @@ let currentGameState = ref(GameState.NONE);
 let players = ref([] as Player[]);
 let currentPlayerIndex = ref(0);
 let currentQuestionData = ref({} as QuestionData);
-let consequenceMessage = ref("");
 let consequenceShown = ref(false);
+let consequenceData = ref({} as ConsequenceData);
 
 const messageCallBackId = "App";
 onMounted(() => {
@@ -76,6 +76,11 @@ onMounted(() => {
       case WebsocketType.QuestionAnswer:
       case WebsocketType.QuestionEndedAck:
         currentGameState.value = GameState.RUNNING;
+
+        // if the list of players was updated, update it
+        if (message.data.players) {
+          players.value = message.data.players;
+        }
         // start a timer for 5 seconds so that players can see the new standings. Then request a new question from the server
         setTimeout(() => {
           WS_API.sendNextQuestionRequest();
@@ -83,7 +88,7 @@ onMounted(() => {
         break;
       case WebsocketType.ConsequenceAck:
         consequenceShown.value = true;
-        consequenceMessage.value = message.data.consequence;
+        consequenceData.value = message.data;
         break;
       case WebsocketType.ConsequenceEndedAck:
         consequenceShown.value = false;

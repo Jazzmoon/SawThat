@@ -2,15 +2,39 @@
     <div id="background">
         <div id="root">
             <h2>Consequence</h2>
-            <p>{{ props.message }}</p>
+            <p>{{ props.data.story }}</p>
+            <p>{{ timer }}</p>
         </div>
     </div>
 </template>
 
 <script lang="ts" setup>
+import { onMounted, ref } from 'vue';
+import type { ConsequenceData } from '../../../shared/apis/WebSocketAPIType';
+
+const timer = ref(0);
+
 const props = defineProps<{
-    message: string
+    data: ConsequenceData
 }>();
+
+onMounted(() => {
+    if (props.data.timer_end) {
+        timer.value = props.data.timer_length - (Date.now() - new Date(props.data.timer_end).getTime()) / 1000;
+    } else {
+        timer.value = props.data.timer_length;
+    }
+    tick();
+});
+
+function tick() {
+    setTimeout(() => {
+        timer.value--;
+        if (timer.value > 0) {
+            tick();
+        }
+    }, 1000);
+}
 </script>
 
 <style scoped>

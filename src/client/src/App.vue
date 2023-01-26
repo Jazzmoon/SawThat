@@ -47,7 +47,11 @@ onMounted(() => {
       case WebsocketType.QuestionTimeOut:
       case WebsocketType.QuestionAnswer:
       case WebsocketType.QuestionEndedAck:
-      currentGameState.value = GameState.RUNNING;
+        currentGameState.value = GameState.RUNNING;
+        // if the list of players was updated, update it
+        if (message.data.players) {
+          players.value = message.data.players;
+        }
         break;
       case WebsocketType.ConsequenceAck:
         consequenceShown.value = true; // todo get the consequence data and shoqw in a modal
