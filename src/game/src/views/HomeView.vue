@@ -117,11 +117,16 @@ async function createGame() {
   // update the start button whenever a player joins or disconnects.
   canGoNext.value = false;
   WS_API.addIncomingMessageCallback("checkPlayerCount", (message) => {
+    let playerCounter = 0;
     switch (message.type) {
       case WebsocketType.GameJoinAck:
+        playerCounter++;
+        break;
       case WebsocketType.PlayerDisconnectAck:
-        canGoNext.value = message.data.players.length >= 2;
-    }
+        playerCounter--;
+        break;
+      }
+    canGoNext.value = playerCounter >= 2;
   });
 }
 
