@@ -31,7 +31,7 @@ export class WS_API extends Base_WS_API {
      * @returns the game code if the game was created. undefined if some error occured.
      */
     public static async sendCreateGameRequest(): Promise<WebsocketMessage> {
-        return await WS_API.sendRequest(WebsocketType.GameSetup, {});
+        return await WS_API.sendRequest(WebsocketType.GameSetup);
     }
 
     /**
@@ -39,6 +39,14 @@ export class WS_API extends Base_WS_API {
      * @returns true if the game was started. False if some error occured.
      */
     public static async sendStartGameRequest(): Promise<WebsocketMessage> {
-        return await WS_API.sendRequest(WebsocketType.GameStart, {});
+        return await WS_API.sendRequest(WebsocketType.GameStart);
+    }
+
+    /**
+     * Sends a request to move to the next player to the server
+     * @returns the server's response.
+     */
+    public static async sendNextQuestionRequest(): Promise<WebsocketMessage> {
+        return await WS_API.sendRequest(WebsocketType.NextPlayer);
     }
 }

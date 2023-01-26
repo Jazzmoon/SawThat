@@ -76,6 +76,10 @@ onMounted(() => {
       case WebsocketType.QuestionAnswer:
       case WebsocketType.QuestionEndedAck:
         currentGameState.value = GameState.RUNNING;
+        // start a timer for 5 seconds so that players can see the new standings. Then request a new question from the server
+        setTimeout(() => {
+          WS_API.sendNextQuestionRequest();
+        }, 7000 /* 7 seconds */);
         break;
       case WebsocketType.ConsequenceAck:
         consequenceShown.value = true;

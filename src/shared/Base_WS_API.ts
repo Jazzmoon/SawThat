@@ -109,7 +109,7 @@ export default class Base_WS_API {
      * @param payload the data to send
      * @returns an awaitable promise that resolves once the request finishes
      */
-    protected static async sendRequest(type: WebsocketType, payload: object): Promise<WebsocketMessage> {
+    protected static async sendRequest(type: WebsocketType, payload: object = {}): Promise<WebsocketMessage> {
         const requestId = Base_WS_API.createRequestId(type);
 
         if (Base_WS_API.socket == null || Base_WS_API.socket.readyState !== WebSocket.OPEN) {

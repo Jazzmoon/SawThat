@@ -31,7 +31,7 @@ export class WS_API extends Base_WS_API {
      * Sends a request to join a game
      */
     public static async sendJoinRequest(): Promise<WebsocketMessage> {
-        return await WS_API.sendRequest(WebsocketType.GameJoin, {});
+        return await WS_API.sendRequest(WebsocketType.GameJoin);
     }
 
     /**
