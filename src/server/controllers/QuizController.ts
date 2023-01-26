@@ -17,13 +17,17 @@ import MathUtil from "../../shared/util/MathUtil";
  * Returns whether or not a user's answer to a question is correct.
  * @param {string} themePackName - Name of the Theme Pack file in which a question needs to be validated against.
  * @param {string} questionID - The specific question id within that question file.
+ * @param {string} questionCategory - The category in which the question can be found in.
  * @param {string} userAnswer - The user answer to the question, in which needs to be validated.
+ * @param {string | undefined} questionType - The specific type of question asked, if known.
  * @returns {Promise<boolean>}
  */
 export const validateAnswer = async (
   themePackName: string,
   questionID: number,
-  userAnswer: string
+  questionCategory: string,
+  userAnswer: string,
+  questionType?: string
 ): Promise<boolean> => {
   // Read file located at ../themes/disney.json
   const theme_path: string = resolve(
@@ -32,30 +36,34 @@ export const validateAnswer = async (
     "themes",
     `${themePackName}.json`
   );
-  console.log("[QC] Trying theme pack:", theme_path);
-  try {
-    var themePack = JSON.parse(await readFile(theme_path, "utf-8"));
-  } catch (error) {
-    return Promise.reject(`Theme pack not found: ${error}`);
-  }
-  var potentialQuestions = themePack.questions.filter((q: any) => {
-    return q.id == questionID;
-  });
-  if (potentialQuestions.length < 1) {
-    return Promise.reject(
-      new Error(
-        `The specified question does not exist in the ${themePackName} theme pack.`
-      )
-    );
-  }
-  // Might be sketchy depending on whether the questions are always multiple choice.
-  return Promise.resolve(userAnswer == potentialQuestions[0].answer);
+  return readFile(theme_path, "utf-8")
+    .then((fstream) => {
+      let themePack = JSON.parse(fstream);
+      // Find question
+      let question = questionType
+        ? themePack.questions[questionCategory].find(
+            (q: Question) =>
+              q.id === questionID && q.question_type === questionType
+          )
+        : themePack.questions[questionCategory].find(
+            (q: Question) => q.id === questionID
+          );
+      if (!question)
+        return Promise.reject(
+          `No question in ${questionCategory} has ID number ${questionID}.`
+        );
+      return Promise.resolve(question.answer === userAnswer);
+    })
+    .catch((err) => {
+      return Promise.reject(err);
+    });
 };
 
 /**
  * Fetches a random question from the given theme pack, formatted for display.
  * @param {string} theme_pack_name - Name of the Theme Pack file in which a question is being generated for.
  * @param {string} category - The name of the category that the question must belong to.
+ * @param {string} question_type - Denotes whether the question is multiple choice or text.
  * @param {Array<number>} used_questions - A list of question ids in which have already been used by the game.
  * @returns {Promise<{ question: string, prompt: string[], media_type: string, media_url: string }>} Formatted question data, loaded from file.
  */
