@@ -24,8 +24,12 @@ import {
 import Game from "../models/Game";
 import { UserType } from "../models/User";
 
-import { nextPlayer, startGame, turn } from "../controllers/GameController";
-import { formatQuestion } from "../controllers/QuizController";
+import {
+  nextPlayer,
+  startGame,
+  turn,
+  questionAnswer,
+} from "../controllers/GameController";
 
 // Create Record to match WS to GameID
 type ClientConn = {
@@ -38,7 +42,10 @@ let connections: Record<
   {
     host: ClientConn;
     clients: Array<ClientConn>;
-    turn?: Date | number;
+    turn?: {
+      turn_end: number;
+      movement_die: number;
+    };
   }
 > = {};
 
@@ -378,15 +385,33 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     break;
                   case WebsocketType.QuestionRequest:
                     turn(connections[gameID], data, game)
-                      .then((res) => {
+                      .then((res) => {})
+                      .catch((err) => {
                         conn.socket.send(
                           JSON.stringify({
-                            type: WebsocketType.QuestionAck,
+                            type: WebsocketType.Error,
                             requestId: data.requestId,
                             data: {
-                              success: res,
+                              err: err,
+                              message: "[WS] Turn has failed.",
                             },
                           } as WebsocketResponse)
+                        );
+                      });
+                    break;
+                  case WebsocketType.QuestionAnswer:
+                    const conn_username = connections[gameID].clients.find(
+                      (c) => c.conn === conn
+                    )!.username;
+                    questionAnswer(
+                      connections[gameID],
+                      data,
+                      conn_username,
+                      game
+                    )
+                      .then((correct) => {
+                        console.log(
+                          `[WS] User ${conn_username} has gotten the answer ${correct}.`
                         );
                       })
                       .catch((err) => {
