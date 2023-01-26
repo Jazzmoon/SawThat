@@ -39,6 +39,8 @@ onMounted(() => {
     switch (message.type) {
       case WebsocketType.Error:
         alert(JSON.stringify(message.data));
+        WS_API.resetConnection();
+        currentGameState.value = GameState.NONE;
         break;
       case WebsocketType.QuestionAck:
         currentGameState.value = GameState.ANSWERING_QUESTION;
@@ -61,6 +63,7 @@ onMounted(() => {
         break;
       case WebsocketType.GameEndedAck:
         currentGameState.value = GameState.NONE;
+        WS_API.resetConnection();
         break;
       case WebsocketType.GameJoinAck:
         players.value = message.data.players;

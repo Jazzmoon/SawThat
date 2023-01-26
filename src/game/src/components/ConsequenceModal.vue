@@ -19,22 +19,22 @@ const props = defineProps<{
 }>();
 
 onMounted(() => {
-    console.log(props.data)
-    if (props.data.timer_end) {
-        timer.value = props.data.timer_length - (Date.now() - new Date(props.data.timer_end).getTime()) / 1000;
-    } else {
-        timer.value = props.data.timer_length;
-    }
-    tick();
+    let offset = (props.data.timer_end) ? (Date.now() - new Date(props.data.timer_end).getTime()) / 1000 : 0;
+    timer.value = props.data.timer_length;
+    tick(offset);
 });
 
-function tick() {
+/**
+ * Counts down seconds until timer.value = 0.
+ * @param offset Accounts for transmission delay from server to node (first tick can be made shorter)
+ */
+function tick(offset: number = 0): void {
     setTimeout(() => {
         timer.value--;
         if (timer.value > 0) {
-            tick();
+            tick(0);
         }
-    }, 1000);
+    }, 1000 - offset);
 }
 </script>
 

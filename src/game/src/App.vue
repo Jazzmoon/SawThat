@@ -2,7 +2,7 @@
   <div id="root">
     <ConsequenceModal v-if="consequenceShown" 
       :data="consequenceData" />
-    <FinalStandings v-else-if="currentView == FinalStandings.__name" 
+    <FinalStandings v-if="currentView == FinalStandings.__name" 
       @close="currentGameState = GameState.NONE" 
       :top3-players="topPlayers" />
     <QuestionView v-else-if="currentView == QuestionView.__name" 
@@ -67,6 +67,8 @@ onMounted(() => {
     switch (message.type) {
       case WebsocketType.Error:
         alert(JSON.stringify(message.data));
+        WS_API.resetConnection();
+        currentGameState.value = GameState.ENDED;
         break;
       case WebsocketType.QuestionAck:
         currentGameState.value = GameState.SHOWING_QUESTION;
@@ -95,6 +97,7 @@ onMounted(() => {
         break;
       case WebsocketType.GameEndedAck:
         currentGameState.value = GameState.ENDED;
+        WS_API.resetConnection();
         break;
       case WebsocketType.GameJoinAck:
         players.value = message.data.players;

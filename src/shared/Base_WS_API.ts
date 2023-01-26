@@ -40,6 +40,15 @@ export default class Base_WS_API {
     }
 
     /**
+     * Call this to reset the api and get ready for a new game
+     */
+    public static resetConnection(): void {
+        Base_WS_API.token = "";
+        Base_WS_API.pendingRequests = {};
+        Base_WS_API.socket?.close();
+    }
+
+    /**
      * Attempts to setup a connection to the Server via
      * WebSockets.
      * @param wsURL the url for the websocket connection
