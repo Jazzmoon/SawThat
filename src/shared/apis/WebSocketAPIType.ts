@@ -30,7 +30,8 @@ export type ConsequenceData = {
   id: number;
   consequence_type: ConsequenceType;
   story: string;
-  spaces?: number;
+
+  movement_die: number;
 } & TimedData;
 
 export type GameEndAckData = {

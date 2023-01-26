@@ -11,9 +11,14 @@ import { SocketStream } from "@fastify/websocket";
 import mongoose from "mongoose";
 
 import { generateJWT } from "./AuthController";
-import { formatQuestion, validateAnswer } from "./QuizController";
+import {
+  formatConsequence,
+  formatQuestion,
+  validateAnswer,
+} from "./QuizController";
 
 import {
+  ConsequenceData,
   QuestionAnswerData,
   QuestionData,
 } from "../../shared/apis/WebSocketAPIType";
@@ -29,6 +34,8 @@ import MathUtil from "../../shared/util/MathUtil";
 
 import Game, { GameType } from "../models/Game";
 import User, { UserType } from "../models/User";
+import { Consequence } from "../../shared/types/Consequence";
+import { ConsequenceType } from "../../shared/enums/ConsequenceType";
 
 type ClientConn = {
   username: string;
@@ -324,94 +331,169 @@ export const turn = async (
       category = "Consequence";
       break;
   }
-  return formatQuestion(
-    game.theme_pack,
-    category,
-    question_type,
-    game.used_questions
-  )
-    .then(async (res) => {
-      let question_data: QuestionData = {
-        id: res.id,
-        category: category,
-        question_type: question_type,
-        question: res.question,
-        options: res.options,
-        media_type: res.media_type,
-        media_url: res.media_url,
-        all_play: 0 <= challenge_die && challenge_die >= 2,
-        movement_die: movement_die,
-        challenge_die: challenge_die,
-        timer_length: 15,
-      };
-      // Add game to the database, making sure it is appended (so we know which is the most recent question)
-      game.used_questions.push(question_data.id);
-      await game.save();
+  if (category === "Consequence") {
+    return formatConsequence(game.theme_pack, game.used_consequences)
+      .then(async (consequence: Consequence) => {
+        let movement_die: number = 0;
+        switch (consequence.consequenceType) {
+          case ConsequenceType.MoveBackward:
+          case ConsequenceType.LoseATurn:
+            movement_die = MathUtil.randInt(-3, -1);
+            break;
+          case ConsequenceType.MoveForward:
+          case ConsequenceType.SkipATurn:
+            movement_die = MathUtil.randInt(1, 3);
+            break;
+        }
 
-      // Start timer and send question:
-      connections.turn = {
-        turn_end: Date.now(),
-        movement_die: movement_die,
-      };
-      question_data.timer_end = connections.turn.turn_end;
-      connections.host.conn.socket.send(
+        let consequence_data: ConsequenceData = {
+          id: consequence.id,
+          consequence_type: consequence.consequenceType,
+          story: consequence.story,
+          movement_die: movement_die,
+          timer_end: Date.now(),
+          timer_length: 10,
+        };
+        // Add game to the database, making sure it is appended (so we know which is the most recent question)
+        game.used_consequences.push(consequence.id);
+        await game.save();
+
+        // Start timer and send question:
+        connections.turn = {
+          turn_end: Date.now() + 10 * 1000,
+          movement_die: movement_die,
+        };
+        consequence_data.timer_end = connections.turn.turn_end;
+        connections.host.conn.socket.send(
+          JSON.stringify({
+            type: WebsocketType.ConsequenceAck,
+            requestId: data.requestId,
+            data: consequence_data,
+          } as WebsocketResponse)
+        );
+        connections.clients
+          .find((c) => c.username === game.players[0].username)!
+          .conn.socket.send(
+            JSON.stringify({
+              type: WebsocketType.ConsequenceAck,
+              requestId: data.requestId,
+              data: consequence_data,
+            } as WebsocketResponse)
+          );
+        // Start the timer async timeout
+        setTimeout(() => {
+          questionEnd(connections, game, data);
+        }, Math.abs(Date.now() - consequence_data.timer_end));
+        return Promise.resolve(true);
+      })
+      .catch((err) => {
+        console.log(
+          `[WS] Error fetching consequence for request id ${data.requestId}:`,
+          err
+        );
+        return Promise.reject(
+          `[WS] Error fetching consequence for request id ${data.requestId}: ${err}`
+        );
+      });
+    /*
+    // Consequence Card
+    connections.clients
+      .find((c) => c.username === game.players[0].username)!
+      .conn.socket.send(
         JSON.stringify({
           type: WebsocketType.QuestionAck,
           requestId: data.requestId,
           data: question_data,
         } as WebsocketResponse)
       );
-      if (question_data.all_play) {
-        // All_play
-        connections.clients.forEach((c) => {
-          c.conn.socket.send(
-            JSON.stringify({
-              type: WebsocketType.QuestionAck,
-              requestId: data.requestId,
-              data: question_data,
-            } as WebsocketResponse)
-          );
-        });
-      } else if ([3, 7].includes(challenge_die)) {
-        // Consequence Card
-        connections.clients
-          .find((c) => c.username === game.players[0].username)!
-          .conn.socket.send(
-            JSON.stringify({
-              type: WebsocketType.QuestionAck,
-              requestId: data.requestId,
-              data: question_data,
-            } as WebsocketResponse)
-          );
-      } else {
-        // My Play
-        connections.clients
-          .find((c) => c.username === game.players[0].username)!
-          .conn.socket.send(
-            JSON.stringify({
-              type: WebsocketType.QuestionAck,
-              requestId: data.requestId,
-              data: question_data,
-            } as WebsocketResponse)
-          );
-      }
-      // Start the timer async timeout
-      setTimeout(() => {
-        questionEnd(connections, game, data);
-      }, Math.abs(Date.now() - question_data.timer_end));
-      return Promise.resolve(true);
-    })
-    .catch((err) => {
-      console.log(
-        `[WS] Error fetching question for request id ${data.requestId}:`,
-        err
-      );
-      return Promise.reject(
-        `[WS] Error fetching question for request id ${data.requestId}: ${err}`
-      );
-    });
+      */
+  } else {
+    return formatQuestion(
+      game.theme_pack,
+      category,
+      question_type,
+      game.used_questions
+    )
+      .then(async (res) => {
+        let question_data: QuestionData = {
+          id: res.id,
+          category: category,
+          question_type: question_type,
+          question: res.question,
+          options: res.options,
+          media_type: res.media_type,
+          media_url: res.media_url,
+          all_play: 0 <= challenge_die && challenge_die >= 2,
+          movement_die: movement_die,
+          challenge_die: challenge_die,
+          timer_length: 15,
+        };
+        // Add game to the database, making sure it is appended (so we know which is the most recent question)
+        game.used_questions.push(question_data.id);
+        await game.save();
+
+        // Start timer and send question:
+        connections.turn = {
+          turn_end: Date.now() + 15 * 1000,
+          movement_die: movement_die,
+        };
+        question_data.timer_end = connections.turn.turn_end;
+        connections.host.conn.socket.send(
+          JSON.stringify({
+            type: WebsocketType.QuestionAck,
+            requestId: data.requestId,
+            data: question_data,
+          } as WebsocketResponse)
+        );
+        if (question_data.all_play) {
+          // All_play
+          connections.clients.forEach((c) => {
+            c.conn.socket.send(
+              JSON.stringify({
+                type: WebsocketType.QuestionAck,
+                requestId: data.requestId,
+                data: question_data,
+              } as WebsocketResponse)
+            );
+          });
+        } else {
+          // My Play
+          connections.clients
+            .find((c) => c.username === game.players[0].username)!
+            .conn.socket.send(
+              JSON.stringify({
+                type: WebsocketType.QuestionAck,
+                requestId: data.requestId,
+                data: question_data,
+              } as WebsocketResponse)
+            );
+        }
+        // Start the timer async timeout
+        setTimeout(() => {
+          questionEnd(connections, game, data);
+        }, Math.abs(Date.now() - question_data.timer_end));
+        return Promise.resolve(true);
+      })
+      .catch((err) => {
+        console.log(
+          `[WS] Error fetching question for request id ${data.requestId}:`,
+          err
+        );
+        return Promise.reject(
+          `[WS] Error fetching question for request id ${data.requestId}: ${err}`
+        );
+      });
+  }
 };
 
+/**
+ *
+ * @param connections
+ * @param data
+ * @param username
+ * @param game
+ * @returns
+ */
 export const questionAnswer = async (
   connections: {
     host: ClientConn;
@@ -458,6 +540,12 @@ export const questionAnswer = async (
   return Promise.resolve(correct);
 };
 
+/**
+ *
+ * @param connections
+ * @param game
+ * @param data
+ */
 const questionEnd = async (
   connections: {
     host: ClientConn;

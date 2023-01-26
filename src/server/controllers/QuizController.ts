@@ -8,9 +8,9 @@
 import { readFile } from "fs/promises";
 import { resolve } from "path";
 
+import { Consequence } from "../../shared/types/Consequence";
 import { Question } from "../../shared/types/Question";
 
-import StringUtil from "../../shared/util/StringUtil";
 import MathUtil from "../../shared/util/MathUtil";
 
 /**
@@ -154,6 +154,49 @@ export const formatQuestion = async (
         media_type: question.media_type,
         media_url: question.media_url,
       });
+    })
+    .catch((err) => {
+      return Promise.reject(err);
+    });
+};
+
+/**
+ *
+ * @param theme_pack_name
+ * @param used_consequences
+ * @returns
+ */
+export const formatConsequence = async (
+  theme_pack_name: string,
+  used_consequences: number[]
+): Promise<Consequence> => {
+  // Read file located at ../themes/disney.json
+  const theme_path: string = resolve(
+    __dirname,
+    "..",
+    "themes",
+    `${theme_pack_name}.json`
+  );
+
+  return readFile(theme_path, "utf-8")
+    .then((fstream) => {
+      let themePack = JSON.parse(fstream);
+      if (!themePack.consequences || themePack.consequences.length < 1)
+        return Promise.reject(
+          new Error("The desired theme pack has no consequnces.")
+        );
+
+      // All consequences given, allow repeats.
+      let consequences: Consequence[] = themePack.consequences.filter(
+        (c: Consequence) => !used_consequences.includes(c.id)
+      ) as Consequence[];
+      if (consequences.length === 0)
+        consequences = themePack.consequences as Consequence[];
+
+      // Pick random consequence
+      let consequence = MathUtil.choice(consequences, 1) as Consequence;
+
+      return Promise.resolve(consequence);
     })
     .catch((err) => {
       return Promise.reject(err);

@@ -320,6 +320,23 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                             } as WebsocketResponse)
                           );
                         });
+
+                        setTimeout(() => {
+                          turn(connections[gameID], data, game)
+                            .then((res) => {})
+                            .catch((err) => {
+                              conn.socket.send(
+                                JSON.stringify({
+                                  type: WebsocketType.Error,
+                                  requestId: data.requestId,
+                                  data: {
+                                    err: err,
+                                    message: "[WS] Turn has failed.",
+                                  },
+                                } as WebsocketResponse)
+                              );
+                            });
+                        }, 5 * 1000);
                       })
                       .catch((err) => {
                         conn.socket.send(
@@ -369,6 +386,22 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                             } as WebsocketResponse)
                           );
                         });
+                        setTimeout(() => {
+                          turn(connections[gameID], data, game)
+                            .then((res) => {})
+                            .catch((err) => {
+                              conn.socket.send(
+                                JSON.stringify({
+                                  type: WebsocketType.Error,
+                                  requestId: data.requestId,
+                                  data: {
+                                    err: err,
+                                    message: "[WS] Turn has failed.",
+                                  },
+                                } as WebsocketResponse)
+                              );
+                            });
+                        }, 5 * 1000);
                       })
                       .catch((err) => {
                         conn.socket.send(
@@ -384,6 +417,19 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       });
                     break;
                   case WebsocketType.QuestionRequest:
+                    if (userType !== "Game") {
+                      conn.socket.send(
+                        JSON.stringify({
+                          type: WebsocketType.Error,
+                          requestId: data.requestId,
+                          data: {
+                            error: new Error("[WS] User not authorized."),
+                            message: "[WS] User not authorized.",
+                          },
+                        } as WebsocketResponse)
+                      );
+                      return;
+                    }
                     turn(connections[gameID], data, game)
                       .then((res) => {})
                       .catch((err) => {
