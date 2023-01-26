@@ -1,9 +1,40 @@
+<template>
+  <main>
+    <div id="root">
+      <div id="left">
+        <LogoSVG id="icon" />
+        <h1 id="title">SawThat?</h1>
+        <div v-if="gameCode">
+          <p>Game Code (Click to Copy):</p>
+          <button id="gameCode" @click="copyCode()">{{ gameCode }}</button>
+          <p>
+            Go to
+            {{ /*import.meta.env.DOMAIN*/ "https://sawthat.jazzmoon.host/" }}
+            and enter this code to join!
+          </p>
+        </div>
+        <button id="gameButton" @click="nextSetupStep()" :disabled="!canGoNext">
+          {{ buttonText }}
+        </button>
+      </div>
+      <div id="right" v-if="gameCode">
+        <h2>Who's already here:</h2>
+        <PlayersListVue
+          id="players"
+          :players="props.players"
+          :currentPlayer="null"
+        />
+      </div>
+    </div>
+  </main>
+</template>
+
 <script setup lang="ts">
 import LogoSVG from "@/assets/logo.svg?component";
 import PlayersListVue from "@/components/PlayersList.vue";
 import { HTTP_API } from "@/middleware/HTTP_API";
 import { WS_API } from "@/middleware/WS_API";
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import { WebsocketType } from "../../../shared/enums/WebsocketTypes";
 import type { Player } from "../../../shared/types/Player";
 
@@ -14,6 +45,7 @@ const props = defineProps<{
 const emit = defineEmits(["gameStarted"]);
 
 const gameCode = ref("");
+const canGoNext = ref(true);
 
 /**
  * Helper function to decide what text to show on the button that
@@ -70,40 +102,25 @@ async function createGame() {
   const requestSuccess = await WS_API.setupWebSocketConnection(gameCode.value);
 
   if (!requestSuccess) {
-    alert(
-      "An error occurred while trying to upgrade the connection with the server."
-    );
+    alert("An error occurred while trying to upgrade the connection with the server.");
     return;
   }
 
   const request2Success = await WS_API.sendCreateGameRequest();
 
   if (!request2Success || request2Success.type === WebsocketType.Error) {
-    alert(
-      `An error occurred while trying to create the game.${request2Success.data}`
-    );
+    alert(`An error occurred while trying to create the game.${request2Success.data}`);
     return;
   }
 
-  // Disable start button since there are no players at first.
-  document.getElementById("gameButton")?.setAttribute("disabled", "true");
-  // Update start button whenever a player joins or disconnects.
+  // Disable start button since there are no players at first and
+  // update the start button whenever a player joins or disconnects.
+  canGoNext.value = false;
   WS_API.addIncomingMessageCallback("checkPlayerCount", (message) => {
-    // props.players seems to lag behind when these messages are handled.
-    // There's probably a better way of doing this.
-    let lengthMod = 1;
     switch (message.type) {
-      case WebsocketType.PlayerDisconnectAck:
-        lengthMod = -1;
       case WebsocketType.GameJoinAck:
-        let button = document.getElementById("gameButton");
-        if (props.players.length + lengthMod > 1) {
-          button?.removeAttribute("disabled");
-        } else {
-          button?.setAttribute("disabled", "true");
-        }
-      default:
-        break;
+      case WebsocketType.PlayerDisconnectAck:
+        canGoNext.value = message.data.players.length >= 2;
     }
   });
 }
@@ -126,37 +143,6 @@ async function startGame() {
   WS_API.removeIncomingMessageCallback("checkPlayerCount");
 }
 </script>
-
-<template>
-  <main>
-    <div id="root">
-      <div id="left">
-        <LogoSVG id="icon" />
-        <h1 id="title">SawThat?</h1>
-        <div v-if="gameCode">
-          <p>Game Code (Click to Copy):</p>
-          <button id="gameCode" @click="copyCode()">{{ gameCode }}</button>
-          <p>
-            Go to
-            {{ /*import.meta.env.DOMAIN*/ "https://sawthat.jazzmoon.host/" }}
-            and enter this code to join!
-          </p>
-        </div>
-        <button id="gameButton" @click="nextSetupStep()">
-          {{ buttonText }}
-        </button>
-      </div>
-      <div id="right" v-if="gameCode">
-        <h2>Who's already here:</h2>
-        <PlayersListVue
-          id="players"
-          :players="props.players"
-          :currentPlayer="null"
-        />
-      </div>
-    </div>
-  </main>
-</template>
 
 <style scoped>
 #root {
