@@ -8,10 +8,16 @@ import { WebsocketType } from "../../../shared/enums/WebsocketTypes";
 import type { Player } from "../../../shared/types/Player";
 
 const props = defineProps<{
-  players: Player[]
+  players: Player[];
 }>();
 
-const emit = defineEmits(['gameStarted']);
+const watch = {
+  players: function (vnew: any, vold: any) {
+    console.log(`Old: ${vold}, New: ${vnew}`);
+  },
+};
+
+const emit = defineEmits(["gameStarted"]);
 
 const gameCode = ref("");
 
@@ -57,7 +63,7 @@ async function nextSetupStep() {
  */
 async function createGame() {
   const requestResult = await HTTP_API.sendCreate("disney"); // todo let the user decide this
-  if (!requestResult || requestResult.hasOwnProperty('error')) {
+  if (!requestResult || requestResult.hasOwnProperty("error")) {
     alert(`Failed to create a new game.\n${JSON.stringify(requestResult)}`);
     return;
   } else {
@@ -70,16 +76,23 @@ async function createGame() {
   const requestSuccess = await WS_API.setupWebSocketConnection(gameCode.value);
 
   if (!requestSuccess) {
-    alert("An error occurred while trying to upgrade the connection with the server.");
+    alert(
+      "An error occurred while trying to upgrade the connection with the server."
+    );
     return;
   }
 
   const request2Success = await WS_API.sendCreateGameRequest();
 
   if (!request2Success || request2Success.type === WebsocketType.Error) {
-    alert(`An error occurred while trying to create the game.${request2Success.data}`);
+    alert(
+      `An error occurred while trying to create the game.${request2Success.data}`
+    );
     return;
   }
+
+  // Disable start button since there are no players at first.
+  document.getElementById("gameCode")?.setAttribute("disabled", "true");
 }
 
 /**
@@ -90,13 +103,14 @@ async function startGame() {
   const request2Success = await WS_API.sendStartGameRequest();
 
   if (!request2Success || request2Success.type === WebsocketType.Error) {
-    alert(`An error occurred while trying to start the game.${request2Success.data}`);
+    alert(
+      `An error occurred while trying to start the game.${request2Success.data}`
+    );
     return;
   }
 
-  emit('gameStarted');
+  emit("gameStarted");
 }
-
 </script>
 
 <template>
@@ -108,13 +122,23 @@ async function startGame() {
         <div v-if="gameCode">
           <p>Game Code (Click to Copy):</p>
           <button id="gameCode" @click="copyCode()">{{ gameCode }}</button>
-          <p>Go to {{ /*import.meta.env.DOMAIN*/ 'https://sawthat.jazzmoon.host/' }} and enter this code to join!</p>
+          <p>
+            Go to
+            {{
+              /*import.meta.env.DOMAIN*/ "https://sawthat.jazzmoon.host/"
+            }}
+            and enter this code to join!
+          </p>
         </div>
         <button @click="nextSetupStep()">{{ buttonText }}</button>
       </div>
       <div id="right" v-if="gameCode">
         <h2>Who's already here:</h2>
-        <PlayersListVue id="players" :players="props.players" :currentPlayer="null" />
+        <PlayersListVue
+          id="players"
+          :players="props.players"
+          :currentPlayer="null"
+        />
       </div>
     </div>
   </main>
