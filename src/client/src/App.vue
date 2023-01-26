@@ -40,7 +40,7 @@ onMounted(() => {
       case WebsocketType.Error:
         alert(JSON.stringify(message.data));
         break;
-      case WebsocketType.QuestionRequest:
+      case WebsocketType.QuestionAck:
         currentGameState.value = GameState.ANSWERING_QUESTION;
         currentQuestionData = message.data;
         break;
