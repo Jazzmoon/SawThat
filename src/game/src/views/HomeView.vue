@@ -86,7 +86,7 @@ async function createGame() {
   }
 
   // Disable start button since there are no players at first.
-  document.getElementById("gameCode")?.setAttribute("disabled", "true");
+  document.getElementById("gameButton")?.setAttribute("disabled", "true");
   // Update start button whenever a player joins or disconnects.
   WS_API.addIncomingMessageCallback("checkPlayerCount", (message) => {
     switch (message.type) {
@@ -94,7 +94,7 @@ async function createGame() {
       case WebsocketType.GameJoinAck:
         console.log("Player joined/disconnected");
         document
-          .getElementById("gameCode")
+          .getElementById("gameButton")
           ?.setAttribute(
             "disabled",
             props.players.length > 1 ? "false" : "true"
@@ -139,7 +139,7 @@ async function startGame() {
             and enter this code to join!
           </p>
         </div>
-        <button @click="nextSetupStep()">{{ buttonText }}</button>
+        <button id="gameButton" @click="nextSetupStep()">{{ buttonText }}</button>
       </div>
       <div id="right" v-if="gameCode">
         <h2>Who's already here:</h2>
