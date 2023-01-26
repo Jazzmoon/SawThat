@@ -19,6 +19,7 @@ const props = defineProps<{
 }>();
 
 onMounted(() => {
+    console.log(props.data)
     if (props.data.timer_end) {
         timer.value = props.data.timer_length - (Date.now() - new Date(props.data.timer_end).getTime()) / 1000;
     } else {
