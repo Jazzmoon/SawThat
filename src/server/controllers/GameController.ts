@@ -11,9 +11,12 @@ import { SocketStream } from "@fastify/websocket";
 import mongoose from "mongoose";
 
 import { generateJWT } from "./AuthController";
-import { formatQuestion } from "./QuizController";
+import { formatQuestion, validateAnswer } from "./QuizController";
 
-import { QuestionData } from "../../shared/apis/WebSocketAPIType";
+import {
+  QuestionAnswerData,
+  QuestionData,
+} from "../../shared/apis/WebSocketAPIType";
 import { QuestionCategory } from "../../shared/enums/QuestionCategory";
 import { TurnModifier } from "../../shared/enums/TurnModifier";
 import { WebsocketType } from "../../shared/enums/WebsocketTypes";
@@ -261,7 +264,10 @@ export const turn = async (
   connections: {
     host: ClientConn;
     clients: Array<ClientConn>;
-    turn?: Date | number;
+    turn?: {
+      turn_end: number;
+      movement_die: number;
+    };
   },
   data: WebsocketRequest,
   game: PopulatedGame
@@ -343,7 +349,11 @@ export const turn = async (
       await game.save();
 
       // Start timer and send question:
-      connections.turn = question_data.timer_end = Date.now();
+      connections.turn = {
+        turn_end: Date.now(),
+        movement_die: movement_die,
+      };
+      question_data.timer_end = connections.turn.turn_end;
       connections.host.conn.socket.send(
         JSON.stringify({
           type: WebsocketType.QuestionAck,
@@ -387,7 +397,7 @@ export const turn = async (
       }
       // Start the timer async timeout
       setTimeout(() => {
-        questionEnd(connections);
+        questionEnd(connections, game, data);
       }, Math.abs(Date.now() - question_data.timer_end));
       return Promise.resolve(true);
     })
@@ -402,13 +412,89 @@ export const turn = async (
     });
 };
 
-const questionAnswer = async () => {};
+export const questionAnswer = async (
+  connections: {
+    host: ClientConn;
+    clients: Array<ClientConn>;
+    turn?: {
+      turn_end: number;
+      movement_die: number;
+    };
+  },
+  data: WebsocketRequest,
+  username: string,
+  game: PopulatedGame
+): Promise<boolean> => {
+  // Verify that the question is still open to be answered
+  if (connections.turn === undefined)
+    return Promise.reject("This question is no longer available for answer");
+  // Verify that the question is the same as the one being asked
+  if (
+    game.used_questions[game.used_questions.length - 1] !==
+    (data.data as QuestionAnswerData).id
+  )
+    return Promise.reject(
+      "Player is answering a different question than was asked."
+    );
 
-const questionEnd = async (connections: {
-  host: ClientConn;
-  clients: Array<ClientConn>;
-  turn?: Date | number;
-}) => {
+  // Check user answer against actual answer
+  const correct: boolean = await validateAnswer(
+    game.theme_pack,
+    (data.data as QuestionAnswerData).id,
+    (data.data as QuestionAnswerData).answer
+  );
+  if (correct) {
+    // If it is the players turn. move them.
+    if (game.players[0].username === username)
+      game.players[0].position += connections.turn.movement_die;
+    // If correct, kill the timeout and move player accordingly
+    connections.turn = undefined;
+    await game.save();
+    await questionEnd(connections, game, data);
+  }
+  // return if answer is correct
+  return Promise.resolve(correct);
+};
+
+const questionEnd = async (
+  connections: {
+    host: ClientConn;
+    clients: Array<ClientConn>;
+    turn?: {
+      turn_end: number;
+      movement_die: number;
+    };
+  },
+  game: PopulatedGame,
+  data: WebsocketRequest
+) => {
+  // Check if it is a timeout, or the question ended early
+  let early = connections.turn === undefined;
+  connections.host.conn.socket.send(
+    JSON.stringify({
+      type: early
+        ? WebsocketType.QuestionEndedAck
+        : WebsocketType.QuestionTimeOut,
+      requestId: data.requestId,
+      data: {
+        players: game.players,
+      },
+    } as WebsocketResponse)
+  );
+  connections.clients.forEach((c) => {
+    c.conn.socket.send(
+      JSON.stringify({
+        type: early
+          ? WebsocketType.QuestionEndedAck
+          : WebsocketType.QuestionTimeOut,
+        requestId: data.requestId,
+        data: {
+          players: game.players,
+        },
+      } as WebsocketResponse)
+    );
+  });
+  // Force the timeout to be undefined to be safe
   connections.turn = undefined;
 };
 
