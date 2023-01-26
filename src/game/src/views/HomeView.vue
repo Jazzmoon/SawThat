@@ -97,7 +97,7 @@ async function createGame() {
           .getElementById("gameButton")
           ?.setAttribute(
             "disabled",
-            props.players.length > 1 ? "false" : "true"
+            message.data["players"]?.length > 1 ? "false" : "true"
           );
       default:
         break;
@@ -139,7 +139,9 @@ async function startGame() {
             and enter this code to join!
           </p>
         </div>
-        <button id="gameButton" @click="nextSetupStep()">{{ buttonText }}</button>
+        <button id="gameButton" @click="nextSetupStep()">
+          {{ buttonText }}
+        </button>
       </div>
       <div id="right" v-if="gameCode">
         <h2>Who's already here:</h2>
