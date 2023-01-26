@@ -1,4 +1,4 @@
-[backend](../README.md) / [Modules](../modules.md) / routes/ws.router
+[server](../README.md) / [Modules](../modules.md) / routes/ws.router
 
 # Module: routes/ws.router
 

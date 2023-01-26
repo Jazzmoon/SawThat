@@ -1,4 +1,4 @@
-[backend](../README.md) / [Modules](../modules.md) / routes/client.router
+[server](../README.md) / [Modules](../modules.md) / routes/client.router
 
 # Module: routes/client.router
 

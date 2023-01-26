@@ -2,8 +2,6 @@
 
 # Server Node
 
-## Table of contents
-
 ### Modules
 
 - [controllers/AuthController](modules/controllers_AuthController.md)
