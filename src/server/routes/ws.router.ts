@@ -487,7 +487,12 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
               type: WebsocketType.PlayerDisconnectAck,
               requestId: undefined,
               data: {
-                username: connections[gameID].host.username,
+                username:
+                  connections[gameID].clients
+                    .filter((cc) => {
+                      return cc.conn == conn;
+                    })
+                    ?.at(0)?.username || connections[gameID].host.username,
               },
             } as WebsocketResponse)
           );
