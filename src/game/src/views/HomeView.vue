@@ -96,7 +96,6 @@ async function createGame() {
       case WebsocketType.PlayerDisconnectAck:
         lengthMod = -1;
       case WebsocketType.GameJoinAck:
-        console.log("Player joined/disconnected");
         let button = document.getElementById("gameButton");
         if (props.players.length + lengthMod > 1) {
           button?.removeAttribute("disabled");
