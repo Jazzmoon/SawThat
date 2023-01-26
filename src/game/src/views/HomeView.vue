@@ -93,12 +93,15 @@ async function createGame() {
       case WebsocketType.PlayerDisconnectAck:
       case WebsocketType.GameJoinAck:
         console.log("Player joined/disconnected");
-        document
-          .getElementById("gameButton")
-          ?.setAttribute(
-            "disabled",
-            message.data["players"]?.length > 1 ? "false" : "true"
-          );
+        console.log(message.data);
+        console.log(props.players);
+        let button = document.getElementById("gameButton");
+        console.log(button);
+        if (props.players.length > 1) {
+          button?.removeAttribute("disabled");
+        } else {
+          button?.setAttribute("disabled", "true");
+        }
       default:
         break;
     }
