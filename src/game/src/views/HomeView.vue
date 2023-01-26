@@ -89,15 +89,16 @@ async function createGame() {
   document.getElementById("gameButton")?.setAttribute("disabled", "true");
   // Update start button whenever a player joins or disconnects.
   WS_API.addIncomingMessageCallback("checkPlayerCount", (message) => {
+    // props.players seems to lag behind when these messages are handled.
+    // There's probably a better way of doing this.
+    let lengthMod = 1;
     switch (message.type) {
       case WebsocketType.PlayerDisconnectAck:
+        lengthMod = -1;
       case WebsocketType.GameJoinAck:
         console.log("Player joined/disconnected");
-        console.log(message.data);
-        console.log(props.players);
         let button = document.getElementById("gameButton");
-        console.log(button);
-        if (props.players.length > 1) {
+        if (props.players.length + lengthMod > 1) {
           button?.removeAttribute("disabled");
         } else {
           button?.setAttribute("disabled", "true");
