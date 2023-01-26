@@ -441,7 +441,9 @@ export const questionAnswer = async (
   const correct: boolean = await validateAnswer(
     game.theme_pack,
     (data.data as QuestionAnswerData).id,
-    (data.data as QuestionAnswerData).answer
+    (data.data as QuestionAnswerData).category,
+    (data.data as QuestionAnswerData).answer,
+    (data.data as QuestionAnswerData).question_type
   );
   if (correct) {
     // If it is the players turn. move them.
