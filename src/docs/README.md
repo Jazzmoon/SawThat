@@ -116,5 +116,6 @@ This view appears when a client node needs to answer a question. This view shows
 
 
 # Setup and running
+
 Please see section 7.1 Building and launching the project of our Software Design Document for details. This node will not function independently, so it is important to setup all the nodes before interacting with any them independently.
 

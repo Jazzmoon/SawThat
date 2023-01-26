@@ -1,4 +1,4 @@
-[backend](../README.md) / [Modules](../modules.md) / routes/game.router
+[server](../README.md) / [Modules](../modules.md) / routes/game.router
 
 # Module: routes/game.router
 

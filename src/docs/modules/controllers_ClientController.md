@@ -1,4 +1,4 @@
-[backend](../README.md) / [Modules](../modules.md) / controllers/ClientController
+[server](../README.md) / [Modules](../modules.md) / controllers/ClientController
 
 # Module: controllers/ClientController
 
@@ -32,4 +32,4 @@ A resolution, or rejection, to indicate if the request was successful.
 
 #### Defined in
 
-[controllers/ClientController.ts:21](https://github.com/Jazzmoon/SawThat/blob/bd5fc3d/src/server/controllers/ClientController.ts#L21)
+[controllers/ClientController.ts:21](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/controllers/ClientController.ts#L21)

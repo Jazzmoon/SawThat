@@ -1,4 +1,4 @@
-[backend](../README.md) / [Modules](../modules.md) / models/User
+[server](../README.md) / [Modules](../modules.md) / models/User
 
 # Module: models/User
 
@@ -33,7 +33,7 @@ The definition of what a user looks like within the database.
 
 #### Defined in
 
-[models/User.ts:12](https://github.com/Jazzmoon/SawThat/blob/bd5fc3d/src/server/models/User.ts#L12)
+[models/User.ts:12](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/models/User.ts#L12)
 
 ## Variables
 
@@ -43,4 +43,4 @@ The definition of what a user looks like within the database.
 
 #### Defined in
 
-[models/User.ts:43](https://github.com/Jazzmoon/SawThat/blob/bd5fc3d/src/server/models/User.ts#L43)
+[models/User.ts:43](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/models/User.ts#L43)
