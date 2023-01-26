@@ -3,19 +3,13 @@ import LogoSVG from "@/assets/logo.svg?component";
 import PlayersListVue from "@/components/PlayersList.vue";
 import { HTTP_API } from "@/middleware/HTTP_API";
 import { WS_API } from "@/middleware/WS_API";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { WebsocketType } from "../../../shared/enums/WebsocketTypes";
 import type { Player } from "../../../shared/types/Player";
 
 const props = defineProps<{
   players: Player[];
 }>();
-
-const watch = {
-  players: function (vnew: any, vold: any) {
-    console.log(`Old: ${vold}, New: ${vnew}`);
-  },
-};
 
 const emit = defineEmits(["gameStarted"]);
 
@@ -93,6 +87,22 @@ async function createGame() {
 
   // Disable start button since there are no players at first.
   document.getElementById("gameCode")?.setAttribute("disabled", "true");
+  // Update start button whenever a player joins or disconnects.
+  WS_API.addIncomingMessageCallback("checkPlayerCount", (message) => {
+    switch (message.type) {
+      case WebsocketType.PlayerDisconnectAck:
+      case WebsocketType.GameJoinAck:
+        console.log("Player joined/disconnected");
+        document
+          .getElementById("gameCode")
+          ?.setAttribute(
+            "disabled",
+            props.players.length > 1 ? "false" : "true"
+          );
+      default:
+        break;
+    }
+  });
 }
 
 /**
@@ -110,6 +120,7 @@ async function startGame() {
   }
 
   emit("gameStarted");
+  WS_API.removeIncomingMessageCallback("checkPlayerCount");
 }
 </script>
 
@@ -124,9 +135,7 @@ async function startGame() {
           <button id="gameCode" @click="copyCode()">{{ gameCode }}</button>
           <p>
             Go to
-            {{
-              /*import.meta.env.DOMAIN*/ "https://sawthat.jazzmoon.host/"
-            }}
+            {{ /*import.meta.env.DOMAIN*/ "https://sawthat.jazzmoon.host/" }}
             and enter this code to join!
           </p>
         </div>
@@ -186,5 +195,10 @@ button {
   text-align: center;
   background-color: #003fa3;
   min-width: 120px;
+}
+
+button:disabled {
+  border: 1rem solid #778db1;
+  background-color: #778db1;
 }
 </style>
