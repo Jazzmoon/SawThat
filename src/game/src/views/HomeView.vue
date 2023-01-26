@@ -31,7 +31,7 @@ function isGameCreated() {
 }
 
 /**
- * Copies the gamecode to the user's clipboard.
+ * Copies the game code to the user's clipboard.
  */
 function copyCode() {
   if (!isGameCreated()) {
@@ -70,14 +70,14 @@ async function createGame() {
   const requestSuccess = await WS_API.setupWebSocketConnection(gameCode.value);
 
   if (!requestSuccess) {
-    alert("An error occured while trying to upgrade the connection with the server.");
+    alert("An error occurred while trying to upgrade the connection with the server.");
     return;
   }
 
   const request2Success = await WS_API.sendCreateGameRequest();
 
   if (!request2Success || request2Success.type === WebsocketType.Error) {
-    alert(`An error occured while trying to create the game.${request2Success.data}`);
+    alert(`An error occurred while trying to create the game.${request2Success.data}`);
     return;
   }
 }
@@ -90,7 +90,7 @@ async function startGame() {
   const request2Success = await WS_API.sendStartGameRequest();
 
   if (!request2Success || request2Success.type === WebsocketType.Error) {
-    alert(`An error occured while trying to start the game.${request2Success.data}`);
+    alert(`An error occurred while trying to start the game.${request2Success.data}`);
     return;
   }
 
@@ -107,7 +107,7 @@ async function startGame() {
         <h1 id="title">SawThat?</h1>
         <div v-if="gameCode">
           <p>Game Code (Click to Copy):</p>
-          <button id="gamecode" @click="copyCode()">{{ gameCode }}</button>
+          <button id="gameCode" @click="copyCode()">{{ gameCode }}</button>
           <p>Go to {{ /*import.meta.env.DOMAIN*/ 'https://sawthat.jazzmoon.host/' }} and enter this code to join!</p>
         </div>
         <button @click="nextSetupStep()">{{ buttonText }}</button>
@@ -141,7 +141,7 @@ async function startGame() {
   min-width: 50px;
   width: 20vmin;
 }
-#gamecode {
+#gameCode {
   width: fit-content;
   margin: auto;
   color: white;
