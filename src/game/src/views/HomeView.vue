@@ -187,6 +187,9 @@ async function startGame() {
   background-color: #003fa3;
   border-radius: 30px;
 }
+#left {
+  margin-left: 48px;
+}
 #right {
   display: inline-block;
   margin-left: 48px;
