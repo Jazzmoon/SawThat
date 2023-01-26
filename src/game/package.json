@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "vite-svg-loader": "^3.6.0",
-    "vue": "^3.2.45"
+    "vue": "^3.2.45",
+    "vue3-radial-progress": "^1.1.1"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.1.4",

@@ -3,12 +3,21 @@
         <div id="root">
             <h2>Consequence</h2>
             <p>{{ props.data.story }}</p>
-            <p>{{ timer }}</p>
+            <RadialProgress 
+                style="margin: auto"
+                :diameter="70"
+                :completed-steps="timer"
+                :total-steps="props.data.timer_length"
+                start-color="blue"
+                stop-color="blue">
+                {{ timer }}
+            </RadialProgress>
         </div>
     </div>
 </template>
 
 <script lang="ts" setup>
+import RadialProgress from "vue3-radial-progress";
 import { onMounted, ref } from 'vue';
 import type { ConsequenceData } from '../../../shared/apis/WebSocketAPIType';
 
