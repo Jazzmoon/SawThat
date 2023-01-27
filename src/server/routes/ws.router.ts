@@ -22,7 +22,7 @@ import {
 } from "../../shared/apis/WebSocketAPIType";
 
 import Game from "../models/Game";
-import { UserType } from "../models/User";
+import User, { UserType } from "../models/User";
 
 import {
   nextPlayer,
@@ -30,6 +30,7 @@ import {
   turn,
   questionAnswer,
 } from "../controllers/GameController";
+import { Player } from "../../shared/types/Player";
 
 // Create Record to match WS to GameID
 type ClientConn = {
@@ -60,7 +61,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
   fastify.get(
     "/:gameID",
     { websocket: true },
-    (conn: SocketStream, req: FastifyRequest) => {
+    async (conn: SocketStream, req: FastifyRequest) => {
       // Set WebSocket Encoding
       conn.setEncoding("utf8");
 
@@ -524,7 +525,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
       | Disconnect:
       * 1. Find client within the connections record and remove them from the connections array
       */
-      conn.socket.on("close", (stream) => {
+      conn.socket.on("close", async (stream) => {
         if (!connections[gameID]) {
           // User never sent message and was never assigned to game
           conn.socket.send(
@@ -538,15 +539,27 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
           );
           return;
         }
+        const game = await Game.findOne({ game_code: gameID })
+          .populate<{ players: UserType[] }>("players")
+          .orFail()
+          .exec();
         // Check if close was host or clients
         if (connections[gameID].host.conn === conn) {
+          // Get rankings
+          const ranking: Player[] = game!.players.map((p) => {
+            return {
+              username: p.username,
+              color: p.color,
+              position: p.position,
+            } as Player;
+          });
           // If Host, disconnect all clients and send message
           connections[gameID].host.conn.socket.send(
             JSON.stringify({
               type: WebsocketType.GameEndedAck,
               requestId: undefined,
               data: {
-                ranking: [], // todo
+                ranking: ranking,
               },
             } as WebsocketResponse)
           );
@@ -556,27 +569,38 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                 type: WebsocketType.GameEndedAck,
                 requestId: undefined,
                 data: {
-                  ranking: [], // todo
+                  ranking: ranking,
                 },
               } as WebsocketResponse)
             );
             c.conn.end();
           });
           delete connections[gameID];
+          // Delete database items
+          await User.findOneAndDelete(game!.hostId);
+          game!.players.forEach(async (p) => {
+            await User.findOneAndDelete({
+              username: p.username,
+              userType: "Client",
+              game: game!._id,
+            });
+          });
           conn.end();
         } else {
           // If Client, just DC and alert everyone else
+          // Get username of player who left
+          let dis_username = connections[gameID].clients.find(
+            (c) => c.conn === conn
+          )!.username;
+          connections[gameID].clients = connections[gameID].clients.filter(
+            (c) => c.conn !== conn
+          );
           connections[gameID].host.conn.socket.send(
             JSON.stringify({
               type: WebsocketType.PlayerDisconnectAck,
               requestId: undefined,
               data: {
-                username:
-                  connections[gameID].clients
-                    .filter((cc) => {
-                      return cc.conn == conn;
-                    })
-                    ?.at(0)?.username || connections[gameID].host.username,
+                username: dis_username,
               },
             } as WebsocketResponse)
           );
@@ -586,14 +610,21 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                 type: WebsocketType.PlayerDisconnectAck,
                 requestId: undefined,
                 data: {
-                  username: c.username,
+                  username: dis_username,
                 },
               } as WebsocketResponse)
             );
           });
-          connections[gameID].clients = connections[gameID].clients.filter(
-            (c) => c.conn !== conn
+          game.players = game.players.filter(
+            (p) => p.username !== dis_username
           );
+          await game.save();
+          // Delete user
+          await User.findOneAndDelete({
+            username: dis_username,
+            userType: "Client",
+            game: game._id,
+          });
           conn.end();
         }
       });
