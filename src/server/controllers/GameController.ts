@@ -476,12 +476,12 @@ export const turn = async (
 };
 
 /**
- *
- * @param connections
- * @param data
- * @param username
- * @param game
- * @returns
+ * Handle a user sending an answer request to the server
+ * @param {{ host: ClientConn; clients: Array<ClientConn>; turn: { turn_end: number; movement_die: number; } | undefined}} connections - The websocket information of all players connected to the specific game.
+ * @param {WebsocketRequest} data - Information related to the request, such as request id and the question answer.
+ * @param {string} username - The username of the user who send the websocket request.
+ * @param {PopulatedGame} game - The populated game instance to fetch information about the current game state.
+ * @returns {Promise<boolean>} Whether the answer submitted is, or is not, correct.
  */
 export const questionAnswer = async (
   connections: {
@@ -540,12 +540,14 @@ export const questionAnswer = async (
 };
 
 /**
- *
- * @param connections
- * @param game
- * @param data
+ * The question has ended, either by timeout or by answer. Handle accordingly.
+ * @param {{ host: ClientConn; clients: Array<ClientConn>; turn: { turn_end: number; movement_die: number; } | undefined}} connections - The websocket information of all players connected to the specific game.
+ * @param {PopulatedGame} game - The populated game instance to fetch information about the current game state.
+ * @param {WebsocketRequest} data - Information related to the request, such as request id.
+ * @param {boolean} early - Is this request ending the game before the timeout?
+ * @returns {Promise<void>} This is a mutation function in which modifies the next game state and sends it to the players.
  */
-const questionEnd = async (
+export const questionEnd = async (
   connections: {
     host: ClientConn;
     clients: Array<ClientConn>;
@@ -557,9 +559,11 @@ const questionEnd = async (
   game: PopulatedGame,
   data: WebsocketRequest,
   early: boolean
-) => {
+): Promise<void> => {
   // This is the natural timeout, but the turn is over
   if (early === false && connections.turn === undefined) return;
+  // Force the timeout to be undefined so no other requests go through
+  connections.turn = undefined;
   // Get updated players array
   const players = await User.find({
     userType: "Client",
@@ -601,9 +605,26 @@ const questionEnd = async (
       } as WebsocketResponse)
     );
   });
-  // Force the timeout to be undefined to be safe
-  connections.turn = undefined;
 };
+
+/**
+ *
+ * @param connections
+ * @param game
+ * @param data
+ */
+export const handleConsequence = async (
+  connections: {
+    host: ClientConn;
+    clients: Array<ClientConn>;
+    turn?: {
+      turn_end: number;
+      movement_die: number;
+    };
+  },
+  game: PopulatedGame,
+  data: WebsocketRequest
+) => {};
 
 /**
  * Check if any players are in the winner state.
