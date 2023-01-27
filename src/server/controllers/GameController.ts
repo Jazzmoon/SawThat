@@ -357,6 +357,16 @@ export const turn = async (
         };
         // Add game to the database, making sure it is appended (so we know which is the most recent question)
         game.used_consequences.push(consequence.id);
+        game.players[0].position += movement_die; // NO SKIP OR LOSE TURN IMPLEMENTED (Negative position trick?)
+        await User.findOneAndUpdate(
+          {
+            username: game.players[0].username,
+            userType: "Client",
+            token: game.players[0].token,
+            game: game.players[0].game,
+          },
+          { position: game.players[0].position }
+        );
         await game.save();
 
         // Start timer and send question:
@@ -383,7 +393,7 @@ export const turn = async (
           );
         // Start the timer async timeout
         setTimeout(() => {
-          questionEnd(connections, game, data, false);
+          handleConsequence(connections, game, data, false);
         }, Math.abs(Date.now() - consequence_data.timer_end));
         return Promise.resolve(true);
       })
