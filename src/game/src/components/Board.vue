@@ -18,44 +18,72 @@ const props = defineProps<{
     currentPlayerIndex: number
 }>()
 
-let playerPieces: Record<string, SVGCircleElement> = {};
-let playerPosition: Record<string, number> = {};
-let playersOnTile: Record<number, number> = {};
+let playerPieces: Record<string, {piece: SVGCircleElement, position: number}> = {};
+let playersOnTile: number[] = Array(38).fill(0);
+
+let playersWithPieces: Set<string> = new Set();
+
+let startingSpot: HTMLElement | null;
 
 onMounted(() => {
     // create the player pieces for each player and position at starting location
-    const startingSpot = document.getElementById("spot1");
-    playersOnTile[0] = 0;
+    startingSpot = document.getElementById("spot1");
     for (const player of props.players) {
-        const piece = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        piece.setAttribute('r', startingSpot?.getAttribute('r')!);
-        piece.setAttribute('fill', player.color);
-        piece.classList.add("boardPiece");
-        playerPieces[player.username] = piece;
-        startingSpot?.parentElement?.append(piece);
-
-        updatePiecePosition(player);
+        createPiece(player);
     }
 });
 
 watch(props.players, async (n, o) => {
+    let currentPlayers = new Set<string>();
     for (const player of props.players) {
-        if (playerPosition[player.username] !== player.position) {
+        currentPlayers.add(player.username);
+
+        // if there is no piece for this player, create one
+        if (playerPieces[player.username] === undefined) {
+            createPiece(player);
+
+        // if the position of the piece is wrong, update it
+        } else if (playerPieces[player.username].position !== player.position) {
             updatePiecePosition(player);
         }
     }
+
+    // remove pieces for players that have left the game
+    const removedPlayers = new Set(Array.from(playersWithPieces).filter(player => !currentPlayers.has(player)));
+    for (const player of removedPlayers) {
+        const position = playerPieces[player].position;
+        playersOnTile[position] = Math.max(0, playersOnTile[position] - 1);
+        delete playerPieces[player];
+    }
+
+    // update the list of players
+    playersWithPieces.clear();
+    playersWithPieces = currentPlayers;
 });
 
-function updatePiecePosition(player: Player) : void {
+function createPiece(player: Player): void {
+    const piece = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    piece.setAttribute('r', startingSpot?.getAttribute('r')!);
+    piece.setAttribute('fill', player.color);
+    piece.classList.add("boardPiece");
+    playerPieces[player.username] = {piece: piece, position: 0};
+    startingSpot?.parentElement?.append(piece);
+    playersWithPieces.add(player.username);
+    updatePiecePosition(player);
+}
+
+
+function updatePiecePosition(player: Player): void {
+    const playerPiece = playerPieces[player.username];
     // remove player from previous tile and add them to the new one
-    playersOnTile[playerPosition[player.username]]--;
-    playersOnTile[player.position] = (playersOnTile[player.position] ?? 0) + 1;
-    playerPosition[player.username] = player.position;
+    playersOnTile[playerPiece.position] = Math.max(0, playersOnTile[playerPiece.position] - 1);
+    playersOnTile[player.position]++;
+    playerPiece.position = player.position;
 
     // move the player's piece on the board. Note that if there are already players on this tile, we stack them up
     const newSpot = document.getElementById(`spot${player.position+1}`);
-    playerPieces[player.username].setAttribute('cy', String(parseInt(newSpot?.getAttribute('cy')!) - 50 * (playersOnTile[player.position] - 1)));
-    playerPieces[player.username].setAttribute('cx', newSpot?.getAttribute('cx')!);
+    playerPiece.piece.setAttribute('cy', String(parseInt(newSpot?.getAttribute('cy')!) - 50 * (playersOnTile[player.position] - 1)));
+    playerPiece.piece.setAttribute('cx', newSpot?.getAttribute('cx')!);
 }
 </script>
 
