@@ -2,7 +2,9 @@ import { WebsocketType } from "./enums/WebsocketTypes";
 import type { WebsocketMessage } from "./types/Websocket";
 /**
  * class that wraps websockets to facilitate communication with the server
- * during the game.
+ * during the game. This class is not meant to be used directly. instead,
+ * you should extend it and place the logic in there. It keeps the code
+ * cleaner.
  */
 export default class Base_WS_API {
     private static socket: WebSocket | null = null;
@@ -16,13 +18,18 @@ export default class Base_WS_API {
     */
     protected constructor() {}
 
+    /**
+     * We use user tokens to idetify users over WebSockets. This method lets you set the token (which the server will send to the node)
+     * to then be used in all requests.
+     * @param userToken the user token that the server sent.
+     */
     public static setUserToken(userToken: string) {
         Base_WS_API.token = userToken;
     }
 
     /**
      * Adds a callback method that is called with the parsed data when the server sends data to this node.
-     * @param id the id of the callback that can then be used to unassign it
+     * @param id the id of the callback that can then be used to unassign it later
      * @param incomingMessageCallback the callback function
      */
     public static addIncomingMessageCallback(id: string, incomingMessageCallback: (data: WebsocketMessage) => void): void {
@@ -30,7 +37,7 @@ export default class Base_WS_API {
     }
 
     /**
-     * Removed a callback method that is called with the parsed data when the server sends data to this node.
+     * Removes a callback method that is called with the parsed data when the server sends data to this node.
      * @param id the id of the callback to remove 
      */
     public static removeIncomingMessageCallback(id: string): void {
