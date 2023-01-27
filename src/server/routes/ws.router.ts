@@ -446,6 +446,19 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       });
                     break;
                   case WebsocketType.QuestionAnswer:
+                    if (userType !== "Client") {
+                      conn.socket.send(
+                        JSON.stringify({
+                          type: WebsocketType.Error,
+                          requestId: data.requestId,
+                          data: {
+                            error: new Error("[WS] User not authorized."),
+                            message: "[WS] User not authorized.",
+                          },
+                        } as WebsocketResponse)
+                      );
+                      return;
+                    }
                     const conn_username = connections[gameID].clients.find(
                       (c) => c.conn === conn
                     )!.username;
