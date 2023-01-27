@@ -620,10 +620,12 @@ export const questionEnd = async (
 };
 
 /**
- *
- * @param connections
- * @param game
- * @param data
+ * Handle consequence timeout or ending early.
+ * @param {{ host: ClientConn; clients: Array<ClientConn>; turn?: { turn_start: number; timeout?: NodeJS.Timeout; movement_die: number; }}} connections - The websocket information of all players connected to the specific game.
+ * @param {PopulatedGame} game - The populated game instance to fetch information about the current game state.
+ * @param {WebsocketRequest} data - Information related to the request, such as request id.
+ * @param {boolean} early - Is this request ending the game before the timeout?
+ * @returns {Promise<void>} This is a mutation function in which modifies the next game state and sends it to the players.
  */
 export const handleConsequence = async (
   connections: {
@@ -705,9 +707,7 @@ export const checkWinner = async (
   if (!game) return Promise.reject("There is no game with this game id.");
   if (!game!.started) return Promise.reject("The game has not yet started.");
   if (game.players.length < 2)
-    return Promise.reject(
-      new Error("There is not enough players to perform this task.")
-    );
+    return Promise.reject("There is not enough players to perform this task.");
   if (
     game!.players[0] instanceof mongoose.Types.ObjectId ||
     game!.players[0] === null
@@ -715,7 +715,7 @@ export const checkWinner = async (
     return Promise.reject("The players didn't populate");
 
   // Check if any players report a position of 41 (Victory Space)
-  const winners = game.players.filter((p) => p.position < 41);
+  const winners = game.players.filter((p) => p.position >= 41);
   if (winners.length === 0) {
     // A winner does not exist
     return Promise.resolve(false);

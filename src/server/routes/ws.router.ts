@@ -30,6 +30,7 @@ import {
   turn,
   questionAnswer,
   handleConsequence,
+  checkWinner,
 } from "../controllers/GameController";
 import { Player } from "../../shared/types/Player";
 
@@ -393,16 +394,67 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           );
                         });
                         setTimeout(() => {
-                          turn(connections[gameID], data, game)
-                            .then((res) => {})
+                          // Check if there is a winner
+                          const winner = checkWinner(gameID)
+                            .then(async (winner: string | boolean) => {
+                              if (winner === false) {
+                                // No winner, continue game
+                                turn(connections[gameID], data, game)
+                                  .then((res) => {})
+                                  .catch((err) => {
+                                    conn.socket.send(
+                                      JSON.stringify({
+                                        type: WebsocketType.Error,
+                                        requestId: data.requestId,
+                                        data: {
+                                          err: err,
+                                          message: "[WS] Turn has failed.",
+                                        },
+                                      } as WebsocketResponse)
+                                    );
+                                  });
+                              } else {
+                                // Winner
+                                const ranking: Player[] = game!.players.map(
+                                  (p) => {
+                                    return {
+                                      username: p.username,
+                                      color: p.color,
+                                      position: p.position,
+                                    } as Player;
+                                  }
+                                );
+                                // If Host, disconnect all clients and send message
+                                connections[gameID].host.conn.socket.send(
+                                  JSON.stringify({
+                                    type: WebsocketType.GameEndedAck,
+                                    requestId: undefined,
+                                    data: {
+                                      ranking: ranking,
+                                    },
+                                  } as WebsocketResponse)
+                                );
+                                connections[gameID].clients.forEach((c) => {
+                                  c.conn.socket.send(
+                                    JSON.stringify({
+                                      type: WebsocketType.GameEndedAck,
+                                      requestId: undefined,
+                                      data: {
+                                        ranking: ranking,
+                                      },
+                                    } as WebsocketResponse)
+                                  );
+                                });
+                              }
+                            })
                             .catch((err) => {
                               conn.socket.send(
                                 JSON.stringify({
                                   type: WebsocketType.Error,
                                   requestId: data.requestId,
                                   data: {
-                                    err: err,
-                                    message: "[WS] Turn has failed.",
+                                    error: err,
+                                    message: `[WS] error occurred while checking winner of ${gameCode}.`,
                                   },
                                 } as WebsocketResponse)
                               );
@@ -416,7 +468,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                             requestId: data.requestId,
                             data: {
                               error: err,
-                              token: token,
+                              message: `[WS] error occurred while fetching next player for ${gameCode}.`,
                             },
                           } as WebsocketResponse)
                         );
