@@ -562,6 +562,7 @@ const questionEnd = async (
   if (early === false && connections.turn === undefined) return;
   // Get updated players array
   const players = await User.find({
+    userType: "Client",
     game: game._id,
   }).exec();
   connections.host.conn.socket.send(
