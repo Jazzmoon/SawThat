@@ -1,12 +1,12 @@
 <template>
   <MultiChoiceQuestionView v-if="currentView == MultiChoiceQuestionView.__name" 
-    @answered="currentGameState = GameState.RUNNING" 
+    @answered="returnToBoard" 
     :data="currentQuestionData"/>
   <MainView v-else-if="currentView == MainView.__name" 
     :players="players" 
     :current-player-index="currentPlayerIndex"/>
   <HomeView v-else 
-    @joined="currentGameState = GameState.RUNNING" />
+    @joined="returnToBoard" />
 </template>
 
 <script setup lang="ts">
@@ -33,6 +33,12 @@ let players = ref([] as Player[]);
 let currentPlayerIndex = ref(0);
 
 const messageCallBackId = "App";
+
+function returnToBoard() {
+  alert('returned');
+  currentGameState.value = GameState.RUNNING;
+}
+
 onMounted(() => {
   WS_API.addIncomingMessageCallback(messageCallBackId, (message: WebsocketMessage) => {
     switch (message.type) {

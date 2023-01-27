@@ -28,9 +28,7 @@ async function submit(choice: number){
 
   if (!response || response.type === WebsocketType.Error) {
     alert(`Failed to send response to the server the game.\n${JSON.stringify(response)}`);
-    return;
   }
-
 }
 </script>
 
