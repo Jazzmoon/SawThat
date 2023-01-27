@@ -653,9 +653,7 @@ export const handleConsequence = async (
   // Messages
   connections.host.conn.socket.send(
     JSON.stringify({
-      type: early
-        ? WebsocketType.ConsequenceEndedAck
-        : WebsocketType.QuestionTimeOut,
+      type: WebsocketType.ConsequenceEndedAck,
       requestId: data.requestId,
       data: {
         players: players.map((p) => {
@@ -671,9 +669,7 @@ export const handleConsequence = async (
   connections.clients.forEach((c) => {
     c.conn.socket.send(
       JSON.stringify({
-        type: early
-          ? WebsocketType.ConsequenceEndedAck
-          : WebsocketType.QuestionTimeOut,
+        type: WebsocketType.ConsequenceEndedAck,
         requestId: data.requestId,
         data: {
           players: players.map((p) => {
