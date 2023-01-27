@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div id="top">
+        <div id="topSection">
             <PlayersListVue id="players" :players="props.players" :currentPlayer="props.currentPlayerIndex"/>
         </div>
         <BoardSVG id="board"/>
@@ -29,9 +29,8 @@ onMounted(() => {
     for (const player of props.players) {
         const piece = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         piece.setAttribute('r', startingSpot?.getAttribute('r')!);
-        piece.setAttribute('stroke', "black");
-        piece.setAttribute('stroke-width', "7px");
         piece.setAttribute('fill', player.color);
+        piece.classList.add("boardPiece");
         playerPieces[player.username] = piece;
         startingSpot?.parentElement?.append(piece);
 
@@ -61,11 +60,20 @@ function updatePiecePosition(player: Player) : void {
 </script>
 
 <style scoped>
-#top {
+#topSection {
     width: 100%;
 }
 #board {
     height: 100%;
     width: 100%;
+}
+</style>
+
+<!-- Not scoped since we need this class to propogate into the svgs that we are creating -->
+<style>
+.boardPiece {
+    transition: all .5s ease-in-out;
+    stroke: black;
+    stroke-width: 7px;
 }
 </style>
