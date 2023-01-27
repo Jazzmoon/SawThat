@@ -45,7 +45,7 @@ let connections: Record<
     host: ClientConn;
     clients: Array<ClientConn>;
     turn?: {
-      turn_end: number;
+      turn_start: number;
       movement_die: number;
     };
   }
