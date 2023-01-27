@@ -28,7 +28,7 @@ const props = defineProps<{
 }>();
 
 onMounted(() => {
-    let offset = (props.data.timer_end) ? (Date.now() - new Date(props.data.timer_end).getTime()) / 1000 : 0;
+    let offset = (props.data.timer_start) ? (Date.now() - new Date(props.data.timer_start).getTime()) / 1000 : 0;
     timer.value = props.data.timer_length;
     tick(offset);
 });
