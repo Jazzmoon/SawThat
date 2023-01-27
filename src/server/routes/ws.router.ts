@@ -29,6 +29,7 @@ import {
   startGame,
   turn,
   questionAnswer,
+  handleConsequence,
 } from "../controllers/GameController";
 import { Player } from "../../shared/types/Player";
 
@@ -176,7 +177,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
 
                 // Handle message
                 switch (data.type) {
-                  case WebsocketType.GameSetup:
+                  case WebsocketType.GameSetup: {
                     if (userType === "Game" && !connections[gameID]) {
                       // Create spot in the connections array for players
                       connections[gameID] = {
@@ -222,7 +223,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       );
                     }
                     break;
-                  case WebsocketType.GameJoin:
+                  }
+                  case WebsocketType.GameJoin: {
                     if (userType === "Client" && connections[gameID]) {
                       // Add connection socket to array
                       connections[gameID].clients.push({
@@ -286,7 +288,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       );
                     }
                     break;
-                  case WebsocketType.GameStart:
+                  }
+                  case WebsocketType.GameStart: {
                     startGame(gameCode)
                       .then((first_player) => {
                         // Notify all players that the game has started and who the first player is
@@ -352,7 +355,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                         );
                       });
                     break;
-                  case WebsocketType.NextPlayer:
+                  }
+                  case WebsocketType.NextPlayer: {
                     nextPlayer(gameCode)
                       .then((res) => {
                         // Notify all players that the game has started and who the next player is
@@ -417,7 +421,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                         );
                       });
                     break;
-                  case WebsocketType.QuestionRequest:
+                  }
+                  case WebsocketType.QuestionRequest: {
                     if (userType !== "Game") {
                       conn.socket.send(
                         JSON.stringify({
@@ -446,7 +451,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                         );
                       });
                     break;
-                  case WebsocketType.QuestionAnswer:
+                  }
+                  case WebsocketType.QuestionAnswer: {
                     if (userType !== "Client") {
                       conn.socket.send(
                         JSON.stringify({
@@ -460,7 +466,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       );
                       return;
                     }
-                    const conn_username = connections[gameID].clients.find(
+                    let conn_username = connections[gameID].clients.find(
                       (c) => c.conn === conn
                     )!.username;
                     questionAnswer(
@@ -487,8 +493,45 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                         );
                       });
                     break;
+                  }
+                  case WebsocketType.ConsequenceEnded: {
+                    if (userType !== "Client") {
+                      conn.socket.send(
+                        JSON.stringify({
+                          type: WebsocketType.Error,
+                          requestId: data.requestId,
+                          data: {
+                            error: new Error("[WS] User not authorized."),
+                            message: "[WS] User not authorized.",
+                          },
+                        } as WebsocketResponse)
+                      );
+                      return;
+                    }
+                    let conn_username = connections[gameID].clients.find(
+                      (c) => c.conn === conn
+                    )!.username;
+                    handleConsequence(
+                      connections[gameID],
+                      game,
+                      data,
+                      true
+                    ).catch((err) => {
+                      conn.socket.send(
+                        JSON.stringify({
+                          type: WebsocketType.Error,
+                          requestId: data.requestId,
+                          data: {
+                            err: err,
+                            message: "[WS] Turn has failed.",
+                          },
+                        } as WebsocketResponse)
+                      );
+                    });
+                    break;
+                  }
                   case WebsocketType.Ping:
-                  default:
+                  default: {
                     // Handle Pong Response
                     conn.socket.send(
                       JSON.stringify({
@@ -500,6 +543,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       } as WebsocketResponse)
                     );
                     break;
+                  }
                 }
               })
               .catch((err) => {
@@ -508,10 +552,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     type: WebsocketType.Error,
                     requestId: data.requestId,
                     data: {
-                      error: `[WS] error occurred while fetching game with code ${gameCode}.${JSON.stringify(
-                        err
-                      )}`,
-                      token: token,
+                      error: err,
+                      message: `[WS] error occurred while fetching game with code ${gameCode}.`,
                     },
                   } as WebsocketResponse)
                 );
