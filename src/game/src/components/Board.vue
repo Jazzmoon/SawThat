@@ -86,6 +86,7 @@ function updatePiecePosition(player: Player): void {
 
     // move the player's piece on the board. Note that if there are already players on this tile, we stack them up
     const newSpot = document.getElementById(`spot${player.position+1}`);
+    console.log(`spot${player.position+1}`);
     playerPiece.piece.setAttribute('cy', String(parseInt(newSpot?.getAttribute('cy')!) - 50 * (playersOnTile[player.position] - 1)));
     playerPiece.piece.setAttribute('cx', newSpot?.getAttribute('cx')!);
 }
