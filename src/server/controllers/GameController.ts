@@ -274,6 +274,7 @@ export const turn = async (
     clients: Array<ClientConn>;
     turn?: {
       turn_start: number;
+      timeout?: NodeJS.Timeout;
       movement_die: number;
     };
   },
@@ -391,7 +392,7 @@ export const turn = async (
             } as WebsocketResponse)
           );
         // Start the timer async timeout
-        setTimeout(() => {
+        connections.turn.timeout = setTimeout(() => {
           handleConsequence(connections, game, data, false);
         }, Math.abs(Date.now() - consequence_data.timer_start + consequence_data.timer_length * 1000));
         return Promise.resolve(true);
@@ -467,7 +468,7 @@ export const turn = async (
             );
         }
         // Start the timer async timeout
-        setTimeout(() => {
+        connections.turn.timeout = setTimeout(() => {
           handleConsequence(connections, game, data, false);
         }, Math.abs(Date.now() - question_data.timer_start + question_data.timer_length * 1000));
         return Promise.resolve(true);
@@ -498,6 +499,7 @@ export const questionAnswer = async (
     clients: Array<ClientConn>;
     turn?: {
       turn_start: number;
+      timeout?: NodeJS.Timeout;
       movement_die: number;
     };
   },
@@ -562,6 +564,7 @@ export const questionEnd = async (
     clients: Array<ClientConn>;
     turn?: {
       turn_start: number;
+      timeout?: NodeJS.Timeout;
       movement_die: number;
     };
   },
@@ -569,9 +572,9 @@ export const questionEnd = async (
   data: WebsocketRequest,
   early: boolean
 ): Promise<void> => {
-  // This is the natural timeout, but the turn is over
-  if (early === false && connections.turn === undefined) return;
+  if (connections.turn === undefined) return;
   // Force the timeout to be undefined so no other requests go through
+  clearTimeout(connections.turn.timeout!);
   connections.turn = undefined;
   // Get updated players array
   const players = await User.find({
@@ -628,6 +631,7 @@ export const handleConsequence = async (
     clients: Array<ClientConn>;
     turn?: {
       turn_start: number;
+      timeout?: NodeJS.Timeout;
       movement_die: number;
     };
   },
@@ -635,9 +639,9 @@ export const handleConsequence = async (
   data: WebsocketRequest,
   early: boolean
 ) => {
-  // This is the natural timeout, but the turn is over
-  if (early === false && connections.turn === undefined) return;
+  if (connections.turn === undefined) return;
   // Force the timeout to be undefined so no other requests go through
+  clearTimeout(connections.turn?.timeout!);
   connections.turn = undefined;
   // Get updated players array
   const players = await User.find({

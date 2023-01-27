@@ -46,6 +46,7 @@ let connections: Record<
     clients: Array<ClientConn>;
     turn?: {
       turn_start: number;
+      timeout?: NodeJS.Timeout;
       movement_die: number;
     };
   }
