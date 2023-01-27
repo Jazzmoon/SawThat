@@ -92,7 +92,9 @@ onMounted(() => {
           players.value.splice(index, 1);
         }
         break;
-      // handle timer and the other cases in the views where they are applicable
+      case WebsocketType.NextPlayerAck:
+        currentPlayerIndex.value = players.value.findIndex((player) => player.username === message.data.username);
+        break;
     }
   });
 });
