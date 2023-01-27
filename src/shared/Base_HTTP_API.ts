@@ -10,7 +10,6 @@ export default class Base_HTTP_API {
     */
     protected constructor() {}
 
-    // TODO TEST THIS THEN IMPLEMENT IN THE CLIENT AND GAME NODES TO ESTABLISH CONECTIONS
     public static async sendPOST(url: string, data: any): Promise<any> {
         return this.sendRequest(url, 'POST', data);
     }

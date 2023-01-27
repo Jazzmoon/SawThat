@@ -28,25 +28,6 @@ import type { Player } from "../../shared/types/Player";
 import type { WebsocketMessage } from '../../shared/types/Websocket';
 import type { ConsequenceData, QuestionData } from '../../shared/apis/WebSocketAPIType';
 
-// todo replace with dat from server
-const topPlayers: Player[] = [
-  {
-    username: "test1",
-    color: '#456732',
-    position: 0
-  },
-  {
-    username: "test2",
-    color: '#15f732',
-    position: 0
-  },
-  {
-    username: "test3",
-    color: '#7567a2',
-    position: 0
-  }
-];
-
 // game state variables
 enum GameState {
   NONE = 0, // game is not created or started yet
@@ -54,6 +35,8 @@ enum GameState {
   SHOWING_QUESTION = 2, // game is running and showing a question
   ENDED = 3// game has ended but not yet returned to the home screen
 }
+
+let topPlayers = ref([] as Player[]);
 let currentGameState = ref(GameState.NONE);
 let players = ref([] as Player[]);
 let currentPlayerIndex = ref(0);
@@ -97,6 +80,7 @@ onMounted(() => {
         break;
       case WebsocketType.GameEndedAck:
         currentGameState.value = GameState.ENDED;
+        topPlayers.value = message.data.ranking;
         WS_API.resetConnection();
         break;
       case WebsocketType.GameJoinAck:
@@ -108,7 +92,7 @@ onMounted(() => {
           players.value.splice(index, 1);
         }
         break;
-      // todo handle timer and the other cases in the views where they are applicable
+      // handle timer and the other cases in the views where they are applicable
     }
   });
 });
@@ -116,7 +100,6 @@ onMounted(() => {
 onUnmounted(() => {
   WS_API.removeIncomingMessageCallback(messageCallBackId);
 });
-
 
 // determines which view should be currently shown to the user
 const currentView = computed(() => {

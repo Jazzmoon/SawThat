@@ -25,16 +25,4 @@ export class HTTP_API extends Base_HTTP_API {
             theme_pack: theme_pack
         });
     }
-
-    // TODO MARK SAID THIS IS DONE OVER WS
-    // /**
-    //  * Sends a request to start a game
-    //  * @param playerName the id of the player to add
-    //  * @param gameCode the game code of the game to join
-    //  */
-    // public static sendStartRequest(gameCode: string): Promise<any> {
-    //     return HTTP_API.sendPOST(`${this.serverUrl}/start`, {
-    //         game_code: gameCode
-    //     });
-    // }
 }

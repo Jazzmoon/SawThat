@@ -29,7 +29,6 @@ enum GameState {
 let currentGameState = ref(GameState.NONE);
 
 let currentQuestionData = ref({} as QuestionData);
-let consequenceShown = ref(false);
 let players = ref([] as Player[]);
 let currentPlayerIndex = ref(0);
 
@@ -55,12 +54,6 @@ onMounted(() => {
           players.value = message.data.players;
         }
         break;
-      case WebsocketType.ConsequenceAck:
-        consequenceShown.value = true; // todo get the consequence data and shoqw in a modal
-        break;
-      case WebsocketType.ConsequenceEndedAck:
-        consequenceShown.value = false;
-        break;
       case WebsocketType.GameEndedAck:
         currentGameState.value = GameState.NONE;
         WS_API.resetConnection();
@@ -74,7 +67,7 @@ onMounted(() => {
           players.value.splice(index, 1);
         }
         break;
-      // todo handle timer and the other cases in the views where they are applicable
+      // handle timer and the other cases in the views where they are applicable
     }
   });
 });

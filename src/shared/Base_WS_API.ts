@@ -163,6 +163,6 @@ export default class Base_WS_API {
      * @returns a string for the newly created key
      */
     private static createRequestId(type: WebsocketType | string): string {
-        return `${type}${Date.now()}`; // TODO FIND A BETTER WAY
+        return `${type}${Date.now()}`;
     }
 }
