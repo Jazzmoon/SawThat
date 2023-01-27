@@ -61,15 +61,7 @@ onMounted(() => {
       case WebsocketType.QuestionAnswer:
       case WebsocketType.QuestionEndedAck:
         currentGameState.value = GameState.RUNNING;
-
-        // if the list of players was updated, update it
-        if (message.data.players) {
-          players.value = message.data.players;
-        }
-        // start a timer for 5 seconds so that players can see the new standings. Then request a new question from the server
-        setTimeout(() => {
-          WS_API.sendNextQuestionRequest();
-        }, 7000 /* 7 seconds */);
+        completeGameStep(message);
         break;
       case WebsocketType.ConsequenceAck:
         consequenceShown.value = true;
@@ -77,6 +69,7 @@ onMounted(() => {
         break;
       case WebsocketType.ConsequenceEndedAck:
         consequenceShown.value = false;
+        completeGameStep(message);
         break;
       case WebsocketType.GameEndedAck:
         currentGameState.value = GameState.ENDED;
@@ -116,6 +109,17 @@ const currentView = computed(() => {
       return QuestionView.__name;
   }
 })
+
+function completeGameStep(message: WebsocketMessage): void {
+  // if the list of players was updated, update it
+  if (message.data.players) {
+    players.value = message.data.players;
+  }
+  // start a timer for 5 seconds so that players can see the new standings. Then request a new question from the server
+  setTimeout(() => {
+    WS_API.sendNextQuestionRequest();
+  }, 7000 /* 7 seconds */);
+}
 
 </script>
 
