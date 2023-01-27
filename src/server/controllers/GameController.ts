@@ -352,7 +352,6 @@ export const turn = async (
           consequence_type: consequence.consequenceType,
           story: consequence.story,
           movement_die: movement_die,
-          timer_end: Date.now() + 10 * 1000,
           timer_length: 10,
         };
         // Add game to the database, making sure it is appended (so we know which is the most recent question)
@@ -371,7 +370,7 @@ export const turn = async (
 
         // Start timer and send question:
         connections.turn = {
-          turn_end: Date.now(),
+          turn_end: Date.now() /* + 10 * 1000*/,
           movement_die: movement_die,
         };
         consequence_data.timer_end = connections.turn.turn_end;
@@ -394,7 +393,7 @@ export const turn = async (
         // Start the timer async timeout
         setTimeout(() => {
           handleConsequence(connections, game, data, false);
-        }, Math.abs(Date.now() - consequence_data.timer_end));
+        }, Math.abs(Date.now() - consequence_data.timer_end + consequence_data.timer_length * 1000));
         return Promise.resolve(true);
       })
       .catch((err) => {
@@ -433,7 +432,7 @@ export const turn = async (
 
         // Start timer and send question:
         connections.turn = {
-          turn_end: Date.now() + 15 * 1000,
+          turn_end: Date.now() /* + 15 * 1000*/,
           movement_die: movement_die,
         };
         question_data.timer_end = connections.turn.turn_end;
@@ -470,7 +469,7 @@ export const turn = async (
         // Start the timer async timeout
         setTimeout(() => {
           handleConsequence(connections, game, data, false);
-        }, Math.abs(Date.now() - question_data.timer_end));
+        }, Math.abs(Date.now() - question_data.timer_end + question_data.timer_length * 1000));
         return Promise.resolve(true);
       })
       .catch((err) => {
