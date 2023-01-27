@@ -25,6 +25,7 @@ import {
 import { QuestionCategory } from "../../shared/enums/QuestionCategory";
 import { TurnModifier } from "../../shared/enums/TurnModifier";
 import { WebsocketType } from "../../shared/enums/WebsocketTypes";
+import type { Player } from "../../shared/types/Player";
 import {
   WebsocketRequest,
   WebsocketResponse,
@@ -351,7 +352,7 @@ export const turn = async (
           consequence_type: consequence.consequenceType,
           story: consequence.story,
           movement_die: movement_die,
-          timer_end: Date.now(),
+          timer_end: Date.now() + 10 * 1000,
           timer_length: 10,
         };
         // Add game to the database, making sure it is appended (so we know which is the most recent question)
@@ -360,7 +361,7 @@ export const turn = async (
 
         // Start timer and send question:
         connections.turn = {
-          turn_end: Date.now() + 10 * 1000,
+          turn_end: Date.now(),
           movement_die: movement_die,
         };
         consequence_data.timer_end = connections.turn.turn_end;
@@ -382,7 +383,7 @@ export const turn = async (
           );
         // Start the timer async timeout
         setTimeout(() => {
-          questionEnd(connections, game, data);
+          questionEnd(connections, game, data, false);
         }, Math.abs(Date.now() - consequence_data.timer_end));
         return Promise.resolve(true);
       })
@@ -395,18 +396,6 @@ export const turn = async (
           `[WS] Error fetching consequence for request id ${data.requestId}: ${err}`
         );
       });
-    /*
-    // Consequence Card
-    connections.clients
-      .find((c) => c.username === game.players[0].username)!
-      .conn.socket.send(
-        JSON.stringify({
-          type: WebsocketType.QuestionAck,
-          requestId: data.requestId,
-          data: question_data,
-        } as WebsocketResponse)
-      );
-      */
   } else {
     return formatQuestion(
       game.theme_pack,
@@ -470,7 +459,7 @@ export const turn = async (
         }
         // Start the timer async timeout
         setTimeout(() => {
-          questionEnd(connections, game, data);
+          questionEnd(connections, game, data, false);
         }, Math.abs(Date.now() - question_data.timer_end));
         return Promise.resolve(true);
       })
@@ -529,12 +518,22 @@ export const questionAnswer = async (
   );
   if (correct) {
     // If it is the players turn. move them.
-    if (game.players[0].username === username)
+    if (game.players[0].username === username) {
       game.players[0].position += connections.turn.movement_die;
+      await User.findOneAndUpdate(
+        {
+          username: game.players[0].username,
+          userType: game.players[0].userType,
+          game: game._id,
+          token: game.players[0].token,
+        },
+        {
+          position: game.players[0].position,
+        }
+      );
+    }
     // If correct, kill the timeout and move player accordingly
-    connections.turn = undefined;
-    await game.save();
-    await questionEnd(connections, game, data);
+    await questionEnd(connections, game, data, true);
   }
   // return if answer is correct
   return Promise.resolve(correct);
@@ -556,10 +555,15 @@ const questionEnd = async (
     };
   },
   game: PopulatedGame,
-  data: WebsocketRequest
+  data: WebsocketRequest,
+  early: boolean
 ) => {
-  // Check if it is a timeout, or the question ended early
-  let early = connections.turn === undefined;
+  // This is the natural timeout, but the turn is over
+  if (early === false && connections.turn === undefined) return;
+  // Get updated players array
+  const players = await User.find({
+    game: game._id,
+  }).exec();
   connections.host.conn.socket.send(
     JSON.stringify({
       type: early
@@ -567,7 +571,13 @@ const questionEnd = async (
         : WebsocketType.QuestionTimeOut,
       requestId: data.requestId,
       data: {
-        players: game.players,
+        players: players.map((p) => {
+          return {
+            username: p.username,
+            color: p.color,
+            position: p.position,
+          } as Player;
+        }),
       },
     } as WebsocketResponse)
   );
@@ -579,7 +589,13 @@ const questionEnd = async (
           : WebsocketType.QuestionTimeOut,
         requestId: data.requestId,
         data: {
-          players: game.players,
+          players: players.map((p) => {
+            return {
+              username: p.username,
+              color: p.color,
+              position: p.position,
+            } as Player;
+          }),
         },
       } as WebsocketResponse)
     );
