@@ -35,7 +35,6 @@ let currentPlayerIndex = ref(0);
 const messageCallBackId = "App";
 
 function returnToBoard() {
-  alert('returned');
   currentGameState.value = GameState.RUNNING;
 }
 

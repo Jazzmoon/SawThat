@@ -22,9 +22,9 @@ const props = defineProps<{
 const emit = defineEmits(['answered']);
 
 async function submit(choice: number){
-  const response = await WS_API.sendMultipleChoiceAnswer(props.data.options[choice], props.data);
-  
   emit('answered');
+
+  const response = await WS_API.sendMultipleChoiceAnswer(props.data.options[choice], props.data);
 
   if (!response || response.type === WebsocketType.Error) {
     alert(`Failed to send response to the server the game.\n${JSON.stringify(response)}`);
