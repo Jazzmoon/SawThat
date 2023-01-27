@@ -52,7 +52,7 @@ watch(props.players, async (n, o) => {
     const removedPlayers = new Set(Array.from(playersWithPieces).filter(player => !currentPlayers.has(player)));
     for (const player of removedPlayers) {
         const position = playerPieces[player].position;
-        playersOnTile[position] = Math.max(0, playersOnTile[position] - 1);
+        playersOnTile[position]--;
         delete playerPieces[player];
     }
 
@@ -66,9 +66,13 @@ function createPiece(player: Player): void {
     piece.setAttribute('r', startingSpot?.getAttribute('r')!);
     piece.setAttribute('fill', player.color);
     piece.classList.add("boardPiece");
-    playerPieces[player.username] = {piece: piece, position: 0};
     startingSpot?.parentElement?.append(piece);
+
     playersWithPieces.add(player.username);
+    
+    playerPieces[player.username] = {piece: piece, position: player.position};
+    playersOnTile[player.position]++;
+    
     updatePiecePosition(player);
 }
 
@@ -76,7 +80,7 @@ function createPiece(player: Player): void {
 function updatePiecePosition(player: Player): void {
     const playerPiece = playerPieces[player.username];
     // remove player from previous tile and add them to the new one
-    playersOnTile[playerPiece.position] = Math.max(0, playersOnTile[playerPiece.position] - 1);
+    playersOnTile[playerPiece.position]--;
     playersOnTile[player.position]++;
     playerPiece.position = player.position;
 
