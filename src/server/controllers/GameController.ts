@@ -273,7 +273,7 @@ export const turn = async (
     host: ClientConn;
     clients: Array<ClientConn>;
     turn?: {
-      turn_end: number;
+      turn_start: number;
       movement_die: number;
     };
   },
@@ -352,7 +352,6 @@ export const turn = async (
           consequence_type: consequence.consequenceType,
           story: consequence.story,
           movement_die: movement_die,
-          timer_end: Date.now() + 10 * 1000,
           timer_length: 10,
         };
         // Add game to the database, making sure it is appended (so we know which is the most recent question)
@@ -371,10 +370,10 @@ export const turn = async (
 
         // Start timer and send question:
         connections.turn = {
-          turn_end: Date.now(),
+          turn_start: Date.now() /* + 10 * 1000*/,
           movement_die: movement_die,
         };
-        consequence_data.timer_end = connections.turn.turn_end;
+        consequence_data.timer_start = connections.turn.turn_start;
         connections.host.conn.socket.send(
           JSON.stringify({
             type: WebsocketType.ConsequenceAck,
@@ -394,7 +393,7 @@ export const turn = async (
         // Start the timer async timeout
         setTimeout(() => {
           handleConsequence(connections, game, data, false);
-        }, Math.abs(Date.now() - consequence_data.timer_end));
+        }, Math.abs(Date.now() - consequence_data.timer_start + consequence_data.timer_length * 1000));
         return Promise.resolve(true);
       })
       .catch((err) => {
@@ -433,10 +432,10 @@ export const turn = async (
 
         // Start timer and send question:
         connections.turn = {
-          turn_end: Date.now() + 15 * 1000,
+          turn_start: Date.now() /* + 15 * 1000*/,
           movement_die: movement_die,
         };
-        question_data.timer_end = connections.turn.turn_end;
+        question_data.timer_start = connections.turn.turn_start;
         connections.host.conn.socket.send(
           JSON.stringify({
             type: WebsocketType.QuestionAck,
@@ -470,7 +469,7 @@ export const turn = async (
         // Start the timer async timeout
         setTimeout(() => {
           handleConsequence(connections, game, data, false);
-        }, Math.abs(Date.now() - question_data.timer_end));
+        }, Math.abs(Date.now() - question_data.timer_start + question_data.timer_length * 1000));
         return Promise.resolve(true);
       })
       .catch((err) => {
@@ -487,7 +486,7 @@ export const turn = async (
 
 /**
  * Handle a user sending an answer request to the server
- * @param {{ host: ClientConn; clients: Array<ClientConn>; turn: { turn_end: number; movement_die: number; } | undefined}} connections - The websocket information of all players connected to the specific game.
+ * @param {{ host: ClientConn; clients: Array<ClientConn>; turn: { turn_start: number; movement_die: number; } | undefined}} connections - The websocket information of all players connected to the specific game.
  * @param {WebsocketRequest} data - Information related to the request, such as request id and the question answer.
  * @param {string} username - The username of the user who send the websocket request.
  * @param {PopulatedGame} game - The populated game instance to fetch information about the current game state.
@@ -498,7 +497,7 @@ export const questionAnswer = async (
     host: ClientConn;
     clients: Array<ClientConn>;
     turn?: {
-      turn_end: number;
+      turn_start: number;
       movement_die: number;
     };
   },
@@ -551,7 +550,7 @@ export const questionAnswer = async (
 
 /**
  * The question has ended, either by timeout or by answer. Handle accordingly.
- * @param {{ host: ClientConn; clients: Array<ClientConn>; turn: { turn_end: number; movement_die: number; } | undefined}} connections - The websocket information of all players connected to the specific game.
+ * @param {{ host: ClientConn; clients: Array<ClientConn>; turn: { turn_start: number; movement_die: number; } | undefined}} connections - The websocket information of all players connected to the specific game.
  * @param {PopulatedGame} game - The populated game instance to fetch information about the current game state.
  * @param {WebsocketRequest} data - Information related to the request, such as request id.
  * @param {boolean} early - Is this request ending the game before the timeout?
@@ -562,7 +561,7 @@ export const questionEnd = async (
     host: ClientConn;
     clients: Array<ClientConn>;
     turn?: {
-      turn_end: number;
+      turn_start: number;
       movement_die: number;
     };
   },
@@ -628,7 +627,7 @@ export const handleConsequence = async (
     host: ClientConn;
     clients: Array<ClientConn>;
     turn?: {
-      turn_end: number;
+      turn_start: number;
       movement_die: number;
     };
   },

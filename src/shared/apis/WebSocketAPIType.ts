@@ -9,7 +9,7 @@ import type { QuestionCategory } from "../enums/QuestionCategory";
 import type { Player } from "../types/Player";
 
 export type TimedData = {
-  timer_end?: Date | number;
+  timer_start?: Date | number;
   timer_length: number;
 };
 
