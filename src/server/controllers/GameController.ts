@@ -357,6 +357,16 @@ export const turn = async (
         };
         // Add game to the database, making sure it is appended (so we know which is the most recent question)
         game.used_consequences.push(consequence.id);
+        game.players[0].position += movement_die; // NO SKIP OR LOSE TURN IMPLEMENTED (Negative position trick?)
+        await User.findOneAndUpdate(
+          {
+            username: game.players[0].username,
+            userType: "Client",
+            token: game.players[0].token,
+            game: game.players[0].game,
+          },
+          { position: game.players[0].position }
+        );
         await game.save();
 
         // Start timer and send question:
@@ -383,7 +393,7 @@ export const turn = async (
           );
         // Start the timer async timeout
         setTimeout(() => {
-          questionEnd(connections, game, data, false);
+          handleConsequence(connections, game, data, false);
         }, Math.abs(Date.now() - consequence_data.timer_end));
         return Promise.resolve(true);
       })
@@ -459,7 +469,7 @@ export const turn = async (
         }
         // Start the timer async timeout
         setTimeout(() => {
-          questionEnd(connections, game, data, false);
+          handleConsequence(connections, game, data, false);
         }, Math.abs(Date.now() - question_data.timer_end));
         return Promise.resolve(true);
       })
@@ -623,8 +633,56 @@ export const handleConsequence = async (
     };
   },
   game: PopulatedGame,
-  data: WebsocketRequest
-) => {};
+  data: WebsocketRequest,
+  early: boolean
+) => {
+  // This is the natural timeout, but the turn is over
+  if (early === false && connections.turn === undefined) return;
+  // Force the timeout to be undefined so no other requests go through
+  connections.turn = undefined;
+  // Get updated players array
+  const players = await User.find({
+    userType: "Client",
+    game: game._id,
+  }).exec();
+  // Messages
+  connections.host.conn.socket.send(
+    JSON.stringify({
+      type: early
+        ? WebsocketType.ConsequenceEndedAck
+        : WebsocketType.QuestionTimeOut,
+      requestId: data.requestId,
+      data: {
+        players: players.map((p) => {
+          return {
+            username: p.username,
+            color: p.color,
+            position: p.position,
+          } as Player;
+        }),
+      },
+    } as WebsocketResponse)
+  );
+  connections.clients.forEach((c) => {
+    c.conn.socket.send(
+      JSON.stringify({
+        type: early
+          ? WebsocketType.ConsequenceEndedAck
+          : WebsocketType.QuestionTimeOut,
+        requestId: data.requestId,
+        data: {
+          players: players.map((p) => {
+            return {
+              username: p.username,
+              color: p.color,
+              position: p.position,
+            } as Player;
+          }),
+        },
+      } as WebsocketResponse)
+    );
+  });
+};
 
 /**
  * Check if any players are in the winner state.
