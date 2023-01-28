@@ -5,10 +5,14 @@
         <img id="logo" :src="LogoSVG" />
         <h2 id="title">Leaderboard</h2>
       </div>
-      <div>
-        <h4>
+      <div v-for="(player, index) in props.players">
+        <h4 v-if="props.currentPlayerIndex === index">
           You are:
-          {{ props.players[currentPlayerIndex].username }}
+          <div
+            class="colorIndicator"
+            :style="`border-color: ${player.color}`"
+          ></div>
+          {{ `${player.username}` }}
         </h4>
       </div>
       <div id="players">
