@@ -8,10 +8,6 @@
       <div>
         <h4>
           You are:
-          <div
-            class="colorIndicator"
-            :style="`border-color: ${props.players[currentPlayerIndex].color}`"
-          ></div>
           {{ props.players[currentPlayerIndex].username }}
         </h4>
       </div>
