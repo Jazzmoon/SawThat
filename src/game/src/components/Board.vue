@@ -4,7 +4,7 @@
 
 <script lang="ts" setup>
 import BoardSVG from "@/assets/board.svg?skipsvgo"; // load svg but don't optimize away id fields
-import { onMounted, watch } from 'vue';
+import { onMounted } from 'vue';
 import type { Player } from "../../../shared/types/Player";
 
 const props = defineProps<{
@@ -13,7 +13,6 @@ const props = defineProps<{
     currentPlayerIndex: number
 }>()
 
-let playerPieces: Record<string, {piece: SVGCircleElement, position: number}> = {};
 let playersOnTile: number[] = Array(38).fill(0);
 let startingSpot: HTMLElement | null;
 
@@ -32,28 +31,24 @@ function createPiece(player: Player, previousSpot: number): void {
     piece.setAttribute('fill', player.color);
     piece.classList.add("boardPiece");
     startingSpot?.parentElement?.append(piece);
-    
-    // set to the previous location
-    playerPieces[player.username] = {piece: piece, position:  Math.max(0, previousSpot)};
+
+    // place at previous location (since the view is recomputed entirely every time)
     playersOnTile[previousSpot]++;
-    
+    placePieceAtPosition(piece, previousSpot);
+
     // update to the new location (for the animation to play)
-    updatePiecePosition(player);
+    playersOnTile[previousSpot]--;
+    playersOnTile[player.position]++;
+    placePieceAtPosition(piece, player.position);
 }
 
-function updatePiecePosition(player: Player): void {
-    const playerPiece = playerPieces[player.username];
-    const position = Math.max(0, player.position);
-    // remove player from previous tile and add them to the new one
-    playersOnTile[playerPiece.position]--;
-    playersOnTile[position]++;
-    playerPiece.position = position;
-
+function placePieceAtPosition(piece: SVGCircleElement, position: number) {
     // move the player's piece on the board. Note that if there are already players on this tile, we stack them up
     const newSpot = document.getElementById(`spot${position+1}`);
-    playerPiece.piece.setAttribute('cy', String(parseInt(newSpot?.getAttribute('cy')!) - 50 * (playersOnTile[position] - 1)));
-    playerPiece.piece.setAttribute('cx', newSpot?.getAttribute('cx')!);
+    piece.setAttribute('cy', String(parseInt(newSpot?.getAttribute('cy')!) - 50 * (playersOnTile[position] - 1)));
+    piece.setAttribute('cx', newSpot?.getAttribute('cx')!);
 }
+
 </script>
 
 <style scoped>
