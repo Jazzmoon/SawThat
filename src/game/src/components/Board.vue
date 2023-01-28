@@ -1,17 +1,11 @@
 <template>
-    <div>
-        <div id="topSection">
-            <PlayersListVue id="players" :players="props.players" :current-player-index="props.currentPlayerIndex" :shownIndex="true"/>
-        </div>
-        <BoardSVG id="board"/>
-    </div>
+    <BoardSVG id="board"/>
 </template>
 
 <script lang="ts" setup>
 import BoardSVG from "@/assets/board.svg?skipsvgo"; // load svg but don't optimize away id fields
 import { onMounted, watch } from 'vue';
 import type { Player } from "../../../shared/types/Player";
-import PlayersListVue from "./PlayersList.vue";
 
 const props = defineProps<{
     players: Player[],
@@ -94,9 +88,6 @@ function updatePiecePosition(player: Player): void {
 </script>
 
 <style scoped>
-#topSection {
-    width: 100%;
-}
 #board {
     height: 100%;
     width: 100%;
