@@ -17,6 +17,7 @@ import {
   WebsocketResponse,
 } from "../../shared/types/Websocket";
 import {
+  ErrorData,
   GameJoinAckData,
   NextPlayerData,
 } from "../../shared/apis/WebSocketAPIType";
@@ -90,7 +91,11 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                   JSON.stringify({
                     type: WebsocketType.Error,
                     requestId: data.requestId,
-                    data: { error: err, token: token },
+                    data: { 
+                      error: err.message, 
+                      token: token,
+                      fatal: true,
+                    } as ErrorData,
                   } as WebsocketResponse)
                 );
               } else {
@@ -101,7 +106,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     data: {
                       error: "[WS] Token sent is undefined.",
                       token: token,
-                    },
+                      fatal: true,
+                    } as ErrorData,
                   } as WebsocketResponse)
                 );
               }
@@ -119,7 +125,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                   data: {
                     error: `[WS] Game ID and JWT mismatch. You requested game with ID ${gameID} but have a JWT for game ${gameCode}.`,
                     token: token,
-                  },
+                    fatal: true,
+                  } as ErrorData,
                 } as WebsocketResponse)
               );
               conn.end();
@@ -138,11 +145,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       type: WebsocketType.Error,
                       requestId: data.requestId,
                       data: {
-                        error: new Error(
-                          `[WS] No game found with id ${gameCode}.`
-                        ),
-                        message: `[WS] No game found with id ${gameCode}.`,
-                      },
+                        error: `[WS] No game found with id ${gameCode}.`,
+                        token: token,
+                        fatal: true,
+                      } as ErrorData,
                     } as WebsocketResponse)
                   );
                   return;
@@ -167,11 +173,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                       type: WebsocketType.Error,
                       requestId: data.requestId,
                       data: {
-                        error: new Error(
-                          `[WS] User is not a part of game ${gameID}.`
-                        ),
-                        message: `[WS] User is not a part of game ${gameID}.`,
-                      },
+                        error: `[WS] User is not a part of game ${gameID}.`,
+                        token: token,
+                        fatal: true,
+                      } as ErrorData,
                     } as WebsocketResponse)
                   );
                   return;
@@ -209,7 +214,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           data: {
                             error: `[WS] Only the game node can set-up a game.`,
                             token: token,
-                          },
+                            fatal: true,
+                          } as ErrorData,
                         } as WebsocketResponse)
                       );
                     } else {
@@ -220,7 +226,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           data: {
                             error: `[WS] A user has already connected to this game as the host.`,
                             token: token,
-                          },
+                            fatal: true,
+                          } as ErrorData,
                         } as WebsocketResponse)
                       );
                     }
@@ -274,7 +281,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           data: {
                             error: `[WS] Game nodes cannot connect as players.`,
                             token: token,
-                          },
+                            fatal: false,
+                          } as ErrorData,
                         } as WebsocketResponse)
                       );
                     } else {
@@ -285,7 +293,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           data: {
                             error: `[WS] The host has not yet connected to the game. Please try again later.`,
                             token: token,
-                          },
+                            fatal: false,
+                          } as ErrorData,
                         } as WebsocketResponse)
                       );
                     }
@@ -336,9 +345,11 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                                   type: WebsocketType.Error,
                                   requestId: data.requestId,
                                   data: {
-                                    err: err,
+                                    error: err,
                                     message: "[WS] Turn has failed.",
-                                  },
+                                    token: token,
+                                    fatal: true,
+                                  } as ErrorData,
                                 } as WebsocketResponse)
                               );
                             });
@@ -352,7 +363,8 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                             data: {
                               error: err,
                               token: token,
-                            },
+                              fatal: true,
+                            } as ErrorData,
                           } as WebsocketResponse)
                         );
                       });
@@ -407,9 +419,11 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                                         type: WebsocketType.Error,
                                         requestId: data.requestId,
                                         data: {
-                                          err: err,
+                                          error: err,
                                           message: "[WS] Turn has failed.",
-                                        },
+                                          token: token,
+                                          fatal: true,
+                                        } as ErrorData,
                                       } as WebsocketResponse)
                                     );
                                   });
@@ -455,7 +469,9 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                                   data: {
                                     error: err,
                                     message: `[WS] error occurred while checking winner of ${gameCode}.`,
-                                  },
+                                    token: token,
+                                    fatal: true,
+                                  } as ErrorData,
                                 } as WebsocketResponse)
                               );
                             });
@@ -469,7 +485,9 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                             data: {
                               error: err,
                               message: `[WS] error occurred while fetching next player for ${gameCode}.`,
-                            },
+                              token: token,
+                              fatal: true,
+                            } as ErrorData,
                           } as WebsocketResponse)
                         );
                       });
@@ -482,9 +500,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           type: WebsocketType.Error,
                           requestId: data.requestId,
                           data: {
-                            error: new Error("[WS] User not authorized."),
-                            message: "[WS] User not authorized.",
-                          },
+                            error: "[WS] User not authorized.",
+                            token: token,
+                            fatal: true,
+                          } as ErrorData,
                         } as WebsocketResponse)
                       );
                       return;
@@ -497,9 +516,11 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                             type: WebsocketType.Error,
                             requestId: data.requestId,
                             data: {
-                              err: err,
+                              error: err,
                               message: "[WS] Turn has failed.",
-                            },
+                              token: token,
+                              fatal: true,
+                            } as ErrorData,
                           } as WebsocketResponse)
                         );
                       });
@@ -512,9 +533,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           type: WebsocketType.Error,
                           requestId: data.requestId,
                           data: {
-                            error: new Error("[WS] User not authorized."),
-                            message: "[WS] User not authorized.",
-                          },
+                            error: "[WS] User not authorized.",
+                            token: token,
+                            fatal: true,
+                          } as ErrorData,
                         } as WebsocketResponse)
                       );
                       return;
@@ -539,9 +561,11 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                             type: WebsocketType.Error,
                             requestId: data.requestId,
                             data: {
-                              err: err,
+                              error: err,
                               message: "[WS] Turn has failed.",
-                            },
+                              token: token,
+                              fatal: true,
+                            } as ErrorData,
                           } as WebsocketResponse)
                         );
                       });
@@ -554,9 +578,10 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           type: WebsocketType.Error,
                           requestId: data.requestId,
                           data: {
-                            error: new Error("[WS] User not authorized."),
-                            message: "[WS] User not authorized.",
-                          },
+                            error: "[WS] User not authorized.",
+                            token: token,
+                            fatal: true,
+                          } as ErrorData,
                         } as WebsocketResponse)
                       );
                       return;
@@ -575,9 +600,11 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                           type: WebsocketType.Error,
                           requestId: data.requestId,
                           data: {
-                            err: err,
+                            error: err,
                             message: "[WS] Turn has failed.",
-                          },
+                            token: token,
+                            fatal: true,
+                          } as ErrorData,
                         } as WebsocketResponse)
                       );
                     });
@@ -607,7 +634,9 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                     data: {
                       error: err,
                       message: `[WS] error occurred while fetching game with code ${gameCode}.`,
-                    },
+                      token: token,
+                      fatal: true,
+                    } as ErrorData,
                   } as WebsocketResponse)
                 );
                 return;
@@ -629,7 +658,9 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
               requestId: undefined,
               data: {
                 error: "[WS] This connection was never associated with a game.",
-              },
+                token: "",
+                fatal: true,
+              } as ErrorData,
             } as WebsocketResponse)
           );
           return;

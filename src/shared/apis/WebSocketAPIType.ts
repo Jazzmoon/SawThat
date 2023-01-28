@@ -67,3 +67,10 @@ export type GameJoinAckData = {
 export type NextPlayerData = {
   player: Player;
 };
+
+export type ErrorData = {
+  error: string | Error,
+  message?: string,
+  fatal: boolean,
+  token: string,
+};

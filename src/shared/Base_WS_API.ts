@@ -1,5 +1,6 @@
 import { WebsocketType } from "./enums/WebsocketTypes";
 import type { WebsocketMessage } from "./types/Websocket";
+import type { ErrorData } from "./apis/WebSocketAPIType";
 /**
  * class that wraps websockets to facilitate communication with the server
  * during the game. This class is not meant to be used directly. instead,
@@ -91,8 +92,9 @@ export default class Base_WS_API {
                     requestId: requestId,
                     data: {
                         error: exception,
-                        message: "An error occured with the connection to the server"
-                    }
+                        message: "An error occured with the connection to the server",
+                        fatal: true
+                    } as ErrorData
                 });
             }
         }
@@ -133,8 +135,9 @@ export default class Base_WS_API {
                 type: WebsocketType.Error,
                 requestId: requestId,
                 data: {
-                    message: "Attempted to send a message over a non-open socket"
-                }
+                    error: "Attempted to send a message over a non-open socket",
+                    fatal: true
+                } as ErrorData
             };
         }
         

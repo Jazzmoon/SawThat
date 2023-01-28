@@ -8,8 +8,7 @@
     <QuestionView v-else-if="currentView == QuestionView.__name" 
       :data="currentQuestionData" />
     <MainView v-else-if="currentView == MainView.__name" 
-      :players="players" 
-      :current-player-index="currentPlayerIndex" />
+      :players="players" />
     <HomeView v-else :players="players" 
       @game-started="currentGameState = GameState.RUNNING" />
   </div>
@@ -39,7 +38,6 @@ enum GameState {
 let topPlayers = ref([] as Player[]);
 let currentGameState = ref(GameState.NONE);
 let players = ref([] as Player[]);
-let currentPlayerIndex = ref(0);
 let currentQuestionData = ref({} as QuestionData);
 let consequenceShown = ref(false);
 let consequenceData = ref({} as ConsequenceData);
@@ -49,9 +47,14 @@ onMounted(() => {
   WS_API.addIncomingMessageCallback(messageCallBackId, (message: WebsocketMessage) => {
     switch (message.type) {
       case WebsocketType.Error:
-        alert(JSON.stringify(message.data));
-        WS_API.resetConnection();
-        currentGameState.value = GameState.ENDED;
+        if (message.data.fatal) {
+          alert(`An error has occured when trying to communicate with the server:\n${message.data.message}\nServer's response: ${JSON.stringify(message.data)}`);
+          WS_API.resetConnection();
+          currentGameState.value = GameState.NONE;
+        } else {
+          alert(`A fatal error has occured when trying to communicate with the server:\n${message.data.message}\nServer's response: ${JSON.stringify(message.data)}`);
+          currentGameState.value = GameState.RUNNING;
+        }
         break;
       case WebsocketType.QuestionAck:
         currentGameState.value = GameState.SHOWING_QUESTION;
@@ -84,9 +87,6 @@ onMounted(() => {
         if (index > -1) {
           players.value.splice(index, 1);
         }
-        break;
-      case WebsocketType.NextPlayerAck:
-        currentPlayerIndex.value = players.value.findIndex((player) => player.username === message.data.username);
         break;
     }
   });
