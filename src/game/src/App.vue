@@ -10,6 +10,7 @@
         :data="currentQuestionData" />
       <MainView v-else-if="currentView == MainView.__name" 
         :players="players"
+        :previous-turn-players="previousTurnPlayers"
         :current-player-index="currentPlayer"/>
       <HomeView v-else :players="players" 
         @game-started="currentGameState = GameState.RUNNING" />
@@ -41,6 +42,7 @@ enum GameState {
 let topPlayers = ref([] as Player[]);
 let currentGameState = ref(GameState.NONE);
 let players = ref([] as Player[]);
+let previousTurnPlayers = ref([] as Player[]);
 let currentQuestionData = ref({} as QuestionData);
 let consequenceShown = ref(false);
 let consequenceData = ref({} as ConsequenceData);
@@ -84,7 +86,7 @@ onMounted(() => {
         WS_API.resetConnection();
         break;
       case WebsocketType.GameJoinAck:
-        players.value = message.data.players;
+        updatePlayersList(message.data.players);
         break;
       case WebsocketType.PlayerDisconnectAck:
         const index = players.value.findIndex((player) => player.username === message.data.username);
@@ -120,7 +122,7 @@ const currentView = computed(() => {
 function completeGameStep(message: WebsocketMessage): void {
   // if the list of players was updated, update it
   if (message.data.players) {
-    players.value = message.data.players;
+    updatePlayersList(message.data.players);
   }
   // start a timer for 5 seconds so that players can see the new standings. Then request a new question from the server
   setTimeout(() => {
@@ -128,6 +130,10 @@ function completeGameStep(message: WebsocketMessage): void {
   }, 7000 /* 7 seconds */);
 }
 
+function updatePlayersList(newPlayers: Player[]): void {
+  previousTurnPlayers.value = players.value;
+  players.value = newPlayers;
+}
 </script>
 
 <style scoped>

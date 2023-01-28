@@ -1,9 +1,15 @@
 <template>
   <main>
       <div id="topSection">
-        <PlayersListVue id="players" :players="props.players" :current-player-index="props.currentPlayerIndex" :shownIndex="true"/>
+        <PlayersListVue id="players" 
+          :players="props.players" 
+          :current-player-index="props.currentPlayerIndex" 
+          :shownIndex="true"/>
       </div>
-     <BoardVue id="gameBoard" :players="props.players" :current-player-index="props.currentPlayerIndex"/>
+     <BoardVue id="gameBoard" 
+        :players="props.players" 
+        :current-player-index="props.currentPlayerIndex" 
+        :previous-turn-players="props.previousTurnPlayers"/>
   </main>
 </template>
 
@@ -14,6 +20,7 @@ import type { Player } from '../../../shared/types/Player';
 
 const props = defineProps<{
   players: Player[],
+  previousTurnPlayers: Player[],
   currentPlayerIndex: number
 }>();
 </script>

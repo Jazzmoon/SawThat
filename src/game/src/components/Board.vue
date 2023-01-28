@@ -9,68 +9,37 @@ import type { Player } from "../../../shared/types/Player";
 
 const props = defineProps<{
     players: Player[],
+    previousTurnPlayers: Player[]
     currentPlayerIndex: number
 }>()
 
 let playerPieces: Record<string, {piece: SVGCircleElement, position: number}> = {};
 let playersOnTile: number[] = Array(38).fill(0);
-
-let playersWithPieces: Set<string> = new Set();
-
 let startingSpot: HTMLElement | null;
 
 onMounted(() => {
     // create the player pieces for each player and position at starting location
     startingSpot = document.getElementById("spot1");
     for (const player of props.players) {
-        createPiece(player);
+        const prevPlayersSpot = props.previousTurnPlayers.find((oldPlayer) => oldPlayer.username === player.username);
+        createPiece(player, prevPlayersSpot?.position ?? 0);
     }
 });
 
-watch(props.players, async (n, o) => {
-    let currentPlayers = new Set<string>();
-    for (const player of props.players) {
-        currentPlayers.add(player.username);
-
-        // if there is no piece for this player, create one
-        if (playerPieces[player.username] === undefined) {
-            createPiece(player);
-
-        // if the position of the piece is wrong, update it
-        } else if (playerPieces[player.username].position !== player.position) {
-            updatePiecePosition(player);
-        }
-    }
-
-    // remove pieces for players that have left the game
-    const removedPlayers = new Set(Array.from(playersWithPieces).filter(player => !currentPlayers.has(player)));
-    for (const player of removedPlayers) {
-        const position = Math.max(0, playerPieces[player].position);
-        playersOnTile[position]--;
-        delete playerPieces[player];
-    }
-
-    // update the list of players
-    playersWithPieces.clear();
-    playersWithPieces = currentPlayers;
-});
-
-function createPiece(player: Player): void {
+function createPiece(player: Player, previousSpot: number): void {
     const piece = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     piece.setAttribute('r', startingSpot?.getAttribute('r')!);
     piece.setAttribute('fill', player.color);
     piece.classList.add("boardPiece");
     startingSpot?.parentElement?.append(piece);
-
-    playersWithPieces.add(player.username);
     
-    const position = Math.max(0, player.position);
-    playerPieces[player.username] = {piece: piece, position:  Math.max(0, position)};
-    playersOnTile[position]++;
+    // set to the previous location
+    playerPieces[player.username] = {piece: piece, position:  Math.max(0, previousSpot)};
+    playersOnTile[previousSpot]++;
     
+    // update to the new location (for the animation to play)
     updatePiecePosition(player);
 }
-
 
 function updatePiecePosition(player: Player): void {
     const playerPiece = playerPieces[player.username];
