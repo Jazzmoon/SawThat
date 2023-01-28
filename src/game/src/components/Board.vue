@@ -21,7 +21,7 @@ onMounted(() => {
     startingSpot = document.getElementById("spot1");
     for (const player of props.players) {
         const prevPlayersSpot = props.previousTurnPlayers.find((oldPlayer) => oldPlayer.username === player.username);
-        createPiece(player, prevPlayersSpot?.position ?? 0);
+        createPiece(player, Math.max(0, Math.min(38, prevPlayersSpot?.position ?? 0)));
     }
 });
 
@@ -37,9 +37,10 @@ function createPiece(player: Player, previousSpot: number): void {
     placePieceAtPosition(piece, previousSpot);
 
     // update to the new location (for the animation to play)
+    const position = Math.max(0, Math.min(player.position, 38));
     playersOnTile[previousSpot]--;
-    playersOnTile[player.position]++;
-    placePieceAtPosition(piece, player.position);
+    playersOnTile[position]++;
+    placePieceAtPosition(piece, position);
 }
 
 function placePieceAtPosition(piece: SVGCircleElement, position: number) {
