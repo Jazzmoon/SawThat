@@ -38,4 +38,3 @@ export enum WebsocketType {
   NextPlayerAck = 7,
   Pong = 21,
 }
-// TODO CLEAN UP THESE NUMBERS. THIS IS HORRIFIC
