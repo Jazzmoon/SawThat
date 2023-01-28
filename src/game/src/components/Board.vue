@@ -50,7 +50,7 @@ watch(props.players, async (n, o) => {
     // remove pieces for players that have left the game
     const removedPlayers = new Set(Array.from(playersWithPieces).filter(player => !currentPlayers.has(player)));
     for (const player of removedPlayers) {
-        const position = playerPieces[player].position;
+        const position = Math.max(0, playerPieces[player].position);
         playersOnTile[position]--;
         delete playerPieces[player];
     }
@@ -69,8 +69,9 @@ function createPiece(player: Player): void {
 
     playersWithPieces.add(player.username);
     
-    playerPieces[player.username] = {piece: piece, position: player.position};
-    playersOnTile[player.position]++;
+    const position = Math.max(0, player.position);
+    playerPieces[player.username] = {piece: piece, position:  Math.max(0, position)};
+    playersOnTile[position]++;
     
     updatePiecePosition(player);
 }
@@ -78,15 +79,15 @@ function createPiece(player: Player): void {
 
 function updatePiecePosition(player: Player): void {
     const playerPiece = playerPieces[player.username];
+    const position = Math.max(0, player.position);
     // remove player from previous tile and add them to the new one
     playersOnTile[playerPiece.position]--;
-    playersOnTile[player.position]++;
-    playerPiece.position = player.position;
+    playersOnTile[position]++;
+    playerPiece.position = position;
 
     // move the player's piece on the board. Note that if there are already players on this tile, we stack them up
-    const newSpot = document.getElementById(`spot${player.position+1}`);
-    console.log(`spot${player.position+1}`);
-    playerPiece.piece.setAttribute('cy', String(parseInt(newSpot?.getAttribute('cy')!) - 50 * (playersOnTile[player.position] - 1)));
+    const newSpot = document.getElementById(`spot${position+1}`);
+    playerPiece.piece.setAttribute('cy', String(parseInt(newSpot?.getAttribute('cy')!) - 50 * (playersOnTile[position] - 1)));
     playerPiece.piece.setAttribute('cx', newSpot?.getAttribute('cx')!);
 }
 </script>
