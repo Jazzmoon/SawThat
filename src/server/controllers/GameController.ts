@@ -469,7 +469,7 @@ export const turn = async (
         }
         // Start the timer async timeout
         connections.turn.timeout = setTimeout(() => {
-          handleConsequence(connections, game, data, false);
+          questionEnd(connections, game, data, false);
         }, Math.abs(Date.now() - question_data.timer_start + question_data.timer_length * 1000));
         return Promise.resolve(true);
       })
