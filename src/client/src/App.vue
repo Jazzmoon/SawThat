@@ -1,12 +1,14 @@
 <template>
-  <MultiChoiceQuestionView v-if="currentView == MultiChoiceQuestionView.__name" 
-    @answered="returnToBoard" 
-    :data="currentQuestionData"/>
-  <MainView v-else-if="currentView == MainView.__name" 
-    :players="players"
-    :current-player-index="currentPlayer"/>
-  <HomeView v-else 
-    @joined="returnToBoard" />
+  <transition name="fade" mode="out-in">
+    <MultiChoiceQuestionView v-if="currentView == MultiChoiceQuestionView.__name" 
+      @answered="returnToBoard" 
+      :data="currentQuestionData"/>
+    <MainView v-else-if="currentView == MainView.__name" 
+      :players="players"
+      :current-player-index="currentPlayer"/>
+    <HomeView v-else 
+      @joined="returnToBoard" />
+  </transition>
 </template>
 
 <script setup lang="ts">
@@ -102,5 +104,13 @@ const currentView = computed(() => {
 </script>
 
 <style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
 
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

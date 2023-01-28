@@ -2,16 +2,18 @@
   <div id="root">
     <ConsequenceModal v-if="consequenceShown" 
       :data="consequenceData" />
-    <FinalStandings v-if="currentView == FinalStandings.__name" 
-      @close="currentGameState = GameState.NONE" 
-      :top3-players="topPlayers" />
-    <QuestionView v-else-if="currentView == QuestionView.__name" 
-      :data="currentQuestionData" />
-    <MainView v-else-if="currentView == MainView.__name" 
-      :players="players"
-      :current-player-index="currentPlayer"/>
-    <HomeView v-else :players="players" 
-      @game-started="currentGameState = GameState.RUNNING" />
+    <transition name="fade" mode="out-in">
+      <FinalStandings v-if="currentView == FinalStandings.__name" 
+        @close="currentGameState = GameState.NONE" 
+        :top3-players="topPlayers" />
+      <QuestionView v-else-if="currentView == QuestionView.__name" 
+        :data="currentQuestionData" />
+      <MainView v-else-if="currentView == MainView.__name" 
+        :players="players"
+        :current-player-index="currentPlayer"/>
+      <HomeView v-else :players="players" 
+        @game-started="currentGameState = GameState.RUNNING" />
+    </transition>
   </div>
 </template>
 
@@ -131,6 +133,17 @@ function completeGameStep(message: WebsocketMessage): void {
 <style scoped>
 #root {
   height: 100%;
-  width: 100%
+  width: 100%;
+  overflow: hidden;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
