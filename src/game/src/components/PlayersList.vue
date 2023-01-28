@@ -1,8 +1,9 @@
 <template>
     <div id="players">
-        <div v-for="(player, index) in props.players" :key="player.username" class="player">
+        <div v-for="(player, index) in props.players" :key="player.username" :class="['player', props.currentPlayerIndex === index ? 'chosen' : '']">
             <div class="colorIndicator" :style="`border-color: ${player.color}`"></div>
-            <p class="playerName">{{`${index + 1}. ${player.username}`}}</p>
+            <p class="playerName" v-if="props.shownIndex">{{`${index + 1}. ${player.username}`}}</p>
+            <p class="playerName" v-else>{{player.username}}</p>
         </div>
     </div>
 </template>
@@ -10,7 +11,9 @@
 <script setup lang="ts">import type { Player } from '../../../shared/types/Player';
 
 const props = defineProps<{
-    players: Player[]
+    players: Player[],
+    currentPlayerIndex?: number,
+    shownIndex: boolean
 }>();
 </script>
 

@@ -3,7 +3,8 @@
     @answered="returnToBoard" 
     :data="currentQuestionData"/>
   <MainView v-else-if="currentView == MainView.__name" 
-    :players="players"/>
+    :players="players"
+    :current-player-index="currentPlayer"/>
   <HomeView v-else 
     @joined="returnToBoard" />
 </template>
@@ -29,6 +30,7 @@ let currentGameState = ref(GameState.NONE);
 
 let currentQuestionData = ref({} as QuestionData);
 let players = ref([] as Player[]);
+let currentPlayer = ref(-1);
 
 const messageCallBackId = "App";
 
@@ -69,10 +71,13 @@ onMounted(() => {
         players.value = message.data.players;
         break;
       case WebsocketType.PlayerDisconnectAck:
-      const index = players.value.findIndex((player) => player.username === message.data.username);
+        const index = players.value.findIndex((player) => player.username === message.data.username);
         if (index > -1) {
           players.value.splice(index, 1);
         }
+        break;
+      case WebsocketType.NextPlayerAck:
+        currentPlayer.value = players.value.findIndex((player) => player.username === message.data.username);
         break;
     }
   });

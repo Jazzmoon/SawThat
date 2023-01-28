@@ -1,7 +1,7 @@
 <template>
     <div>
         <div id="topSection">
-            <PlayersListVue id="players" :players="props.players"/>
+            <PlayersListVue id="players" :players="props.players" :current-player-index="props.currentPlayerIndex" :shownIndex="true"/>
         </div>
         <BoardSVG id="board"/>
     </div>
@@ -14,7 +14,8 @@ import type { Player } from "../../../shared/types/Player";
 import PlayersListVue from "./PlayersList.vue";
 
 const props = defineProps<{
-    players: Player[]
+    players: Player[],
+    currentPlayerIndex: number
 }>()
 
 let playerPieces: Record<string, {piece: SVGCircleElement, position: number}> = {};

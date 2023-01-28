@@ -22,7 +22,7 @@
         <PlayersListVue
           id="players"
           :players="props.players"
-          :currentPlayer="null"
+          :shownIndex="false"
         />
       </div>
     </div>

@@ -8,7 +8,8 @@
     <QuestionView v-else-if="currentView == QuestionView.__name" 
       :data="currentQuestionData" />
     <MainView v-else-if="currentView == MainView.__name" 
-      :players="players" />
+      :players="players"
+      :current-player-index="currentPlayer"/>
     <HomeView v-else :players="players" 
       @game-started="currentGameState = GameState.RUNNING" />
   </div>
@@ -41,6 +42,7 @@ let players = ref([] as Player[]);
 let currentQuestionData = ref({} as QuestionData);
 let consequenceShown = ref(false);
 let consequenceData = ref({} as ConsequenceData);
+let currentPlayer = ref(-1);
 
 const messageCallBackId = "App";
 onMounted(() => {
@@ -87,6 +89,9 @@ onMounted(() => {
         if (index > -1) {
           players.value.splice(index, 1);
         }
+        break;
+      case WebsocketType.NextPlayerAck:
+        currentPlayer.value = players.value.findIndex((player) => player.username === message.data.username);
         break;
     }
   });
