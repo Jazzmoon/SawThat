@@ -5,7 +5,7 @@
         <img id="logo" :src="LogoSVG" />
         <h2 id="title">Leaderboard</h2>
       </div>
-      <div v-for="(player, index) in props.players">
+      <div v-for="(player, index) in props.players" :key="player.username">
         <h4 v-if="props.currentPlayerIndex === index">
           You are:
           <div
@@ -43,6 +43,8 @@ const props = defineProps<{
   players: Player[];
   currentPlayerIndex: number;
 }>();
+
+console.log(props);
 </script>
 
 <style scoped>
