@@ -6,14 +6,9 @@
         <h2 id="title">Leaderboard</h2>
       </div>
       <div v-for="(player, index) in props.players" :key="player.username">
-        <h4 v-if="props.currentPlayerIndex === index">
-          You are:
-          <div
-            class="colorIndicator"
-            :style="`border-color: ${player.color}`"
-          ></div>
-          {{ `${player.username}` }}
-        </h4>
+        <p v-if="props.currentPlayerIndex === index">
+          You are: <b :style="`color: ${player.color};`">⬤</b> {{ `${player.username}` }}
+        </p>
       </div>
       <div id="players">
         <div
@@ -43,8 +38,6 @@ const props = defineProps<{
   players: Player[];
   currentPlayerIndex: number;
 }>();
-
-console.log(props);
 </script>
 
 <style scoped>
