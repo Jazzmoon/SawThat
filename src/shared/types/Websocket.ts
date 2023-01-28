@@ -6,12 +6,18 @@
  */
 import type { WebsocketType } from "../enums/WebsocketTypes";
 
+/**
+ * The generic interface of all messages sent across the websocket.
+ */
 export type WebsocketMessage = {
   type: WebsocketType;
   requestId?: string;
   data: any;
 };
 
+/**
+ * Extending WebsocketMessage, a websocket request limits the legal types and adds a token parameter.
+ */
 export type WebsocketRequest = WebsocketMessage & {
   type:
     | WebsocketType.GameSetup
@@ -29,6 +35,9 @@ export type WebsocketRequest = WebsocketMessage & {
   token: string;
 };
 
+/**
+ * Extending WebsocketMessage, a websocket response limits the legal types.
+ */
 export type WebsocketResponse = WebsocketMessage & {
   type:
     | WebsocketType.Error

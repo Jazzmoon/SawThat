@@ -4,6 +4,9 @@
  * A file that details the typing information for trivia questions.
  */
 
+/**
+ * The format of a question as data in the system.
+ */
 export type Question = {
   id: number;
   question_type: "Multiple Choice" | "Text Question";

@@ -676,6 +676,481 @@ It receives a request and various parameters, and handles it appropriately.
 
 node_modules/fastify/types/plugin.d.ts:13
 
+# Shared Folder
+
+This folder contains all the shared code between the client, game, and server. It is used to ensure that the client, game, and server are always in sync with each other. Many types, enums, and classes can be found here:
+
+## Module: shared/apis
+
+### Type Aliases
+
+#### ConnectionEstablished
+
+T **ConnectionEstablished**: `Object`
+
+This data structure is to act as a confirmation that the user has connected to the websocket with the correct information.
+
+##### Type declaration
+
+| Name       | Type     |
+| :--------- | :------- |
+| `JWT`      | `string` |
+| `gameCode` | `string` |
+| `message`  | `string` |
+| `userType` | `string` |
+| `username` | `string` |
+
+##### Defined in
+
+[apis/WebSocketAPIType.ts:73](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/apis/WebSocketAPIType.ts#L73)
+
+___
+
+#### ConsequenceData
+
+T **ConsequenceData**: { `consequence_type`: [`ConsequenceType`](../enums/enums_ConsequenceType.ConsequenceType.md) ; `id`: `number` ; `movement_die`: `number` ; `story`: `string`  } & [`TimedData`](apis_WebSocketAPIType.md#timeddata)
+
+Detailing the consequence data that the server sends to the game and client nodes.
+
+##### Defined in
+
+[apis/WebSocketAPIType.ts:38](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/apis/WebSocketAPIType.ts#L38)
+
+___
+
+#### ErrorData
+
+T **ErrorData**: `Object`
+
+If an error occurs, send back data of this format to ensure it can be handled.
+
+##### Type declaration
+
+| Name       | Type                |
+| :--------- | :------------------ |
+| `error`    | `string` \| `Error` |
+| `fatal`    | `boolean`           |
+| `message?` | `string`            |
+| `token`    | `string`            |
+
+##### Defined in
+
+[apis/WebSocketAPIType.ts:98](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/apis/WebSocketAPIType.ts#L98)
+
+___
+
+#### GameEndAckData
+
+T **GameEndAckData**: `Object`
+
+When a game has ended, the final rankings of the players is sent.
+
+##### Type declaration
+
+| Name      | Type                                 |
+| :-------- | :----------------------------------- |
+| `ranking` | [`Player`](types_Player.md#player)[] |
+
+##### Defined in
+
+[apis/WebSocketAPIType.ts:49](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/apis/WebSocketAPIType.ts#L49)
+
+___
+
+#### GameJoinAckData
+
+T **GameJoinAckData**: `Object`
+
+When a player connects to the websocket, send a player list to everyone to notify them.
+
+##### Type declaration
+
+| Name      | Type                                 |
+| :-------- | :----------------------------------- |
+| `players` | [`Player`](types_Player.md#player)[] |
+
+##### Defined in
+
+[apis/WebSocketAPIType.ts:84](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/apis/WebSocketAPIType.ts#L84)
+
+___
+
+#### NextPlayerData
+
+T **NextPlayerData**: `Object`
+
+When the game progresses to the next turn, the game node must know whose turn it is next.
+
+##### Type declaration
+
+| Name     | Type                               |
+| :------- | :--------------------------------- |
+| `player` | [`Player`](types_Player.md#player) |
+
+##### Defined in
+
+[apis/WebSocketAPIType.ts:91](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/apis/WebSocketAPIType.ts#L91)
+
+___
+
+#### QuestionAnswerData
+
+T **QuestionAnswerData**: `Object`
+
+When a client sends their answer to the server via a request, this is how that answer is formatted.
+
+##### Type declaration
+
+| Name             | Type     |
+| :--------------- | :------- |
+| `answer`         | `string` |
+| `category`       | `string` |
+| `id`             | `number` |
+| `question_type?` | `string` |
+
+##### Defined in
+
+[apis/WebSocketAPIType.ts:63](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/apis/WebSocketAPIType.ts#L63)
+
+___
+
+#### QuestionData
+
+T **QuestionData**: { `all_play?`: `boolean` ; `category`: `string` ; `challenge_die`: [`QuestionCategory`](../enums/enums_QuestionCategory.QuestionCategory.md) ; `id`: `number` ; `media_type?`: ``"image"`` \| ``"video"`` \| ``null`` ; `media_url?`: `string` \| ``null`` ; `movement_die`: `number` ; `options`: `string`[] ; `question`: `string` ; `question_type`: ``"Multiple Choice"``  } & [`TimedData`](apis_WebSocketAPIType.md#timeddata)
+
+Detailing the question data that the server sends to the game and client nodes.
+
+##### Defined in
+
+[apis/WebSocketAPIType.ts:22](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/apis/WebSocketAPIType.ts#L22)
+
+___
+
+#### QuestionEndedData
+
+T **QuestionEndedData**: `Object`
+
+Upon each question ending, send an array detailing where each player is located.
+
+##### Type declaration
+
+| Name      | Type                                 |
+| :-------- | :----------------------------------- |
+| `players` | [`Player`](types_Player.md#player)[] |
+
+##### Defined in
+
+[apis/WebSocketAPIType.ts:56](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/apis/WebSocketAPIType.ts#L56)
+
+___
+
+#### TimedData
+
+T **TimedData**: `Object`
+
+Any response from the server that involves the server starting a timer will include the following information.
+
+##### Type declaration
+
+| Name           | Type               |
+| :------------- | :----------------- |
+| `timer_length` | `number`           |
+| `timer_start?` | `Date` \| `number` |
+
+##### Defined in
+
+[apis/WebSocketAPIType.ts:14](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/apis/WebSocketAPIType.ts#L14)
+
+
+## Module: shared/enums
+
+### Color
+
+- `RED` - `"#FF0000"`
+- `ORANGE` - `"#FFA500"`
+- `YELLOW` - `"#FFFF00"`
+- `GREEN` - `"#008000"`
+- `BLUE` - `"#0000FF"`
+- `PURPLE` - `"#800080"`
+- `PINK` - `"#FFC0CB"`
+- `BROWN` - `"#A52A2A"`
+
+#### Defined in
+
+[enums/Color.ts](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/enums/Color.ts)
+
+### ConsequenceType
+
+- `LoseATurn` - `2`
+- `MoveBackward` - `1`
+- `MoveForward` - `0`
+- `SkipATurn` - `3`
+
+#### Defined in
+
+[enums/ConsequenceType.ts](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/enums/ConsequenceType.ts)
+
+### QuestionCategory
+
+- `TakeThreeAllPlay` - `0`
+- `MiscellaneousAllPlay` - `1`
+- `MusicalAllPlay` - `2`
+- `Consequence` - `3`
+- `TakeThreeMyPlay` - `4`
+- `MusicalMyPlay` - `5`
+- `MiscellaneousMyPlay` - `6`
+- `ConsequenceB` - `7`
+
+#### Defined in
+
+[enums/QuestionCategory.ts](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/enums/QuestionCategory.ts)
+
+### TurnModifier
+
+- `Normal` - `0`
+- `DoubleFeature` - `1`
+- `FinalCut1` - `5`
+- `FinalCut2` - `4`
+- `FinalCut3` - `3`
+- `AllPlayToWin` - `2`
+- `Winner` - `6`
+
+#### Defined in
+
+[enums/TurnModifier.ts](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/enums/TurnModifier.ts)
+
+### WebsocketTypes
+
+- `Consequence`
+- `ConsequenceAck`
+- `ConsequenceEnded`
+- `ConsequenceEndedAck`
+- `Error`
+- `GameEnded`
+- `GameEndedAck`
+- `GameJoin`
+- `GameJoinAck`
+- `GameSetup`
+- `GameSetupAck`
+- `GameStart`
+- `GameStartAck`
+- `NextPlayer`
+- `NextPlayerAck`
+- `Ping`
+- `PlayerDisconnectAck`
+- `Pong`
+- `QuestionAck`
+- `QuestionAnswer`
+- `QuestionEnded`
+- `QuestionEndedAck`
+- `QuestionRequest`
+- `QuestionTimeOut`
+- `QuestionTimerTick`
+- `QuestionTimerTickAck`
+
+#### Defined in
+
+[enums/WebsocketTypes.ts](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/enums/WebsocketTypes.ts)
+
+## Module: shared/types
+
+### Consequence
+
+T **Consequence**: `Object`
+
+The format of a consequence card as data in the system.
+
+#### Type declaration
+
+| Name              | Type                                                                   |
+| :---------------- | :--------------------------------------------------------------------- |
+| `consequenceType` | [`ConsequenceType`](../enums/enums_ConsequenceType.ConsequenceType.md) |
+| `id`              | `number`                                                               |
+| `story`           | `string`                                                               |
+| `timerLength?`    | `number`                                                               |
+
+#### Defined in
+
+[types/Consequence.ts:6](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/types/Consequence.ts#L6)
+
+### WebsocketMessage
+
+T **WebsocketMessage**: `Object`
+
+The generic interface of all messages sent across the websocket.
+
+#### Type declaration
+
+| Name         | Type                                                              |
+| :----------- | :---------------------------------------------------------------- |
+| `data`       | `any`                                                             |
+| `requestId?` | `string`                                                          |
+| `type`       | [`WebsocketType`](../enums/enums_WebsocketTypes.WebsocketType.md) |
+
+#### Defined in
+
+[types/Websocket.ts:12](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/types/Websocket.ts#L12)
+
+___
+
+### WebsocketRequest
+
+T **WebsocketRequest**: [`WebsocketMessage`](types_Websocket.md#websocketmessage) & { `token`: `string` ; `type`: [`GameSetup`](../enums/enums_WebsocketTypes.WebsocketType.md#gamesetup) \| [`GameJoin`](../enums/enums_WebsocketTypes.WebsocketType.md#gamejoin) \| [`GameStart`](../enums/enums_WebsocketTypes.WebsocketType.md#gamestart) \| [`GameEnded`](../enums/enums_WebsocketTypes.WebsocketType.md#gameended) \| [`QuestionRequest`](../enums/enums_WebsocketTypes.WebsocketType.md#questionrequest) \| [`QuestionTimerTick`](../enums/enums_WebsocketTypes.WebsocketType.md#questiontimertick) \| [`QuestionEnded`](../enums/enums_WebsocketTypes.WebsocketType.md#questionended) \| [`QuestionAnswer`](../enums/enums_WebsocketTypes.WebsocketType.md#questionanswer) \| [`Consequence`](../enums/enums_WebsocketTypes.WebsocketType.md#consequence) \| [`ConsequenceEnded`](../enums/enums_WebsocketTypes.WebsocketType.md#consequenceended) \| [`NextPlayer`](../enums/enums_WebsocketTypes.WebsocketType.md#nextplayer) \| [`Ping`](../enums/enums_WebsocketTypes.WebsocketType.md#ping)  }
+
+Extending WebsocketMessage, a websocket request limits the legal types and adds a token parameter.
+
+#### Defined in
+
+[types/Websocket.ts:21](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/types/Websocket.ts#L21)
+
+___
+
+### WebsocketResponse
+
+T **WebsocketResponse**: [`WebsocketMessage`](types_Websocket.md#websocketmessage) & { `type`: [`Error`](../enums/enums_WebsocketTypes.WebsocketType.md#error) \| [`GameSetupAck`](../enums/enums_WebsocketTypes.WebsocketType.md#gamesetupack) \| [`GameJoinAck`](../enums/enums_WebsocketTypes.WebsocketType.md#gamejoinack) \| [`GameStartAck`](../enums/enums_WebsocketTypes.WebsocketType.md#gamestartack) \| [`GameEndedAck`](../enums/enums_WebsocketTypes.WebsocketType.md#gameendedack) \| [`QuestionAck`](../enums/enums_WebsocketTypes.WebsocketType.md#questionack) \| [`QuestionTimerTickAck`](../enums/enums_WebsocketTypes.WebsocketType.md#questiontimertickack) \| [`QuestionEndedAck`](../enums/enums_WebsocketTypes.WebsocketType.md#questionendedack) \| [`ConsequenceAck`](../enums/enums_WebsocketTypes.WebsocketType.md#consequenceack) \| [`ConsequenceEndedAck`](../enums/enums_WebsocketTypes.WebsocketType.md#consequenceendedack) \| [`PlayerDisconnectAck`](../enums/enums_WebsocketTypes.WebsocketType.md#playerdisconnectack) \| [`NextPlayerAck`](../enums/enums_WebsocketTypes.WebsocketType.md#nextplayerack) \| [`Pong`](../enums/enums_WebsocketTypes.WebsocketType.md#pong)  }
+
+Extending WebsocketMessage, a websocket response limits the legal types.
+
+#### Defined in
+
+[types/Websocket.ts:41](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/types/Websocket.ts#L41)
+
+### Player
+
+T **Player**: `Object`
+
+The format of a player as data in the system.
+This is what the game and client would see, but may not be all relevant information about them.
+
+#### Type declaration
+
+| Name       | Type     |
+| :--------- | :------- |
+| `color`    | `string` |
+| `position` | `number` |
+| `username` | `string` |
+
+#### Defined in
+
+[types/Player.ts:5](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/types/Player.ts#L5)
+
+### Question
+
+T **Question**: `Object`
+
+The format of a question as data in the system.
+
+#### Type declaration
+
+| Name            | Type                                         |
+| :-------------- | :------------------------------------------- |
+| `answer`        | `string`                                     |
+| `clue_list`     | `string`[]                                   |
+| `fake_answers`  | []                                           |
+| `id`            | `number`                                     |
+| `media_type`    | ``"image"`` \| ``"video"`` \| ``null``       |
+| `media_url`     | `string` \| ``null``                         |
+| `question`      | `string`                                     |
+| `question_type` | ``"Multiple Choice"`` \| ``"Text Question"`` |
+
+#### Defined in
+
+[types/Question.ts:10](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/types/Question.ts#L10)
+
+
+## Module: shared/util
+
+### Class: MathUtil
+
+#### Constructors
+
+##### constructor
+
+• **new default**()
+
+#### Methods
+
+##### choice
+
+- `Static` **choice**<`T`\>(`choices`, `amount?`): `T` \| `T`[]
+
+Return random entity from an array of choices.
+
+###### Type parameters
+
+| Name |
+| :--- |
+| `T`  |
+
+###### Parameters
+
+| Name      | Type     | Default value | Description             |
+| :-------- | :------- | :------------ | :---------------------- |
+| `choices` | `T`[]    | `undefined`   | Options to choose from. |
+| `amount`  | `number` | `1`           | -                       |
+
+###### Returns
+
+`T` \| `T`[]
+
+The randomly selected option from the array.
+
+###### Defined in
+
+[util/MathUtil.ts:32](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/util/MathUtil.ts#L32)
+
+___
+
+##### randInt
+
+- `Static` **randInt**(`a`, `b`): `number`
+
+Generate a random integer between 2 integral bounds, inclusive.
+
+###### Parameters
+
+| Name | Type     | Description                                |
+| :--- | :------- | :----------------------------------------- |
+| `a`  | `number` | Lower bound, rounded down if not integral. |
+| `b`  | `number` | Upper bound, rounded down if not integral. |
+
+###### Returns
+
+`number`
+
+A random integer between a and b, inclusive.
+
+###### Defined in
+
+[util/MathUtil.ts:11](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/util/MathUtil.ts#L11)
+
+___
+
+##### shuffle
+
+- `Static` **shuffle**<`T`\>(`arr`): `T`[]
+
+###### Type parameters
+
+| Name |
+| :--- |
+| `T`  |
+
+###### Parameters
+
+| Name  | Type  |
+| :---- | :---- |
+| `arr` | `T`[] |
+
+###### Returns
+
+`T`[]
+
+###### Defined in
+
+[util/MathUtil.ts:17](https://github.com/Jazzmoon/SawThat/blob/bcdc021/src/shared/util/MathUtil.ts#L17)
+
+
 # Setup and running
 
 Please see section 7.1 Building and launching the project of our Software Design Document for details. This node will not function independently, so it is important to setup all the nodes before interacting with any them independently.
