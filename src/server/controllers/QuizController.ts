@@ -161,10 +161,10 @@ export const formatQuestion = async (
 };
 
 /**
- *
- * @param theme_pack_name
- * @param used_consequences
- * @returns
+ * Generate a consequence for the game.
+ * @param {string} theme_pack_name - The name of the theme pack file.
+ * @param {number} used_consequences - List of already used consequence ids.
+ * @returns {Promise<Consequence>} The consequence fetched for the game.
  */
 export const formatConsequence = async (
   theme_pack_name: string,

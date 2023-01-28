@@ -8,8 +8,10 @@
 
 - [checkWinner](controllers_GameController.md#checkwinner)
 - [createGame](controllers_GameController.md#creategame)
+- [handleConsequence](controllers_GameController.md#handleconsequence)
 - [nextPlayer](controllers_GameController.md#nextplayer)
 - [questionAnswer](controllers_GameController.md#questionanswer)
+- [questionEnd](controllers_GameController.md#questionend)
 - [startGame](controllers_GameController.md#startgame)
 - [turn](controllers_GameController.md#turn)
 
@@ -33,7 +35,7 @@ Check if any players are in the winner state.
 
 #### Defined in
 
-[controllers/GameController.ts:596](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/controllers/GameController.ts#L596)
+[controllers/GameController.ts:693](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/controllers/GameController.ts#L693)
 
 ___
 
@@ -58,7 +60,40 @@ Returns a response wrapped in a promise to be handled by the Fastify router.
 
 #### Defined in
 
-[controllers/GameController.ts:98](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/controllers/GameController.ts#L98)
+[controllers/GameController.ts:99](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/controllers/GameController.ts#L99)
+
+___
+
+### handleConsequence
+
+▸ **handleConsequence**(`connections`, `game`, `data`, `early`): `Promise`<`void`\>
+
+Handle consequence timeout or ending early.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `connections` | `Object` | The websocket information of all players connected to the specific game. |
+| `connections.clients` | `ClientConn`[] | - |
+| `connections.host` | `ClientConn` | - |
+| `connections.turn?` | `Object` | - |
+| `connections.turn.movement_die` | `number` | - |
+| `connections.turn.timeout?` | `Timeout` | - |
+| `connections.turn.turn_start` | `number` | - |
+| `game` | `PopulatedGame` | The populated game instance to fetch information about the current game state. |
+| `data` | `WebsocketRequest` | Information related to the request, such as request id. |
+| `early` | `boolean` | Is this request ending the game before the timeout? |
+
+#### Returns
+
+`Promise`<`void`\>
+
+This is a mutation function in which modifies the next game state and sends it to the players.
+
+#### Defined in
+
+[controllers/GameController.ts:630](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/controllers/GameController.ts#L630)
 
 ___
 
@@ -85,7 +120,7 @@ The username of the player next in the rotation.
 
 #### Defined in
 
-[controllers/GameController.ts:230](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/controllers/GameController.ts#L230)
+[controllers/GameController.ts:231](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/controllers/GameController.ts#L231)
 
 ___
 
@@ -93,27 +128,65 @@ ___
 
 ▸ **questionAnswer**(`connections`, `data`, `username`, `game`): `Promise`<`boolean`\>
 
+Handle a user sending an answer request to the server
+
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `connections` | `Object` |
-| `connections.clients` | `ClientConn`[] |
-| `connections.host` | `ClientConn` |
-| `connections.turn?` | `Object` |
-| `connections.turn.movement_die` | `number` |
-| `connections.turn.turn_end` | `number` |
-| `data` | `WebsocketRequest` |
-| `username` | `string` |
-| `game` | `PopulatedGame` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `connections` | `Object` | The websocket information of all players connected to the specific game. |
+| `connections.clients` | `ClientConn`[] | - |
+| `connections.host` | `ClientConn` | - |
+| `connections.turn?` | `Object` | - |
+| `connections.turn.movement_die` | `number` | - |
+| `connections.turn.timeout?` | `Timeout` | - |
+| `connections.turn.turn_start` | `number` | - |
+| `data` | `WebsocketRequest` | Information related to the request, such as request id and the question answer. |
+| `username` | `string` | The username of the user who send the websocket request. |
+| `game` | `PopulatedGame` | The populated game instance to fetch information about the current game state. |
 
 #### Returns
 
 `Promise`<`boolean`\>
 
+Whether the answer submitted is, or is not, correct.
+
 #### Defined in
 
-[controllers/GameController.ts:497](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/controllers/GameController.ts#L497)
+[controllers/GameController.ts:496](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/controllers/GameController.ts#L496)
+
+___
+
+### questionEnd
+
+▸ **questionEnd**(`connections`, `game`, `data`, `early`): `Promise`<`void`\>
+
+The question has ended, either by timeout or by answer. Handle accordingly.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `connections` | `Object` | The websocket information of all players connected to the specific game. |
+| `connections.clients` | `ClientConn`[] | - |
+| `connections.host` | `ClientConn` | - |
+| `connections.turn?` | `Object` | - |
+| `connections.turn.movement_die` | `number` | - |
+| `connections.turn.timeout?` | `Timeout` | - |
+| `connections.turn.turn_start` | `number` | - |
+| `game` | `PopulatedGame` | The populated game instance to fetch information about the current game state. |
+| `data` | `WebsocketRequest` | Information related to the request, such as request id. |
+| `early` | `boolean` | Is this request ending the game before the timeout? |
+
+#### Returns
+
+`Promise`<`void`\>
+
+This is a mutation function in which modifies the next game state and sends it to the players.
+
+#### Defined in
+
+[controllers/GameController.ts:561](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/controllers/GameController.ts#L561)
 
 ___
 
@@ -140,7 +213,7 @@ The username of the player first in the rotation.
 
 #### Defined in
 
-[controllers/GameController.ts:192](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/controllers/GameController.ts#L192)
+[controllers/GameController.ts:193](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/controllers/GameController.ts#L193)
 
 ___
 
@@ -159,7 +232,8 @@ Handle the turn logic for a single round of the game, triggered by the game node
 | `connections.host` | `ClientConn` | - |
 | `connections.turn?` | `Object` | - |
 | `connections.turn.movement_die` | `number` | - |
-| `connections.turn.turn_end` | `number` | - |
+| `connections.turn.timeout?` | `Timeout` | - |
+| `connections.turn.turn_start` | `number` | - |
 | `data` | `WebsocketRequest` | Any relevant data that the game node sends across the websocket stream. |
 | `game` | `PopulatedGame` | The game state. We know that the sender of these messages is the game node. |
 
@@ -169,4 +243,4 @@ Handle the turn logic for a single round of the game, triggered by the game node
 
 #### Defined in
 
-[controllers/GameController.ts:270](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/controllers/GameController.ts#L270)
+[controllers/GameController.ts:271](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/controllers/GameController.ts#L271)

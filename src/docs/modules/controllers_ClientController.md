@@ -32,4 +32,4 @@ A resolution, or rejection, to indicate if the request was successful.
 
 #### Defined in
 
-[controllers/ClientController.ts:21](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/controllers/ClientController.ts#L21)
+[controllers/ClientController.ts:21](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/controllers/ClientController.ts#L21)

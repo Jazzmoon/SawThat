@@ -33,7 +33,7 @@ The definition of what a user looks like within the database.
 
 #### Defined in
 
-[models/User.ts:12](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/models/User.ts#L12)
+[models/User.ts:12](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/models/User.ts#L12)
 
 ## Variables
 
@@ -43,4 +43,4 @@ The definition of what a user looks like within the database.
 
 #### Defined in
 
-[models/User.ts:43](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/models/User.ts#L43)
+[models/User.ts:43](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/models/User.ts#L43)

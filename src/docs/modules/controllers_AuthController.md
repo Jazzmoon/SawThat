@@ -34,4 +34,4 @@ Resolution code with JWT embedded.
 
 #### Defined in
 
-[controllers/AuthController.ts:23](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/controllers/AuthController.ts#L23)
+[controllers/AuthController.ts:23](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/controllers/AuthController.ts#L23)

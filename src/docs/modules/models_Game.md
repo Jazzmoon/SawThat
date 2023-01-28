@@ -34,7 +34,7 @@ The definition of what a game looks like within the database.
 
 #### Defined in
 
-[models/Game.ts:12](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/models/Game.ts#L12)
+[models/Game.ts:12](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/models/Game.ts#L12)
 
 ## Variables
 
@@ -44,4 +44,4 @@ The definition of what a game looks like within the database.
 
 #### Defined in
 
-[models/Game.ts:45](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/models/Game.ts#L45)
+[models/Game.ts:45](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/models/Game.ts#L45)

@@ -16,20 +16,24 @@
 
 ▸ **formatConsequence**(`theme_pack_name`, `used_consequences`): `Promise`<`Consequence`\>
 
+Generate a consequence for the game.
+
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `theme_pack_name` | `string` |
-| `used_consequences` | `number`[] |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `theme_pack_name` | `string` | The name of the theme pack file. |
+| `used_consequences` | `number`[] | List of already used consequence ids. |
 
 #### Returns
 
 `Promise`<`Consequence`\>
 
+The consequence fetched for the game.
+
 #### Defined in
 
-[controllers/QuizController.ts:169](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/controllers/QuizController.ts#L169)
+[controllers/QuizController.ts:169](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/controllers/QuizController.ts#L169)
 
 ___
 
@@ -56,7 +60,7 @@ Formatted question data, loaded from file.
 
 #### Defined in
 
-[controllers/QuizController.ts:70](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/controllers/QuizController.ts#L70)
+[controllers/QuizController.ts:70](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/controllers/QuizController.ts#L70)
 
 ___
 
@@ -82,4 +86,4 @@ Returns whether or not a user's answer to a question is correct.
 
 #### Defined in
 
-[controllers/QuizController.ts:25](https://github.com/Jazzmoon/SawThat/blob/c2c2bae/src/server/controllers/QuizController.ts#L25)
+[controllers/QuizController.ts:25](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/controllers/QuizController.ts#L25)
