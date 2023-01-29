@@ -4,38 +4,37 @@ import { HTTP_API } from "@/middleware/HTTP_API";
 import { WS_API } from "@/middleware/WS_API";
 import { WebsocketType } from "../../../shared/enums/WebsocketTypes";
 
-const emit = defineEmits(['joined']);
+const emit = defineEmits(["joined"]);
 
 let gameCode = "";
 let playerName = "";
 
 async function submit() {
   const joinGameRequest = await HTTP_API.sendJoinRequest(playerName, gameCode);
-  
-  if (!joinGameRequest || joinGameRequest.hasOwnProperty('error')) {
+
+  if (!joinGameRequest || joinGameRequest.hasOwnProperty("error")) {
     alert(`Failed to join the game.\n${JSON.stringify(joinGameRequest)}`);
     return;
   }
-  
+
   WS_API.setUserToken(joinGameRequest.token);
-  
+
   const connectResponse = await WS_API.setupWebSocketConnection(gameCode);
-  
+
   if (!connectResponse) {
     alert("Failed to establish connection with the server");
     return;
   }
-  
+
   const joinWSResponse = await WS_API.sendJoinRequest();
-  
+
   if (!joinWSResponse || joinWSResponse.type === WebsocketType.Error) {
     alert(`Failed to join the server.\n${joinWSResponse.data.error}`);
     return;
   }
 
-  emit('joined', playerName);
+  emit("joined", playerName);
 }
-
 </script>
 
 <template>
@@ -45,8 +44,8 @@ async function submit() {
       <h1 id="title">SawThat?</h1>
       <div id="inputs">
         <p id="hint">Enter your game code to start:</p>
-        <input type="text" v-model="gameCode" placeholder="Game Code"/>
-        <input type="text" v-model="playerName" placeholder="Your Name"/>
+        <input type="text" v-model="gameCode" placeholder="Game Code" />
+        <input type="text" v-model="playerName" placeholder="Your Name" />
         <button @click="submit()">Go!</button>
       </div>
     </div>
@@ -59,7 +58,7 @@ async function submit() {
   flex-direction: column;
 }
 #title {
-  font-family: 'Fredericka the Great';
+  font-family: "Fredericka the Great";
   text-align: center;
   font-weight: 100;
   font-size: 5rem;
@@ -81,8 +80,9 @@ async function submit() {
 #hint {
   text-align: center;
 }
-input, button {
-  border: 1rem solid #003FA3;
+input,
+button {
+  border: 1rem solid #003fa3;
   border-radius: 30px;
   padding: 12px;
   margin: 8px;
@@ -95,6 +95,6 @@ input {
 }
 
 button {
-  background-color: #003FA3;
+  background-color: #003fa3;
 }
 </style>

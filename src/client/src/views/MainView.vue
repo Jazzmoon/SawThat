@@ -19,7 +19,11 @@
             :style="`border-color: ${player.color}`"
           ></div>
           <p class="playerName">
-            {{ `${player.username}${youIndex === index ? " (You)" : ""}` }}
+            {{
+              `${player.username}${
+                props.currentPlayerIndex === index ? " (You)" : ""
+              }`
+            }}
           </p>
         </div>
       </div>
@@ -29,18 +33,13 @@
 
 <script lang="ts" setup>
 import LogoSVG from "@/assets/logo.svg";
-import { computed } from "vue";
 import type { Player } from "../../../shared/types/Player";
 
 const props = defineProps<{
   players: Player[];
   currentPlayerIndex: number;
-  youId: string;
+  currentPlayerUsername: string;
 }>();
-
-const youIndex = computed(() => {
-  return props.players.findIndex((player) => player.username === props.youId);
-});
 </script>
 
 <style scoped>
