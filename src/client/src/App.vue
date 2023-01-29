@@ -46,9 +46,6 @@ function returnToBoard(id: string) {
   if (currentPlayerUsername.value === "") {
     currentPlayerUsername.value = id;
   }
-  currentPlayer.value = players.value.findIndex(
-    (player) => player.username === currentPlayerUsername.value
-  );
 }
 
 onMounted(() => {
