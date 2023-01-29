@@ -82,8 +82,7 @@ onMounted(() => {
         }
         break;
       case WebsocketType.NextPlayerAck:
-        currentPlayer.value = players.value.findIndex((player) => player.username === message.data.username);
-        console.log(currentPlayer.value, message.data);
+        currentPlayer.value = players.value.findIndex((player) => player.username === message.data.player.username);
         break;
     }
   });
