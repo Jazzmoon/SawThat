@@ -221,10 +221,8 @@ export const startGame = async (gameID: string): Promise<string> => {
 };
 
 /**
- * Given a game id, prepare to start the game. To do so:
- * 1. Randomize the player array to determine turn order.
- * 2. Change the boolean in the game model to be True.
- * 3. Return the username of the first player in the turn order.
+ * Given a game id, shift the player list left and return the next player
+ * in the turn order.
  * @param {string} gameID - The Model Game ID within the database.
  * @return {Promise<string>} The username of the player next in the rotation.
  */
@@ -512,8 +510,9 @@ export const questionAnswer = async (
   game: PopulatedGame
 ): Promise<boolean> => {
   // Verify that the question is still open to be answered
+  // If the question is no longer available, just treat answers as incorrect.
   if (connections.turn === undefined)
-    return Promise.reject("This question is no longer available for answer");
+    return Promise.resolve(false);
   // Verify that the question is the same as the one being asked
   if (
     game.used_questions[game.used_questions.length - 1] !==
