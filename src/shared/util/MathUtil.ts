@@ -15,11 +15,11 @@ export default class MathUtil {
   }
 
   /**
-   *
-   * @param bound_a
-   * @param bound_b
-   * @param value
-   * @returns
+   * Ensure a number remains within a minimum and maximum bound range.
+   * @param {number} bound_a - One of two bounds for the value.
+   * @param {number} bound_b - One of two bounds for the value.
+   * @param {number} value - The value in which potentially could fall outside the bounds.
+   * @returns {number} A value constrained within the bounds provided.
    */
   public static bound(bound_a: number, bound_b: number, value: number): number {
     let min = Math.min(bound_a, bound_b),
@@ -28,9 +28,9 @@ export default class MathUtil {
   }
 
   /**
-   *
-   * @param arr
-   * @returns
+   * Shuffle an array of values.
+   * @param {Array<T>} arr - The original array.
+   * @returns {Array<T>} The shuffled array.
    */
   public static shuffle<T>(arr: Array<T>): Array<T> {
     return arr
