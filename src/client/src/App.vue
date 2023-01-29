@@ -43,10 +43,12 @@ const messageCallBackId = "App";
 
 function returnToBoard(id: string) {
   currentGameState.value = GameState.RUNNING;
+  if (currentPlayerUsername.value === "") {
+    currentPlayerUsername.value = id;
+  }
   currentPlayer.value = players.value.findIndex(
-    (player) => player.username === id
+    (player) => player.username === currentPlayerUsername.value
   );
-  currentPlayerUsername.value = id;
 }
 
 onMounted(() => {
