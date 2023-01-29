@@ -1,6 +1,6 @@
 <template>
     <div id="players">
-        <div v-for="(player, index) in props.players" :key="player.username" :class="['player', props.currentPlayerIndex === index ? 'chosen' : '']">
+        <div v-for="(player, index) in props.players" :key="player.username" :class="['player', props.currentPlayerIndex === index ? 'currentTurn' : '']">
             <div class="colorIndicator" :style="`border-color: ${player.color}`"></div>
             <p class="playerName" v-if="props.shownIndex">{{`${index + 1}. ${player.username}`}}</p>
             <p class="playerName" v-else>{{player.username}}</p>
@@ -51,7 +51,7 @@ const props = defineProps<{
     margin-left: 12px;
 }
 
-.player.chosen {
+.player.currentTurn {
     border-radius: 15px;
     border: 5px solid #003fa3;
 }
