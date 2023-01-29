@@ -92,13 +92,13 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
             const { username, userType, gameCode } = validatedToken;
 
             try {
-              const game = await tryGetGame(stream, gameID, gameCode, token, data, userType);
+              const game = await tryGetGame(conn, gameID, gameCode, token, data, userType);
 
               if (!game) {
                 return; // TODO Mark, since this is inside a try catch, we don't need to handle the errors in tryGetGame. Just throw and handle below
               }
 
-              await handleMessage(stream, data, game, token, username, gameID, gameCode, userType);
+              await handleMessage(conn, data, game, token, username, gameID, gameCode, userType);
 
             } catch(err) {
               conn.socket.send(
