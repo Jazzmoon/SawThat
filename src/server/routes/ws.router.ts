@@ -159,7 +159,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
  * @param token the token to validate
  * @param gameID the id of the game
  * @param data the payload of the request
- * @returns true if the validation succedded. False otherwise
+ * @returns true if the validation succeeded. False otherwise
  */
 function tryValidateToken(
   conn: SocketStream,

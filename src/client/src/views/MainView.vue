@@ -9,16 +9,19 @@
         <div
           v-for="(player, index) in props.players"
           :key="player.username"
-          :class="[
-            'player',
-            props.currentPlayerIndex === index ? 'chosen' : '',
-          ]"
+          :class="['player', props.currentPlayerIndex === index ? 'currentTurn' : '']"
         >
           <div
             class="colorIndicator"
             :style="`border-color: ${player.color}`"
           ></div>
-          <p class="playerName">{{`${youIndex === index ? 'You → ' : ''}${player.username}`}}</p>
+          <p class="playerName">
+            {{
+              `${player.username}${selfIndex === index ? " (You)" : ""}${
+                props.currentPlayerIndex === index ? " (Current Turn)" : ""
+              }`
+            }}
+          </p>
         </div>
       </div>
     </div>
@@ -27,17 +30,19 @@
 
 <script lang="ts" setup>
 import LogoSVG from "@/assets/logo.svg";
-import { computed } from 'vue';
+import { computed } from "vue";
 import type { Player } from "../../../shared/types/Player";
 
 const props = defineProps<{
   players: Player[];
   currentPlayerIndex: number;
-  youId: string;
+  selfUsername: string;
 }>();
 
-const youIndex = computed(() => {
-  return props.players.findIndex(player => player.username === props.youId);
+const selfIndex = computed(() => {
+  return props.players.findIndex(
+    (player) => player.username === props.selfUsername
+  );
 });
 </script>
 
@@ -70,7 +75,7 @@ const youIndex = computed(() => {
   padding: 6px;
 }
 
-.player.chosen {
+.player.currentTurn {
   border-radius: 15px;
   border: 5px solid #003fa3;
 }
