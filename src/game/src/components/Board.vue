@@ -21,7 +21,7 @@ onMounted(() => {
     startingSpot = document.getElementById("spot1");
     for (const player of props.players) {
         const prevPlayersSpot = props.previousTurnPlayers.find((oldPlayer) => oldPlayer.username === player.username);
-        createPiece(player, Math.max(0, Math.min(38, prevPlayersSpot?.position ?? 0)));
+        createPiece(player, Math.max(0, Math.min(39, prevPlayersSpot?.position ?? 0)));
     }
 });
 
@@ -37,7 +37,9 @@ function createPiece(player: Player, previousSpot: number): void {
     placePieceAtPosition(piece, previousSpot);
 
     // update to the new location (for the animation to play)
-    const position = Math.max(0, Math.min(player.position, 38));
+    // we clamp the max and min of the position to avoid flying off the board
+    // 39 = final cut it lasts for multiple rounds
+    const position = Math.max(0, Math.min(player.position, 39));
     playersOnTile[previousSpot]--;
     playersOnTile[position]++;
     placePieceAtPosition(piece, position);
