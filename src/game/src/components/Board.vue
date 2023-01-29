@@ -13,12 +13,13 @@ const props = defineProps<{
     currentPlayerIndex: number
 }>()
 
-let playersOnTile: number[] = Array(38).fill(0);
+let playersOnTile: number[];
 let startingSpot: HTMLElement | null;
 
 onMounted(() => {
     // create the player pieces for each player and position at starting location
     startingSpot = document.getElementById("spot1");
+    playersOnTile = Array(38).fill(0);
     for (const player of props.players) {
         const prevPlayersSpot = props.previousTurnPlayers.find((oldPlayer) => oldPlayer.username === player.username);
         createPiece(player, Math.max(0, Math.min(39, prevPlayersSpot?.position ?? 0)));
