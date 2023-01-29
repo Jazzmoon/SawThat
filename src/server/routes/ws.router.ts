@@ -608,7 +608,7 @@ async function gameQuestionRequest(conn: SocketStream, token: any, gameID: strin
 }
 
 async function gameQuestionAnswer(conn: SocketStream, token: any, gameID: string, userType: string, data: any, game: any) {
-  if (!checkUserAuthorization(userType, "Game", conn, data, token)) {
+  if (!checkUserAuthorization(userType, "Client", conn, data, token)) {
     return;
   }
   let conn_username = connections[gameID].clients.find(
