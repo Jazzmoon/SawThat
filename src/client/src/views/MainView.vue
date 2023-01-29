@@ -9,10 +9,7 @@
         <div
           v-for="(player, index) in props.players"
           :key="player.username"
-          :class="[
-            'player',
-            props.currentPlayerIndex === index ? 'chosen' : '',
-          ]"
+          :class="['player', selfIndex === index ? 'chosen' : '']"
         >
           <div
             class="colorIndicator"
@@ -20,8 +17,8 @@
           ></div>
           <p class="playerName">
             {{
-              `${player.username}${
-                props.currentPlayerIndex === index ? " (You)" : ""
+              `${player.username}${selfIndex === index ? " (You)" : ""}${
+                props.currentPlayerIndex === index ? " (Current Turn)" : ""
               }`
             }}
           </p>
@@ -33,13 +30,20 @@
 
 <script lang="ts" setup>
 import LogoSVG from "@/assets/logo.svg";
+import { computed } from "vue";
 import type { Player } from "../../../shared/types/Player";
 
 const props = defineProps<{
   players: Player[];
   currentPlayerIndex: number;
-  currentPlayerUsername: string;
+  selfUsername: string;
 }>();
+
+const selfIndex = computed(() => {
+  return props.players.findIndex(
+    (player) => player.username === props.selfUsername
+  );
+});
 </script>
 
 <style scoped>

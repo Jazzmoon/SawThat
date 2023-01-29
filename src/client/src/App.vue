@@ -9,7 +9,7 @@
       v-else-if="currentView == MainView.__name"
       :players="players"
       :current-player-index="currentPlayer"
-      :current-player-username="currentPlayerUsername"
+      :self-username="currentPlayerUsername"
     />
     <HomeView v-else @joined="returnToBoard" />
   </transition>
