@@ -33,7 +33,7 @@ async function submit() {
     return;
   }
 
-  emit('joined');
+  emit('joined', playerName);
 }
 
 </script>
