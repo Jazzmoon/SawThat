@@ -124,7 +124,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
       * 1. Find client within the connections record and remove them from the connections array
       */
       conn.socket.on("close", async (stream) => {
-        await handleDisconnect(stream, gameID);
+        await handleDisconnect(conn, gameID);
       });
     }
   );
