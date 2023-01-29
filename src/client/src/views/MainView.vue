@@ -18,7 +18,9 @@
             class="colorIndicator"
             :style="`border-color: ${player.color}`"
           ></div>
-          <p class="playerName">{{`${youIndex === index ? 'You → ' : ''}${player.username}`}}</p>
+          <p class="playerName">
+            {{ `${player.username}${youIndex === index ? " (You)" : ""}` }}
+          </p>
         </div>
       </div>
     </div>
@@ -27,7 +29,7 @@
 
 <script lang="ts" setup>
 import LogoSVG from "@/assets/logo.svg";
-import { computed } from 'vue';
+import { computed } from "vue";
 import type { Player } from "../../../shared/types/Player";
 
 const props = defineProps<{
@@ -37,7 +39,7 @@ const props = defineProps<{
 }>();
 
 const youIndex = computed(() => {
-  return props.players.findIndex(player => player.username === props.youId);
+  return props.players.findIndex((player) => player.username === props.youId);
 });
 </script>
 
