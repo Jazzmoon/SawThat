@@ -39,10 +39,13 @@ function createPiece(player: Player, previousSpot: number): void {
     // update to the new location (for the animation to play)
     // we clamp the max and min of the position to avoid flying off the board
     // 39 = final cut it lasts for multiple rounds
-    const position = Math.max(0, Math.min(player.position, 39));
-    playersOnTile[previousSpot]--;
-    playersOnTile[position]++;
-    placePieceAtPosition(piece, position);
+    // the 1s delay is to play the animation a bit later so everyone can see it
+    setTimeout(() => {
+        const position = Math.max(0, Math.min(player.position, 39));
+        playersOnTile[previousSpot]--;
+        playersOnTile[position]++;
+        placePieceAtPosition(piece, position);
+    }, 1000);
 }
 
 function placePieceAtPosition(piece: SVGCircleElement, position: number) {

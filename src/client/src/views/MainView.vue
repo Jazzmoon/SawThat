@@ -5,11 +5,6 @@
         <img id="logo" :src="LogoSVG" />
         <h2 id="title">Leaderboard</h2>
       </div>
-      <div v-for="(player, index) in props.players" :key="player.username">
-        <p v-if="props.currentPlayerIndex === index">
-          You are: <b :style="`color: ${player.color};`">⬤</b> {{ `${player.username}` }}
-        </p>
-      </div>
       <div id="players">
         <div
           v-for="(player, index) in props.players"
@@ -23,7 +18,7 @@
             class="colorIndicator"
             :style="`border-color: ${player.color}`"
           ></div>
-          <p class="playerName">{{ `${index + 1}. ${player.username}` }}</p>
+          <p class="playerName">{{`${youIndex === index ? 'You → ' : ''}${player.username}`}}</p>
         </div>
       </div>
     </div>
@@ -32,12 +27,18 @@
 
 <script lang="ts" setup>
 import LogoSVG from "@/assets/logo.svg";
+import { computed } from 'vue';
 import type { Player } from "../../../shared/types/Player";
 
 const props = defineProps<{
   players: Player[];
   currentPlayerIndex: number;
+  youId: string;
 }>();
+
+const youIndex = computed(() => {
+  return props.players.findIndex(player => player.username === props.youId);
+});
 </script>
 
 <style scoped>

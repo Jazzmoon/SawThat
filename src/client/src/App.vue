@@ -5,7 +5,8 @@
       :data="currentQuestionData"/>
     <MainView v-else-if="currentView == MainView.__name" 
       :players="players"
-      :current-player-index="currentPlayer"/>
+      :current-player-index="currentPlayer"
+      :you-id="youId"/>
     <HomeView v-else 
       @joined="returnToBoard" />
   </transition>
@@ -33,11 +34,13 @@ let currentGameState = ref(GameState.NONE);
 let currentQuestionData = ref({} as QuestionData);
 let players = ref([] as Player[]);
 let currentPlayer = ref(-1);
+let youId = ref("");
 
 const messageCallBackId = "App";
 
-function returnToBoard() {
+function returnToBoard(id: string) {
   currentGameState.value = GameState.RUNNING;
+  youId.value = id;
 }
 
 onMounted(() => {
