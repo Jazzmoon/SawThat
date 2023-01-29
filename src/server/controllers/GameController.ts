@@ -79,12 +79,12 @@ const generateGameID = async (): Promise<string> => {
         Math.floor(Math.random() * characters.length)
       );
       exists = await Game.exists({ game_code: gameID }).then((res) => {
-        console.log(`Verifying Game Code Existence: ${res}`);
+        console.log(`[GC] Verifying Game Code Existence: ${res}`);
         return res !== null;
       });
     }
   } catch (err) {
-    console.error("An error in game ID generation occurred.", err);
+    console.log("[WS] An error in game ID generation occurred.", err);
     gameID = "ABCDEFG";
   }
   return Promise.resolve(gameID);
