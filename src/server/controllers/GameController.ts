@@ -357,7 +357,11 @@ export const turn = async (
         };
         // Add game to the database, making sure it is appended (so we know which is the most recent question)
         game.used_consequences.push(consequence.id);
-        game.players[0].position += movement_die; // NO SKIP OR LOSE TURN IMPLEMENTED (Negative position trick?)
+        game.players[0].position = MathUtil.bound(
+          0,
+          41,
+          game.players[0].position + movement_die
+        ); // NO SKIP OR LOSE TURN IMPLEMENTED (Negative position trick?)
         await User.findOneAndUpdate(
           {
             username: game.players[0].username,
@@ -530,7 +534,11 @@ export const questionAnswer = async (
   if (correct) {
     // If it is the players turn. move them.
     if (game.players[0].username === username) {
-      game.players[0].position += connections.turn.movement_die;
+      game.players[0].position = MathUtil.bound(
+        0,
+        41,
+        game.players[0].position + connections.turn.movement_die
+      );
       await User.findOneAndUpdate(
         {
           username: game.players[0].username,

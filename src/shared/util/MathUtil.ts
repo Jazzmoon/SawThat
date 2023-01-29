@@ -14,6 +14,24 @@ export default class MathUtil {
     return Math.floor(Math.random() * (max - min)) + min;
   }
 
+  /**
+   *
+   * @param bound_a
+   * @param bound_b
+   * @param value
+   * @returns
+   */
+  public static bound(bound_a: number, bound_b: number, value: number): number {
+    let min = Math.min(bound_a, bound_b),
+      max = Math.max(bound_a, bound_b);
+    return Math.min(max, Math.max(min, value));
+  }
+
+  /**
+   *
+   * @param arr
+   * @returns
+   */
   public static shuffle<T>(arr: Array<T>): Array<T> {
     return arr
       .map((value) => ({
