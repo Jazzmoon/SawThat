@@ -277,8 +277,15 @@ export const turn = async (
     };
   },
   data: WebsocketRequest,
-  game: PopulatedGame
+  gameID: string
 ): Promise<boolean> => {
+  const game = await Game.findOne({
+    game_code: gameID,
+  })
+    .populate<{ hostId: UserType }>("hostId")
+    .populate<{ players: UserType[] }>("players")
+    .orFail()
+    .exec();
   // Generate dice values for the game node:
   // Get turn modifier information for player
   // Return Turn Modifier for Question Generation
@@ -395,7 +402,7 @@ export const turn = async (
           );
         // Start the timer async timeout
         connections.turn.timeout = setTimeout(() => {
-          handleConsequence(connections, game, data, false);
+          handleConsequence(connections, gameID, data, false);
         }, Math.abs(Date.now() - consequence_data.timer_start + consequence_data.timer_length * 1000));
         return Promise.resolve(true);
       })
@@ -471,7 +478,7 @@ export const turn = async (
         }
         // Start the timer async timeout
         connections.turn.timeout = setTimeout(() => {
-          questionEnd(connections, game, data, false);
+          questionEnd(connections, gameID, data, false);
         }, Math.abs(Date.now() - question_data.timer_start + question_data.timer_length * 1000));
         return Promise.resolve(true);
       })
@@ -492,7 +499,7 @@ export const turn = async (
  * @param {{ host: ClientConn; clients: Array<ClientConn>; turn: { turn_start: number; movement_die: number; } | undefined}} connections - The websocket information of all players connected to the specific game.
  * @param {WebsocketRequest} data - Information related to the request, such as request id and the question answer.
  * @param {string} username - The username of the user who send the websocket request.
- * @param {PopulatedGame} game - The populated game instance to fetch information about the current game state.
+ * @param {string} gameID - The populated game instance to fetch information about the current game state.
  * @returns {Promise<boolean>} Whether the answer submitted is, or is not, correct.
  */
 export const questionAnswer = async (
@@ -507,12 +514,18 @@ export const questionAnswer = async (
   },
   data: WebsocketRequest,
   username: string,
-  game: PopulatedGame
+  gameID: string
 ): Promise<boolean> => {
+  const game = await Game.findOne({
+    game_code: gameID,
+  })
+    .populate<{ hostId: UserType }>("hostId")
+    .populate<{ players: UserType[] }>("players")
+    .orFail()
+    .exec();
   // Verify that the question is still open to be answered
   // If the question is no longer available, just treat answers as incorrect.
-  if (connections.turn === undefined)
-    return Promise.resolve(false);
+  if (connections.turn === undefined) return Promise.resolve(false);
   // Verify that the question is the same as the one being asked
   if (
     game.used_questions[game.used_questions.length - 1] !==
@@ -551,7 +564,7 @@ export const questionAnswer = async (
       );
     }
     // If correct, kill the timeout and move player accordingly
-    await questionEnd(connections, game, data, true);
+    await questionEnd(connections, gameID, data, true);
   }
   // return if answer is correct
   return Promise.resolve(correct);
@@ -560,7 +573,7 @@ export const questionAnswer = async (
 /**
  * The question has ended, either by timeout or by answer. Handle accordingly.
  * @param {{ host: ClientConn; clients: Array<ClientConn>; turn: { turn_start: number; movement_die: number; } | undefined}} connections - The websocket information of all players connected to the specific game.
- * @param {PopulatedGame} game - The populated game instance to fetch information about the current game state.
+ * @param {string} gameID - The populated game instance to fetch information about the current game state.
  * @param {WebsocketRequest} data - Information related to the request, such as request id.
  * @param {boolean} early - Is this request ending the game before the timeout?
  * @returns {Promise<void>} This is a mutation function in which modifies the next game state and sends it to the players.
@@ -575,7 +588,7 @@ export const questionEnd = async (
       movement_die: number;
     };
   },
-  game: PopulatedGame,
+  gameID: string,
   data: WebsocketRequest,
   early: boolean
 ): Promise<void> => {
@@ -583,6 +596,11 @@ export const questionEnd = async (
   // Force the timeout to be undefined so no other requests go through
   clearTimeout(connections.turn.timeout!);
   connections.turn = undefined;
+  const game = await Game.findOne({
+    game_code: gameID,
+  })
+    .orFail()
+    .exec();
   // Get updated players array
   const players = await User.find({
     userType: "Client",
@@ -644,7 +662,7 @@ export const handleConsequence = async (
       movement_die: number;
     };
   },
-  game: PopulatedGame,
+  gameID: string,
   data: WebsocketRequest,
   early: boolean
 ) => {
@@ -652,6 +670,13 @@ export const handleConsequence = async (
   // Force the timeout to be undefined so no other requests go through
   clearTimeout(connections.turn?.timeout!);
   connections.turn = undefined;
+  const game = await Game.findOne({
+    game_code: gameID,
+  })
+    .populate<{ hostId: UserType }>("hostId")
+    .populate<{ players: UserType[] }>("players")
+    .orFail()
+    .exec();
   // Get updated players array
   const players = await User.find({
     userType: "Client",
@@ -690,6 +715,30 @@ export const handleConsequence = async (
       } as WebsocketResponse)
     );
   });
+};
+
+/**
+ *
+ * @param gameID
+ * @param movement_die
+ * @returns
+ */
+export const movePlayer = async (gameID: string, movement_die: number) => {
+  // Fetch the game's player
+  const player_list = await Game.findOne({
+    game_code: gameID,
+  })
+    .orFail()
+    .get("players")
+    .exec();
+
+  // Update the first player's movement
+  const worked = await User.findByIdAndUpdate(player_list[0], {
+    $inc: {
+      position: movement_die,
+    },
+  }).exec();
+  return worked;
 };
 
 /**

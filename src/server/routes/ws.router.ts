@@ -68,7 +68,6 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
     async (conn: SocketStream, req: FastifyRequest) => {
       // Set WebSocket Encoding
       conn.setEncoding("utf8");
-
       // Get params and data
       const { gameID } = req.params as { gameID: string };
 
@@ -98,19 +97,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
             const { username, userType, gameCode } = validatedToken;
 
             try {
-              const game = await tryGetGame(
-                conn,
-                gameID,
-                gameCode,
-                token,
-                data,
-                userType
-              );
-
-              if (!game) {
-                return; // TODO Mark, since this is inside a try catch, we don't need to handle the errors in tryGetGame. Just throw and handle below
-              }
-
+              const game = tryGetGame(conn, gameID, token, data, userType);
               await handleMessage(
                 conn,
                 data,
@@ -118,7 +105,6 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                 token,
                 username,
                 gameID,
-                gameCode,
                 userType
               );
             } catch (err) {
@@ -128,7 +114,7 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
                   requestId: data.requestId,
                   data: {
                     error: err,
-                    message: `[WS] error occurred while fetching game with code ${gameCode}.`,
+                    message: `[WS] error occurred while fetching game with code ${gameID}.`,
                     token: token,
                     fatal: true,
                   } as ErrorData,
@@ -221,24 +207,24 @@ function tryValidateToken(
  * Tries to extract the data data from the database and sends error messages as needed
  * @param conn the connection over which the data is send
  * @param gameID
- * @param gameCode
  * @param token
  * @param data
  * @param userType
  * @returns the current game state
  */
 // TODO: Mark, what is the difference between gameCode and gameId?
+// TODO: Daniel, there isn't. The verify function ensures they're equivalent. One is token, one is URL.
 async function tryGetGame(
   conn: SocketStream,
   gameID: string,
-  gameCode: string,
   token: any,
   data: any,
   userType: string
 ): Promise<any> {
-  const game = await Game.findOne({ game_code: gameCode })
+  const game = await Game.findOne({ game_code: gameID })
     .populate<{ hostId: UserType }>("hostId")
     .populate<{ players: UserType[] }>("players")
+    .orFail()
     .exec();
 
   if (!game) {
@@ -246,7 +232,7 @@ async function tryGetGame(
       conn,
       data,
       token,
-      `[WS] No game found with id ${gameCode}.`,
+      `[WS] No game found with id ${gameID}.`,
       null,
       true
     );
@@ -512,12 +498,11 @@ async function gameStartRequest(
   conn: SocketStream,
   token: any,
   gameID: string,
-  gameCode: string,
   data: any,
   game: any
 ) {
   try {
-    const first_player = await startGame(gameCode);
+    const first_player = await startGame(gameID);
     // Notify all players that the game has started and who the first player is
     const player = game.players.find((u) => u.username === first_player);
     connections[gameID].host.conn.socket.send(
@@ -551,7 +536,7 @@ async function gameStartRequest(
 
     setTimeout(async () => {
       try {
-        await turn(connections[gameID], data, game);
+        await turn(connections[gameID], data, gameID);
       } catch (err) {
         conn.socket.send(
           JSON.stringify({
@@ -586,12 +571,11 @@ async function gameNextPlayerRequest(
   conn: SocketStream,
   token: any,
   gameID: string,
-  gameCode: string,
   data: any,
   game: any
 ) {
   try {
-    const res = await nextPlayer(gameCode);
+    const res = await nextPlayer(gameID);
     // Notify all players that the game has started and who the next player is
     const player = game.players.find((u) => u.username === res);
     connections[gameID].host.conn.socket.send(
@@ -628,7 +612,7 @@ async function gameNextPlayerRequest(
         const winner = await checkWinner(gameID);
         if (winner === false) {
           // No winner, continue game
-          await turn(connections[gameID], data, game);
+          await turn(connections[gameID], data, gameID);
         } else {
           // Winner
           const ranking: Player[] = game!.players.map((p) => {
@@ -667,7 +651,7 @@ async function gameNextPlayerRequest(
             requestId: data.requestId,
             data: {
               error: err,
-              message: `[WS] error occurred while checking winner of ${gameCode}.`,
+              message: `[WS] error occurred while checking winner of ${gameID}.`,
               token: token,
               fatal: true,
             } as ErrorData,
@@ -682,7 +666,7 @@ async function gameNextPlayerRequest(
         requestId: data.requestId,
         data: {
           error: err,
-          message: `[WS] error occurred while fetching next player for ${gameCode}.`,
+          message: `[WS] error occurred while fetching next player for ${gameID}.`,
           token: token,
           fatal: true,
         } as ErrorData,
@@ -703,7 +687,7 @@ async function gameQuestionRequest(
     return;
   }
   await tryTurnAction(conn, data, token, async () => {
-    const _ = await turn(connections[gameID], data, game);
+    const _ = await turn(connections[gameID], data, gameID);
   });
 }
 
@@ -762,7 +746,6 @@ async function handleMessage(
   token: any,
   username: string,
   gameID: string,
-  gameCode: string,
   userType: string
 ) {
   switch (data.type) {
@@ -775,11 +758,11 @@ async function handleMessage(
       break;
     }
     case WebsocketType.GameStart: {
-      await gameStartRequest(conn, token, gameID, gameCode, data, game);
+      await gameStartRequest(conn, token, gameID, data, game);
       break;
     }
     case WebsocketType.NextPlayer: {
-      await gameNextPlayerRequest(conn, token, gameID, gameCode, data, game);
+      await gameNextPlayerRequest(conn, token, gameID, data, game);
       break;
     }
     case WebsocketType.QuestionRequest: {
