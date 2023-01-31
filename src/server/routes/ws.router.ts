@@ -33,6 +33,7 @@ import {
   handleConsequence,
   checkWinner,
 } from "../controllers/GameController";
+import { Context } from "../../shared/types/Context";
 import { Player } from "../../shared/types/Player";
 
 // Create Record to match WS to GameID
@@ -45,11 +46,12 @@ let connections: Record<
   string,
   {
     host: ClientConn;
-    clients: Array<ClientConn>;
+    clients: ClientConn[];
     turn?: {
       turn_start: number;
       timeout?: NodeJS.Timeout;
       movement_die: number;
+      answered: ClientConn[];
     };
   }
 > = {};
@@ -84,29 +86,63 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
           data.token,
           process.env.ACCESS_TOKEN_SECRET! as Secret,
           async (err: any, token: any) => {
-            const validatedToken = tryValidateToken(
-              conn,
-              err,
-              token,
-              gameID,
-              data
-            );
-            if (!validatedToken) {
-              return;
+            if (err || token === undefined) {
+              console.log(`[WS] Validation Error: ${err}`);
+              if (err instanceof Error) {
+                conn.socket.send(
+                  JSON.stringify({
+                    type: WebsocketType.Error,
+                    requestId: data.requestId,
+                    data: {
+                      error: err.message,
+                      token: token,
+                      fatal: true,
+                    } as ErrorData,
+                  } as WebsocketResponse)
+                );
+              } else {
+                conn.socket.send(
+                  JSON.stringify({
+                    type: WebsocketType.Error,
+                    requestId: data.requestId,
+                    data: {
+                      error: "[WS] Token sent is undefined.",
+                      token: token,
+                      fatal: true,
+                    } as ErrorData,
+                  } as WebsocketResponse)
+                );
+              }
+              conn.end();
+              return null;
             }
-            const { username, userType, gameCode } = validatedToken;
-
-            try {
-              const game = tryGetGame(conn, gameID, token, data, userType);
-              await handleMessage(
+            // Decompose JWT token
+            const { username, userType, gameCode } = token;
+            // Validate that the gameID and gameCode from the token match
+            if (gameCode !== gameID) {
+              sendError(
                 conn,
                 data,
-                game,
                 token,
-                username,
-                gameID,
-                userType
+                `[WS] Game ID and JWT mismatch. You requested game with ID ${gameID} but have a JWT for game ${gameCode}.`,
+                null,
+                true
               );
+              conn.end();
+              return null;
+            }
+
+            // Create context for passing
+            const context: Context = {
+              username: username,
+              userType: userType,
+              token: token,
+              gameID: gameID,
+            };
+
+            try {
+              const game = tryGetGame(conn, data, context);
+              await handleMessage(conn, data, context);
             } catch (err) {
               conn.socket.send(
                 JSON.stringify({
@@ -138,106 +174,16 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
   done();
 };
 
-/**
- * Tries to validate the JWT token and handles sending error messages
- * @param conn the socket stream that is used for the data transmission
- * @param err error object passed from JWT
- * @param token the token to validate
- * @param gameID the id of the game
- * @param data the payload of the request
- * @returns true if the validation succeeded. False otherwise
- */
-function tryValidateToken(
-  conn: SocketStream,
-  err: any,
-  token: any,
-  gameID: string,
-  data: any
-): any | null {
-  if (err || token === undefined) {
-    console.log(`[WS] Validation Error: ${err}`);
-    if (err instanceof Error) {
-      conn.socket.send(
-        JSON.stringify({
-          type: WebsocketType.Error,
-          requestId: data.requestId,
-          data: {
-            error: err.message,
-            token: token,
-            fatal: true,
-          } as ErrorData,
-        } as WebsocketResponse)
-      );
-    } else {
-      conn.socket.send(
-        JSON.stringify({
-          type: WebsocketType.Error,
-          requestId: data.requestId,
-          data: {
-            error: "[WS] Token sent is undefined.",
-            token: token,
-            fatal: true,
-          } as ErrorData,
-        } as WebsocketResponse)
-      );
-    }
-    conn.end();
-    return null;
-  }
-  // Decompose JWT token
-  const { username, userType, gameCode } = token;
-  // Validate that the gameID and gameCode from the token match
-  if (gameCode !== gameID) {
-    sendError(
-      conn,
-      data,
-      token,
-      `[WS] Game ID and JWT mismatch. You requested game with ID ${gameID} but have a JWT for game ${gameCode}.`,
-      null,
-      true
-    );
-    conn.end();
-    return null;
-  }
-
-  return token;
-}
-
-/**
- * Tries to extract the data data from the database and sends error messages as needed
- * @param conn the connection over which the data is send
- * @param gameID
- * @param token
- * @param data
- * @param userType
- * @returns the current game state
- */
-// TODO: Mark, what is the difference between gameCode and gameId?
-// TODO: Daniel, there isn't. The verify function ensures they're equivalent. One is token, one is URL.
 async function tryGetGame(
   conn: SocketStream,
-  gameID: string,
-  token: any,
   data: any,
-  userType: string
+  context: Context
 ): Promise<any> {
-  const game = await Game.findOne({ game_code: gameID })
+  const game = await Game.findOne({ game_code: context.gameID })
     .populate<{ hostId: UserType }>("hostId")
     .populate<{ players: UserType[] }>("players")
     .orFail()
     .exec();
-
-  if (!game) {
-    sendError(
-      conn,
-      data,
-      token,
-      `[WS] No game found with id ${gameID}.`,
-      null,
-      true
-    );
-    return null;
-  }
 
   console.log(
     `[WS] Populated Game information: ${game.hostId} | ${game.players}`
@@ -245,17 +191,20 @@ async function tryGetGame(
 
   // Find all user data related to the game
   const user =
-    userType === "Game"
+    context.userType === "Game"
       ? game.hostId
       : game.players.find((u) => u.token === data.token);
 
   // Respond that user is not a part of the game or doesn't exist.
-  if (!user || (userType === "Game" && game.hostId.token !== data.token)) {
+  if (
+    !user ||
+    (context.userType === "Game" && game.hostId.token !== data.token)
+  ) {
     sendError(
       conn,
       data,
-      token,
-      `[WS] User is not a part of game ${gameID}.`,
+      context,
+      `[WS] User is not a part of game ${context.gameID}.`,
       null,
       true
     );
@@ -264,19 +213,13 @@ async function tryGetGame(
   return game;
 }
 
-/**
- * Handles the disconnection of nodes by ending the game
- * @param conn
- * @param gameID
- * @returns
- */
 async function handleDisconnect(conn: SocketStream, gameID: string) {
   if (!connections[gameID]) {
     // User never sent message and was never assigned to game
     sendError(
       conn,
       null,
-      "",
+      { username: "", userType: "", token: "", gameID: "" } as Context,
       "[WS] This connection was never associated with a game.",
       null,
       true
@@ -371,19 +314,20 @@ async function handleDisconnect(conn: SocketStream, gameID: string) {
   }
 }
 
-function gameSetupRequest(
+async function gameSetupRequest(
   conn: SocketStream,
-  token: any,
-  userType: string,
-  gameID: string,
-  username: string,
   data: any,
-  game: any
+  context: Context
 ) {
-  if (userType === "Game" && !connections[gameID]) {
+  if (context.userType === "Game" && !connections[context.gameID]) {
+    const game = await Game.findOne({ game_code: context.gameID })
+      .populate<{ hostId: UserType }>("hostId")
+      .populate<{ players: UserType[] }>("players")
+      .orFail()
+      .exec();
     // Create spot in the connections array for players
-    connections[gameID] = {
-      host: { username: username, conn: conn },
+    connections[context.gameID] = {
+      host: { username: context.username, conn: conn },
       clients: [],
     };
     conn.socket.send(
@@ -401,11 +345,11 @@ function gameSetupRequest(
         } as GameJoinAckData,
       } as WebsocketResponse)
     );
-  } else if (userType !== "Game") {
+  } else if (context.userType !== "Game") {
     sendError(
       conn,
       data,
-      token,
+      context,
       `[WS] Only the game node can set-up a game.`,
       null,
       true
@@ -414,7 +358,7 @@ function gameSetupRequest(
     sendError(
       conn,
       data,
-      token,
+      context,
       `[WS] A user has already connected to this game as the host.`,
       null,
       false
@@ -422,20 +366,16 @@ function gameSetupRequest(
   }
 }
 
-function gameJoinRequest(
+async function gameJoinRequest(
   conn: SocketStream,
-  token: any,
-  userType: string,
-  gameID: string,
-  username: string,
   data: any,
-  game: any
+  context: Context
 ) {
-  if (userType !== "Client") {
+  if (context.userType !== "Client") {
     sendError(
       conn,
       data,
-      token,
+      context,
       `[WS] Game nodes cannot connect as players.`,
       null,
       false
@@ -443,14 +383,19 @@ function gameJoinRequest(
     return;
   }
 
-  if (connections[gameID]) {
+  if (connections[context.gameID]) {
+    const game = await Game.findOne({ game_code: context.gameID })
+      .populate<{ hostId: UserType }>("hostId")
+      .populate<{ players: UserType[] }>("players")
+      .orFail()
+      .exec();
     // Add connection socket to array
-    connections[gameID].clients.push({
-      username: username,
+    connections[context.gameID].clients.push({
+      username: context.username,
       conn: conn,
     });
     // Ping all players in game that player has joined
-    connections[gameID].host.conn.socket.send(
+    connections[context.gameID].host.conn.socket.send(
       JSON.stringify({
         type: WebsocketType.GameJoinAck,
         requestId: data.requestId,
@@ -465,7 +410,7 @@ function gameJoinRequest(
         } as GameJoinAckData,
       } as WebsocketResponse)
     );
-    connections[gameID].clients.forEach((c) => {
+    connections[context.gameID].clients.forEach((c) => {
       c.conn.socket.send(
         JSON.stringify({
           type: WebsocketType.GameJoinAck,
@@ -486,7 +431,7 @@ function gameJoinRequest(
     sendError(
       conn,
       data,
-      token,
+      context,
       `[WS] The host has not yet connected to the game. Please try again later.`,
       null,
       false
@@ -496,16 +441,19 @@ function gameJoinRequest(
 
 async function gameStartRequest(
   conn: SocketStream,
-  token: any,
-  gameID: string,
   data: any,
-  game: any
+  context: Context
 ) {
   try {
-    const first_player = await startGame(gameID);
+    const game = await Game.findOne({ game_code: context.gameID })
+      .populate<{ hostId: UserType }>("hostId")
+      .populate<{ players: UserType[] }>("players")
+      .orFail()
+      .exec();
+    const first_player = await startGame(context.gameID);
     // Notify all players that the game has started and who the first player is
     const player = game.players.find((u) => u.username === first_player);
-    connections[gameID].host.conn.socket.send(
+    connections[context.gameID].host.conn.socket.send(
       JSON.stringify({
         type: WebsocketType.GameStartAck,
         requestId: data.requestId,
@@ -518,7 +466,7 @@ async function gameStartRequest(
         } as NextPlayerData,
       } as WebsocketResponse)
     );
-    connections[gameID].clients.forEach((c) => {
+    connections[context.gameID].clients.forEach((c) => {
       c.conn.socket.send(
         JSON.stringify({
           type: WebsocketType.GameStartAck,
@@ -536,7 +484,7 @@ async function gameStartRequest(
 
     setTimeout(async () => {
       try {
-        await turn(connections[gameID], data, gameID);
+        await turn(connections[context.gameID], data, context);
       } catch (err) {
         conn.socket.send(
           JSON.stringify({
@@ -545,7 +493,7 @@ async function gameStartRequest(
             data: {
               error: err,
               message: "[WS] Turn has failed.",
-              token: token,
+              token: context.token,
               fatal: true,
             } as ErrorData,
           } as WebsocketResponse)
@@ -559,7 +507,7 @@ async function gameStartRequest(
         requestId: data.requestId,
         data: {
           error: err,
-          token: token,
+          token: context.token,
           fatal: true,
         } as ErrorData,
       } as WebsocketResponse)
@@ -569,16 +517,19 @@ async function gameStartRequest(
 
 async function gameNextPlayerRequest(
   conn: SocketStream,
-  token: any,
-  gameID: string,
   data: any,
-  game: any
+  context: Context
 ) {
   try {
-    const res = await nextPlayer(gameID);
+    const game = await Game.findOne({ game_code: context.gameID })
+      .populate<{ hostId: UserType }>("hostId")
+      .populate<{ players: UserType[] }>("players")
+      .orFail()
+      .exec();
+    const res = await nextPlayer(context.gameID);
     // Notify all players that the game has started and who the next player is
     const player = game.players.find((u) => u.username === res);
-    connections[gameID].host.conn.socket.send(
+    connections[context.gameID].host.conn.socket.send(
       JSON.stringify({
         type: WebsocketType.NextPlayerAck,
         requestId: data.requestId,
@@ -591,7 +542,7 @@ async function gameNextPlayerRequest(
         } as NextPlayerData,
       } as WebsocketResponse)
     );
-    connections[gameID].clients.forEach((c) => {
+    connections[context.gameID].clients.forEach((c) => {
       c.conn.socket.send(
         JSON.stringify({
           type: WebsocketType.NextPlayerAck,
@@ -609,10 +560,10 @@ async function gameNextPlayerRequest(
     setTimeout(async () => {
       // Check if there is a winner
       try {
-        const winner = await checkWinner(gameID);
+        const winner = await checkWinner(context.gameID);
         if (winner === false) {
           // No winner, continue game
-          await turn(connections[gameID], data, gameID);
+          await turn(connections[context.gameID], data, context);
         } else {
           // Winner
           const ranking: Player[] = game!.players.map((p) => {
@@ -623,7 +574,7 @@ async function gameNextPlayerRequest(
             } as Player;
           });
           // If Host, disconnect all clients and send message
-          connections[gameID].host.conn.socket.send(
+          connections[context.gameID].host.conn.socket.send(
             JSON.stringify({
               type: WebsocketType.GameEndedAck,
               requestId: undefined,
@@ -632,7 +583,7 @@ async function gameNextPlayerRequest(
               },
             } as WebsocketResponse)
           );
-          connections[gameID].clients.forEach((c) => {
+          connections[context.gameID].clients.forEach((c) => {
             c.conn.socket.send(
               JSON.stringify({
                 type: WebsocketType.GameEndedAck,
@@ -651,8 +602,8 @@ async function gameNextPlayerRequest(
             requestId: data.requestId,
             data: {
               error: err,
-              message: `[WS] error occurred while checking winner of ${gameID}.`,
-              token: token,
+              message: `[WS] error occurred while checking winner of ${context.gameID}.`,
+              token: context.token,
               fatal: true,
             } as ErrorData,
           } as WebsocketResponse)
@@ -666,8 +617,8 @@ async function gameNextPlayerRequest(
         requestId: data.requestId,
         data: {
           error: err,
-          message: `[WS] error occurred while fetching next player for ${gameID}.`,
-          token: token,
+          message: `[WS] error occurred while fetching next player for ${context.gameID}.`,
+          token: context.token,
           fatal: true,
         } as ErrorData,
       } as WebsocketResponse)
@@ -677,104 +628,79 @@ async function gameNextPlayerRequest(
 
 async function gameQuestionRequest(
   conn: SocketStream,
-  token: any,
-  gameID: string,
-  userType: string,
   data: any,
-  game: any
+  context: Context
 ) {
-  if (!checkUserAuthorization(userType, "Game", conn, data, token)) {
+  if (!checkUserAuthorization(conn, data, context, "Game")) {
     return;
   }
-  await tryTurnAction(conn, data, token, async () => {
-    const _ = await turn(connections[gameID], data, gameID);
+  await tryTurnAction(conn, data, context, async () => {
+    const _ = await turn(connections[context.gameID], data, context);
   });
 }
 
 async function gameQuestionAnswer(
   conn: SocketStream,
-  token: any,
-  gameID: string,
-  userType: string,
   data: any,
-  game: any
+  context: Context
 ) {
-  if (!checkUserAuthorization(userType, "Client", conn, data, token)) {
+  if (!checkUserAuthorization(conn, data, context, "Client")) {
     return;
   }
-  let conn_username = connections[gameID].clients.find(
-    (c) => c.conn === conn
-  )!.username;
-
-  tryTurnAction(conn, data, token, async () => {
+  tryTurnAction(conn, data, context, async () => {
     const correct = await questionAnswer(
-      connections[gameID],
+      connections[context.gameID],
       data,
-      conn_username,
-      game
+      context
     );
-    console.log(`[WS] User ${conn_username} has gotten the answer ${correct}.`);
+    console.log(
+      `[WS] User ${context.username} has gotten the answer ${correct}.`
+    );
   });
 }
 
 async function gameConsequenceEnded(
   conn: SocketStream,
-  token: any,
-  gameID: string,
-  userType: string,
   data: any,
-  game: any
+  context: Context
 ) {
-  if (!checkUserAuthorization(userType, "Client", conn, data, token)) {
+  if (!checkUserAuthorization(conn, data, context, "Client")) {
     return;
   }
-  let conn_username = connections[gameID].clients.find(
-    // TODO APPARENTLY THE RESULT OF THIS IS NOT USED. DO WE NEED IT?
-    (c) => c.conn === conn
-  )!.username;
-  await tryTurnAction(conn, data, token, () =>
-    handleConsequence(connections[gameID], game, data, true)
+  await tryTurnAction(conn, data, context, () =>
+    handleConsequence(connections[context.gameID], data, context, true)
   );
 }
 
-// TODO: Mark, what is the difference between gameCode and gameId?
-// ALSO, if you use classes, not only will testing (less shim-ing) be easier but all we could store the connection and other parameters as class-level globals
-async function handleMessage(
-  conn: SocketStream,
-  data: any,
-  game: any,
-  token: any,
-  username: string,
-  gameID: string,
-  userType: string
-) {
+// TODO: ALSO, if you use classes, not only will testing (less shim-ing) be easier but all we could store the connection and other parameters as class-level globals
+async function handleMessage(conn: SocketStream, data: any, context: Context) {
   switch (data.type) {
     case WebsocketType.GameSetup: {
-      gameSetupRequest(conn, token, userType, gameID, username, data, game);
+      gameSetupRequest(conn, data, context);
       break;
     }
     case WebsocketType.GameJoin: {
-      gameJoinRequest(conn, token, userType, gameID, username, data, game);
+      gameJoinRequest(conn, data, context);
       break;
     }
     case WebsocketType.GameStart: {
-      await gameStartRequest(conn, token, gameID, data, game);
+      await gameStartRequest(conn, data, context);
       break;
     }
     case WebsocketType.NextPlayer: {
-      await gameNextPlayerRequest(conn, token, gameID, data, game);
+      await gameNextPlayerRequest(conn, data, context);
       break;
     }
     case WebsocketType.QuestionRequest: {
-      await gameQuestionRequest(conn, token, gameID, userType, data, game);
+      await gameQuestionRequest(conn, data, context);
       break;
     }
     case WebsocketType.QuestionAnswer: {
-      await gameQuestionAnswer(conn, token, gameID, userType, data, game);
+      await gameQuestionAnswer(conn, data, context);
       break;
     }
     case WebsocketType.ConsequenceEnded: {
-      await gameConsequenceEnded(conn, token, gameID, userType, data, game);
+      await gameConsequenceEnded(conn, data, context);
       break;
     }
     case WebsocketType.Ping:
@@ -795,14 +721,13 @@ async function handleMessage(
 }
 
 function checkUserAuthorization(
-  userType: string,
-  goalUserType: string,
   conn: SocketStream,
   data: any,
-  token: any
+  context: Context,
+  goalUserType: string
 ): boolean {
-  if (userType !== goalUserType) {
-    sendError(conn, data, token, "[WS] User not authorized.", null, true);
+  if (context.userType !== goalUserType) {
+    sendError(conn, data, context, "[WS] User not authorized.", null, true);
     return false;
   }
   return true;
@@ -811,20 +736,20 @@ function checkUserAuthorization(
 async function tryTurnAction(
   conn: SocketStream,
   data: any,
-  token: any,
+  context: Context,
   action: () => Promise<void>
 ) {
   try {
     await action();
   } catch (err) {
-    sendError(conn, data, token, err, "[WS] Turn has failed.", true);
+    sendError(conn, data, context, err, "[WS] Turn has failed.", true);
   }
 }
 
 function sendError(
   conn: SocketStream,
   data: any,
-  token: any,
+  context: Context,
   err: any,
   message: string | null,
   fatal: boolean
@@ -836,7 +761,7 @@ function sendError(
       data: {
         error: err,
         message: message,
-        token: token ?? "",
+        token: context.token ?? "",
         fatal: fatal,
       } as ErrorData,
     } as WebsocketResponse)

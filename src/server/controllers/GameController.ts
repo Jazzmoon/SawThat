@@ -37,6 +37,7 @@ import Game, { GameType } from "../models/Game";
 import User, { UserType } from "../models/User";
 import { Consequence } from "../../shared/types/Consequence";
 import { ConsequenceType } from "../../shared/enums/ConsequenceType";
+import { Context } from "../../shared/types/Context";
 
 type ClientConn = {
   username: string;
@@ -277,10 +278,10 @@ export const turn = async (
     };
   },
   data: WebsocketRequest,
-  gameID: string
+  context: Context
 ): Promise<boolean> => {
   const game = await Game.findOne({
-    game_code: gameID,
+    game_code: context.gameID,
   })
     .populate<{ hostId: UserType }>("hostId")
     .populate<{ players: UserType[] }>("players")
@@ -402,7 +403,7 @@ export const turn = async (
           );
         // Start the timer async timeout
         connections.turn.timeout = setTimeout(() => {
-          handleConsequence(connections, gameID, data, false);
+          handleConsequence(connections, data, context, false);
         }, Math.abs(Date.now() - consequence_data.timer_start + consequence_data.timer_length * 1000));
         return Promise.resolve(true);
       })
@@ -478,7 +479,7 @@ export const turn = async (
         }
         // Start the timer async timeout
         connections.turn.timeout = setTimeout(() => {
-          questionEnd(connections, gameID, data, false);
+          questionEnd(connections, data, context, false);
         }, Math.abs(Date.now() - question_data.timer_start + question_data.timer_length * 1000));
         return Promise.resolve(true);
       })
@@ -513,11 +514,10 @@ export const questionAnswer = async (
     };
   },
   data: WebsocketRequest,
-  username: string,
-  gameID: string
+  context: Context
 ): Promise<boolean> => {
   const game = await Game.findOne({
-    game_code: gameID,
+    game_code: context.gameID,
   })
     .populate<{ hostId: UserType }>("hostId")
     .populate<{ players: UserType[] }>("players")
@@ -545,7 +545,7 @@ export const questionAnswer = async (
   );
   if (correct) {
     // If it is the players turn. move them.
-    if (game.players[0].username === username) {
+    if (game.players[0].username === context.username) {
       game.players[0].position = MathUtil.bound(
         0,
         41,
@@ -564,7 +564,7 @@ export const questionAnswer = async (
       );
     }
     // If correct, kill the timeout and move player accordingly
-    await questionEnd(connections, gameID, data, true);
+    await questionEnd(connections, data, context, true);
   }
   // return if answer is correct
   return Promise.resolve(correct);
@@ -573,8 +573,8 @@ export const questionAnswer = async (
 /**
  * The question has ended, either by timeout or by answer. Handle accordingly.
  * @param {{ host: ClientConn; clients: Array<ClientConn>; turn: { turn_start: number; movement_die: number; } | undefined}} connections - The websocket information of all players connected to the specific game.
- * @param {string} gameID - The populated game instance to fetch information about the current game state.
  * @param {WebsocketRequest} data - Information related to the request, such as request id.
+ * @param {Context} context - The populated game instance to fetch information about the current game state.
  * @param {boolean} early - Is this request ending the game before the timeout?
  * @returns {Promise<void>} This is a mutation function in which modifies the next game state and sends it to the players.
  */
@@ -588,8 +588,8 @@ export const questionEnd = async (
       movement_die: number;
     };
   },
-  gameID: string,
   data: WebsocketRequest,
+  context: Context,
   early: boolean
 ): Promise<void> => {
   if (connections.turn === undefined) return;
@@ -597,7 +597,7 @@ export const questionEnd = async (
   clearTimeout(connections.turn.timeout!);
   connections.turn = undefined;
   const game = await Game.findOne({
-    game_code: gameID,
+    game_code: context.gameID,
   })
     .orFail()
     .exec();
@@ -662,8 +662,8 @@ export const handleConsequence = async (
       movement_die: number;
     };
   },
-  gameID: string,
   data: WebsocketRequest,
+  context: Context,
   early: boolean
 ) => {
   if (connections.turn === undefined) return;
@@ -671,7 +671,7 @@ export const handleConsequence = async (
   clearTimeout(connections.turn?.timeout!);
   connections.turn = undefined;
   const game = await Game.findOne({
-    game_code: gameID,
+    game_code: context.gameID,
   })
     .populate<{ hostId: UserType }>("hostId")
     .populate<{ players: UserType[] }>("players")
