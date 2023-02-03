@@ -239,12 +239,12 @@ export const nextPlayer = async (gameID: string): Promise<string> => {
 };
 
 /**
- *
- * @param context
- * @param movement_die
- * @param turn_modifier
- * @param challenge_die
- * @returns
+ * Fetches a question, or consequence, and formats it appropriately.
+ * @param context - The context of the request sender.
+ * @param movement_die - The original value of the movement die.
+ * @param turn_modifier - The turn modifier, if any exists.
+ * @param challenge_die - The value of the challenge dice.
+ * @returns The formatted question and request type.
  */
 export const generateQuestion = async (
   context: Context,
@@ -335,9 +335,9 @@ export const generateQuestion = async (
 
 /**
  * Handle the turn logic for a single round of the game, triggered by the game node sending a message.
- * @param connections - List of all Websockets relevant to the game that this turn is for.
+ * @param connections - List of all WebSockets relevant to the game that this turn is for.
  * @param data - Any relevant data that the game node sends across the websocket stream.
- * @param game - The game state. We know that the sender of these messages is the game node.
+ * @param context - The context of the request sender.
  */
 export const turn = async (
   connections: {
@@ -461,11 +461,10 @@ export const turn = async (
 
 /**
  * Handle a user sending an answer request to the server
- * @param {{ host: ClientConn; clients: Array<ClientConn>; turn: { turn_start: number; movement_die: number; } | undefined}} connections - The websocket information of all players connected to the specific game.
- * @param {WebsocketRequest} data - Information related to the request, such as request id and the question answer.
- * @param {string} username - The username of the user who send the websocket request.
- * @param {string} gameID - The populated game instance to fetch information about the current game state.
- * @returns {Promise<boolean>} Whether the answer submitted is, or is not, correct.
+ * @param connections - The websocket information of all players connected to the specific game.
+ * @param data - Information related to the request, such as request id and the question answer.
+ * @param context - The context of the request sender.
+ * @returns Whether the answer submitted is, or is not, correct.
  */
 export const questionAnswer = async (
   connections: {
@@ -525,10 +524,10 @@ export const questionAnswer = async (
 };
 
 /**
- *
- * @param gameID
- * @param movement_die
- * @returns
+ * Takes the player whose current turn it is, and moves them forward.
+ * @param gameID The game ID of the player who must move.
+ * @param movement_die How far the player is moving forward.
+ * @returns The updated user data to ensure they moved.
  */
 export const movePlayer = async (gameID: string, movement_die: number) => {
   // Fetch the game's player
@@ -544,17 +543,19 @@ export const movePlayer = async (gameID: string, movement_die: number) => {
     $inc: {
       position: movement_die,
     },
-  }).exec();
+  })
+    .orFail()
+    .exec();
   return worked;
 };
 
 /**
  * The question has ended, either by timeout or by answer. Handle accordingly.
- * @param {{ host: ClientConn; clients: Array<ClientConn>; turn: { turn_start: number; movement_die: number; } | undefined}} connections - The websocket information of all players connected to the specific game.
- * @param {WebsocketRequest} data - Information related to the request, such as request id.
- * @param {Context} context - The populated game instance to fetch information about the current game state.
- * @param {boolean} early - Is this request ending the game before the timeout?
- * @returns {Promise<void>} This is a mutation function in which modifies the next game state and sends it to the players.
+ * @param connections - The websocket information of all players connected to the specific game.
+ * @param data - Information related to the request, such as request id.
+ * @param context - The populated game instance to fetch information about the current game state.
+ * @param early - Is this request ending the game before the timeout?
+ * @returns This is a mutation function in which modifies the next game state and sends it to the players.
  */
 export const questionEnd = async (
   connections: {
@@ -629,11 +630,11 @@ export const questionEnd = async (
 
 /**
  * Handle consequence timeout or ending early.
- * @param {{ host: ClientConn; clients: Array<ClientConn>; turn?: { turn_start: number; timeout?: NodeJS.Timeout; movement_die: number; }}} connections - The websocket information of all players connected to the specific game.
- * @param {PopulatedGame} game - The populated game instance to fetch information about the current game state.
- * @param {WebsocketRequest} data - Information related to the request, such as request id.
- * @param {boolean} early - Is this request ending the game before the timeout?
- * @returns {Promise<void>} This is a mutation function in which modifies the next game state and sends it to the players.
+ * @param connections - The websocket information of all players connected to the specific game.
+ * @param game - The populated game instance to fetch information about the current game state.
+ * @param data - Information related to the request, such as request id.
+ * @param early - Is this request ending the game before the timeout?
+ * @returns This is a mutation function in which modifies the next game state and sends it to the players.
  */
 export const handleConsequence = async (
   connections: {
@@ -705,8 +706,8 @@ export const handleConsequence = async (
 
 /**
  * Check if any players are in the winner state.
- * @param {string} gameID - The game code string for the game you want to check the winner of.
- * @returns {Promise<string | boolean>}
+ * @param gameID - The game code string for the game you want to check the winner of.
+ * @returns Whether there is a winning player in the game.
  */
 export const checkWinner = async (
   gameID: string
