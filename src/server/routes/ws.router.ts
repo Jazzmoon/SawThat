@@ -35,6 +35,7 @@ import {
 } from "../controllers/GameController";
 import { Context } from "../../shared/types/Context";
 import { Player } from "../../shared/types/Player";
+import { TurnModifier } from "../../shared/enums/TurnModifier";
 
 // Create Record to match WS to GameID
 type ClientConn = {
@@ -50,8 +51,9 @@ let connections: Record<
     turn?: {
       turn_start: number;
       timeout?: NodeJS.Timeout;
+      turn_modifier: TurnModifier;
       movement_die: number;
-      answered: ClientConn[];
+      answered: string[];
     };
   }
 > = {};
