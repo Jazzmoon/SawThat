@@ -4,11 +4,7 @@
  * Router dedicated to handling websocket interactions.
  */
 import { SocketStream } from "@fastify/websocket";
-import {
-  FastifyInstance,
-  FastifyPluginCallback,
-  FastifyRequest,
-} from "fastify";
+import { FastifyPluginCallback, FastifyRequest } from "fastify";
 import jwt, { Secret } from "jsonwebtoken";
 
 import { WebsocketType } from "../../shared/enums/WebsocketTypes";
@@ -33,36 +29,18 @@ import {
   handleConsequence,
   checkWinner,
 } from "../controllers/GameController";
+import { Connections } from "../../shared/types/Connections";
 import { Context } from "../../shared/types/Context";
 import { Player } from "../../shared/types/Player";
-import { TurnModifier } from "../../shared/enums/TurnModifier";
 
 // Create Record to match WS to GameID
-type ClientConn = {
-  username: string;
-  conn: SocketStream;
-};
-
-let connections: Record<
-  string,
-  {
-    host: ClientConn;
-    clients: ClientConn[];
-    turn?: {
-      turn_start: number;
-      timeout?: NodeJS.Timeout;
-      turn_modifier: TurnModifier;
-      movement_die: number;
-      answered: string[];
-    };
-  }
-> = {};
+let connections: Connections = {};
 
 /**
  * The handling function for the websocket router.
  * It receives a request and various parameters, and handles it appropriately.
- * @param {FastifyInstance} fastify - The root fastify instance that the router is attaching itself to.
- * @param {Record} opts - Configuration options relevant to only this specific sub-router.
+ * @param fastify - The root fastify instance that the router is attaching itself to.
+ * @param opts - Configuration options relevant to only this specific sub-router.
  * @param done - Function that indicates the end of definitions.
  */
 const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {

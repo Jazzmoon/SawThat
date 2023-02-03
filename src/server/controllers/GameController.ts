@@ -125,7 +125,7 @@ export const createGame = async (
     const newGame = await game.save();
 
     // Link Game and User objects together
-    User.findOneAndUpdate(
+    await User.findOneAndUpdate(
       {
         username: `game${gameCode}`,
         userType: "Game",
@@ -135,7 +135,7 @@ export const createGame = async (
     )
       .orFail()
       .exec();
-    newGame
+    await newGame
       .updateOne({
         hostId: await User.findOne({
           username: `game${gameCode}`,
