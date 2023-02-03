@@ -21,6 +21,7 @@ import {
 import Game from "../models/Game";
 import User, { UserType } from "../models/User";
 
+import { Connections } from "../controllers/WebSocketController";
 import {
   nextPlayer,
   startGame,
@@ -29,7 +30,6 @@ import {
   handleConsequence,
   checkWinner,
 } from "../controllers/GameController";
-import { Connections } from "../../shared/types/Connections";
 import { Context } from "../../shared/types/Context";
 import { Player } from "../../shared/types/Player";
 

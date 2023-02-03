@@ -36,11 +36,7 @@ import {
 import { Consequence } from "../../shared/types/Consequence";
 import { Context } from "../../shared/types/Context";
 import MathUtil from "../../shared/util/MathUtil";
-
-type ClientConn = {
-  username: string;
-  conn: SocketStream;
-};
+import { Connection } from "./WebSocketController";
 
 /**
  * Generates a unique game code that is a minimum of 4 characters long,
@@ -340,17 +336,7 @@ export const generateQuestion = async (
  * @param context - The context of the request sender.
  */
 export const turn = async (
-  connections: {
-    host: ClientConn;
-    clients: Array<ClientConn>;
-    turn?: {
-      turn_start: number;
-      timeout?: NodeJS.Timeout;
-      turn_modifier: TurnModifier;
-      movement_die: number;
-      answered: string[];
-    };
-  },
+  connections: Connection,
   data: WebsocketRequest,
   context: Context
 ) => {
@@ -467,17 +453,7 @@ export const turn = async (
  * @returns Whether the answer submitted is, or is not, correct.
  */
 export const questionAnswer = async (
-  connections: {
-    host: ClientConn;
-    clients: Array<ClientConn>;
-    turn?: {
-      turn_start: number;
-      timeout?: NodeJS.Timeout;
-      turn_modifier: TurnModifier;
-      movement_die: number;
-      answered: string[];
-    };
-  },
+  connections: Connection,
   data: WebsocketRequest,
   context: Context
 ): Promise<boolean> => {
@@ -558,15 +534,7 @@ export const movePlayer = async (gameID: string, movement_die: number) => {
  * @returns This is a mutation function in which modifies the next game state and sends it to the players.
  */
 export const questionEnd = async (
-  connections: {
-    host: ClientConn;
-    clients: Array<ClientConn>;
-    turn?: {
-      turn_start: number;
-      timeout?: NodeJS.Timeout;
-      movement_die: number;
-    };
-  },
+  connections: Connection,
   data: WebsocketRequest,
   context: Context,
   early: boolean
@@ -637,17 +605,7 @@ export const questionEnd = async (
  * @returns This is a mutation function in which modifies the next game state and sends it to the players.
  */
 export const handleConsequence = async (
-  connections: {
-    host: ClientConn;
-    clients: Array<ClientConn>;
-    turn?: {
-      turn_start: number;
-      timeout?: NodeJS.Timeout;
-      turn_modifier: TurnModifier;
-      movement_die: number;
-      answered: string[];
-    };
-  },
+  connections: Connection,
   data: WebsocketRequest,
   context: Context,
   early: boolean

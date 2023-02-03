@@ -1,11 +1,5 @@
-/**
- * @file Connections.ts
- * @author Mark Hutchison
- * Type related to websocket connection information.
- */
-
 import { SocketStream } from "@fastify/websocket";
-import { TurnModifier } from "../enums/TurnModifier";
+import { TurnModifier } from "../../shared/enums/TurnModifier";
 
 export type ClientConn = {
   username: string;
