@@ -288,11 +288,7 @@ export const generateQuestion = async (
 ): Promise<[WebsocketType, ConsequenceData | QuestionData]> => {
   // Define variable constants
   const question_type: "Multiple Choice" | "Text Question" = "Multiple Choice";
-  let game = await Game.findOne({ game_code: context.gameID })
-      .populate<{ hostId: UserType }>("hostId")
-      .populate<{ players: UserType[] }>("players")
-      .orFail()
-      .exec(),
+  let game = await Game.findOne({ game_code: context.gameID }).orFail().exec(),
     category: string = "Consequence";
   switch (challenge_die) {
     case QuestionCategory.TakeThreeAllPlay:
@@ -341,6 +337,16 @@ export const generateQuestion = async (
       movement_die: movement_die,
       timer_length: 10,
     };
+    // Add consequence ID to used list
+    game.used_consequences.push(consequence.id);
+    let updated_game = await game.save();
+    if (
+      updated_game.used_consequences[
+        updated_game.used_consequences.length - 1
+      ] !== consequence.id
+    )
+      throw "Consequences did not update properly";
+    // Move the player
     await movePlayer(context.gameID, movement_die);
     return [WebsocketType.ConsequenceAck, consequence_data];
   } else {
@@ -363,6 +369,15 @@ export const generateQuestion = async (
         challenge_die: challenge_die,
         timer_length: 15,
       };
+
+    // Add question ID to used list
+    game.used_questions.push(question.id);
+    let updated_game = await game.save();
+    if (
+      updated_game.used_questions[updated_game.used_questions.length - 1] !==
+      question.id
+    )
+      throw "Questions did not update properly";
     return [WebsocketType.QuestionAck, question_data];
   }
 };
