@@ -165,9 +165,7 @@ async function tryGetGame(
     .orFail()
     .exec();
 
-  console.log(
-    `[WS] Populated Game information: ${game.hostId} | ${game.players}`
-  );
+  // console.log(`[WS] Populated Game information: ${game.hostId} | ${game.players}`);
 
   // Find all user data related to the game
   const user =
@@ -652,7 +650,6 @@ async function gameConsequenceEnded(
   );
 }
 
-// TODO: ALSO, if you use classes, not only will testing (less shim-ing) be easier but all we could store the connection and other parameters as class-level globals
 async function handleMessage(conn: SocketStream, data: any, context: Context) {
   switch (data.type) {
     case WebsocketType.GameSetup: {

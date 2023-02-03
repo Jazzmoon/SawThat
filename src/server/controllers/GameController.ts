@@ -7,7 +7,6 @@
  */
 
 import { FastifyReply, FastifyRequest } from "fastify";
-import { SocketStream } from "@fastify/websocket";
 import mongoose from "mongoose";
 
 import { generateJWT } from "./AuthController";
@@ -145,11 +144,9 @@ export const createGame = async (
     used_questions: [],
     used_consequences: [],
   });
-  console.log(`[GC] Creating Game Schema: ${game}`);
 
   try {
     const newGame = await game.save();
-    console.log(`[GC] Saving Game Schema: ${newGame} | ${newGame._id}`);
 
     // Link Game and User objects together
     try {
@@ -163,7 +160,6 @@ export const createGame = async (
       )
         .orFail()
         .exec();
-      console.log(`[GC] Updating Host Schema: ${host} | ${host._id}`);
       const game_update = await Game.findByIdAndUpdate(newGame._id, {
         hostId: host._id,
       })
@@ -454,6 +450,7 @@ export const turn = async (
   connections.turn = {
     turn_start: Date.now(),
     turn_modifier: turn_modifier,
+    all_play: 0 <= challenge_die && challenge_die <= 2,
     movement_die: res_data.movement_die,
     answered: [],
   };
@@ -466,7 +463,7 @@ export const turn = async (
       data: res_data,
     } as WebsocketResponse)
   );
-  if (0 <= challenge_die && challenge_die <= 2) {
+  if (connections.turn.all_play) {
     // All Play
     connections.clients.forEach((c) => {
       c.conn.socket.send(
@@ -510,13 +507,6 @@ export const questionAnswer = async (
   data: WebsocketRequest,
   context: Context
 ): Promise<boolean> => {
-  const game = await Game.findOne({
-    game_code: context.gameID,
-  })
-    .populate<{ hostId: UserType }>("hostId")
-    .populate<{ players: UserType[] }>("players")
-    .orFail()
-    .exec();
   /*
     Verify that the question is still open to be answered,
     that the user hasn't already answered,
@@ -524,24 +514,46 @@ export const questionAnswer = async (
   */
   if (
     connections.turn === undefined ||
-    connections.turn.answered.includes(context.username) ||
-    game.used_questions[game.used_questions.length - 1] !==
-      (data.data as QuestionAnswerData).id
+    connections.turn.timeout === undefined ||
+    connections.turn.answered.includes(context.username)
   )
     return false;
-
+  const game = await Game.findOne({
+    game_code: context.gameID,
+  })
+    .populate<{ hostId: UserType }>("hostId")
+    .populate<{ players: UserType[] }>("players")
+    .orFail()
+    .exec();
+  if (
+    game.used_questions[game.used_questions.length - 1] !==
+    (data.data as QuestionAnswerData).id
+  )
+    return false;
   // Add the user to the list of people who answered
   connections.turn.answered.push(context.username);
 
   // Check user answer against actual answer
+  console.log(
+    `[GC] User ${context.username} has submitted answer ${
+      (data.data as QuestionAnswerData).answer
+    } for question (${(data.data as QuestionAnswerData).id} | ${
+      (data.data as QuestionAnswerData).category
+    })`
+  );
+
   const correct: boolean = await validateAnswer(
     game.theme_pack,
     (data.data as QuestionAnswerData).id,
     (data.data as QuestionAnswerData).category,
     (data.data as QuestionAnswerData).answer,
     (data.data as QuestionAnswerData).question_type
-  );
+  ).catch((err) => {
+    console.log(`[GC] Validate answer encountered the following error:`, err);
+    return false;
+  });
   if (correct) {
+    console.log(`[GC] User ${context.username} was correct.`);
     // If it is the players turn. Move them.
     if (game.players[0].username === context.username) {
       await movePlayer(context.gameID, connections.turn.movement_die);
@@ -549,6 +561,14 @@ export const questionAnswer = async (
     // If correct, kill the timeout and move player accordingly
     await questionEnd(connections, data, context, true);
   }
+
+  // If this player was the last player required before timeout, kill the question
+  if (
+    (connections.turn.all_play === true &&
+      connections.turn.answered.length === 1) ||
+    connections.turn.answered.length === game.players.length
+  )
+    await questionEnd(connections, data, context, true);
   return correct;
 };
 

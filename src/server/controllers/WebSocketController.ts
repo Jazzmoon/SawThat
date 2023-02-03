@@ -12,6 +12,7 @@ export type Connection = {
   turn?: {
     turn_start: number;
     timeout?: NodeJS.Timeout;
+    all_play: boolean;
     turn_modifier: TurnModifier;
     movement_die: number;
     answered: string[];
