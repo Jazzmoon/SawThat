@@ -4,7 +4,7 @@
  * Type related to websocket connection information.
  */
 
-import { SocketStream } from "../../server/node_modules/@fastify/websocket";
+import { SocketStream } from "@fastify/websocket";
 import { TurnModifier } from "../enums/TurnModifier";
 
 export type ClientConn = {

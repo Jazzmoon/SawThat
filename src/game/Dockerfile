@@ -19,6 +19,10 @@ COPY game /app
 RUN mkdir -p /shared
 COPY shared /shared
 
+RUN cd /shared
+RUN npm ci
+RUN cd /app
+
 # build app for production with minification
 RUN npm run build
 

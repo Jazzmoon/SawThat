@@ -17,6 +17,10 @@ COPY server /app
 RUN mkdir -p /shared
 COPY shared /shared
 
+RUN cd /shared
+RUN npm ci
+RUN cd /app
+
 # Run build command
 RUN npm run build
 
