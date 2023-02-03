@@ -145,9 +145,11 @@ export const createGame = async (
     used_questions: [],
     used_consequences: [],
   });
+  console.log(`[GC] Creating Game Schema: ${game}`);
 
   try {
     const newGame = await game.save();
+    console.log(`[GC] Saving Game Schema: ${newGame} | ${newGame._id}`);
 
     // Link Game and User objects together
     try {
@@ -161,6 +163,7 @@ export const createGame = async (
       )
         .orFail()
         .exec();
+      console.log(`[GC] Updating Host Schema: ${host} | ${host._id}`);
       const game_update = await Game.findByIdAndUpdate(newGame._id, {
         hostId: host._id,
       })
