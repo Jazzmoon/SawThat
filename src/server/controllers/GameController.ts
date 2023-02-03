@@ -54,16 +54,16 @@ const generateGameID = async (): Promise<string> => {
 
   // Check if Game object can be found by Mongoose using this id
   try {
-    let exists: boolean = await Game.exists({ game_code: gameID })
-      .orFail()
-      .then((res) => res !== null);
+    let exists: boolean = await Game.exists({ game_code: gameID }).then(
+      (res) => res !== null
+    );
     while (exists) {
       gameID += characters.charAt(
         Math.floor(Math.random() * characters.length)
       );
-      exists = await Game.exists({ game_code: gameID })
-        .orFail()
-        .then((res) => res !== null);
+      exists = await Game.exists({ game_code: gameID }).then(
+        (res) => res !== null
+      );
     }
     return gameID;
   } catch (err) {
