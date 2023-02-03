@@ -99,13 +99,42 @@ export const createGame = async (
         message:
           "Request Body missing parameter `theme_pack`. Please ensure this value exists and is a string.",
       });
+    return res;
   }
-  const gameCode: string = await generateGameID(),
+  let gameCode: string, accessToken: string;
+  try {
+    gameCode = await generateGameID();
+  } catch (err) {
+    res
+      .code(400)
+      .type("application/json")
+      .send(
+        err instanceof Error
+          ? { error: err, message: `[GC] Create gameCode: ${err.message}` }
+          : { error: err, message: "[GC] Create gameCode: Unknown Error Type" }
+      );
+    return res;
+  }
+  try {
     accessToken = await generateJWT({
       username: `game${gameCode}`,
       gameCode: gameCode,
       userType: "Game",
     });
+  } catch (err) {
+    res
+      .code(400)
+      .type("application/json")
+      .send(
+        err instanceof Error
+          ? { error: err, message: `[GC] Create Access Token: ${err.message}` }
+          : {
+              error: err,
+              message: "[GC] Create Access Token: Unknown Error Type",
+            }
+      );
+    return res;
+  }
 
   // Create game object
   const game = new Game({
@@ -121,42 +150,55 @@ export const createGame = async (
     const newGame = await game.save();
 
     // Link Game and User objects together
-    const host = await User.findOneAndUpdate(
-      {
-        username: `game${gameCode}`,
-        userType: "Game",
-        token: accessToken,
-      },
-      { game: newGame._id }
-    )
-      .orFail()
-      .exec();
-    const game_update = await Game.findByIdAndUpdate(newGame._id, {
-      hostId: host._id,
-    })
-      .orFail()
-      .exec();
+    try {
+      const host = await User.findOneAndUpdate(
+        {
+          username: `game${gameCode}`,
+          userType: "Game",
+          token: accessToken,
+        },
+        { game: newGame._id }
+      )
+        .orFail()
+        .exec();
+      const game_update = await Game.findByIdAndUpdate(newGame._id, {
+        hostId: host._id,
+      })
+        .orFail()
+        .exec();
 
-    // Send back response
-    res.code(200).type("application/json").send({
-      game: newGame,
-      gameID: gameCode,
-      userToken: accessToken,
-    });
-  } catch (err) {
-    if (err instanceof Error) {
+      // Send back response
+      res.code(200).type("application/json").send({
+        game: newGame,
+        gameID: gameCode,
+        userToken: accessToken,
+      });
+      return res;
+    } catch (err) {
       res
         .code(400)
         .type("application/json")
-        .send({ error: err, message: err.message });
-    } else {
-      res
-        .code(400)
-        .type("application/json")
-        .send({ error: err, message: "Unknown Error Type" });
+        .send(
+          err instanceof Error
+            ? { error: err, message: `[GC] Game Host Update: ${err.message}` }
+            : {
+                error: err,
+                message: "[GC] Game Host Update: Unknown Error Type",
+              }
+        );
+      return res;
     }
+  } catch (err) {
+    res
+      .code(400)
+      .type("application/json")
+      .send(
+        err instanceof Error
+          ? { error: err, message: `[GC] Game Save: ${err.message}` }
+          : { error: err, message: "[GC] Game Save: Unknown Error Type" }
+      );
+    return res;
   }
-  return res;
 };
 
 /**

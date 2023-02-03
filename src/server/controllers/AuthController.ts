@@ -48,12 +48,8 @@ export const generateJWT = async (requestData: {
       game: null,
     });
 
-    try {
-      const newUser = await user.save();
-      return Promise.resolve(accessToken);
-    } catch (e) {
-      return Promise.reject(`User could not be created: ${e}`);
-    }
+    const newUser = await user.save();
+    return accessToken;
   } else {
     // Find the Game in the database to link to user
     const game = await Game.findOne({ game_code: requestData.gameCode }).lean();
@@ -67,15 +63,10 @@ export const generateJWT = async (requestData: {
         color: requestData.color,
         position: 0,
       });
-
-      try {
-        const newUser = await user.save();
-        return Promise.resolve(accessToken);
-      } catch (e) {
-        return Promise.reject(`User could not be created: ${e}`);
-      }
+      const newUser = await user.save();
+      return accessToken;
     } else {
-      return Promise.reject("Game with that ID doesn't exist to join.");
+      throw "Game with that ID doesn't exist to join.";
     }
   }
 };
