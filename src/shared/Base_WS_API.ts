@@ -54,6 +54,7 @@ export default class Base_WS_API {
         Base_WS_API.token = "";
         Base_WS_API.pendingRequests = {};
         Base_WS_API.socket?.close();
+        Base_WS_API.socket = null;
     }
 
     /**
