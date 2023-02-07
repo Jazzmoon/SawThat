@@ -462,15 +462,21 @@ async function gameStartRequest(
 
     setTimeout(async () => {
       try {
-        await turn(connections[context.gameID], data, context);
+        const turn_data = await turn(
+          connections[context.gameID],
+          data,
+          context
+        );
+        console.log(`[WS] Turn didn't error: ${turn_data}`);
       } catch (err) {
+        console.log(`[WS] gameStartRequest inner try failed.`);
         conn.socket.send(
           JSON.stringify({
             type: WebsocketType.Error,
             requestId: data.requestId,
             data: {
               error: err,
-              message: "[WS] Turn has failed.",
+              message: "[WS] Turn, from gameStartRequest, has failed.",
               token: context.token,
               fatal: true,
             } as ErrorData,
@@ -479,6 +485,7 @@ async function gameStartRequest(
       }
     }, 5 * 1000);
   } catch (err) {
+    console.log(`[WS] gameStartRequest outer try failed.`);
     conn.socket.send(
       JSON.stringify({
         type: WebsocketType.Error,
@@ -609,9 +616,8 @@ async function gameQuestionRequest(
   data: any,
   context: Context
 ) {
-  if (!checkUserAuthorization(conn, data, context, "Game")) {
-    return;
-  }
+  if (!checkUserAuthorization(conn, data, context, "Game"))
+    throw "[WS] User is not an authorized Game.";
   await tryTurnAction(conn, data, context, async () => {
     const _ = await turn(connections[context.gameID], data, context);
   });
@@ -622,9 +628,8 @@ async function gameQuestionAnswer(
   data: any,
   context: Context
 ) {
-  if (!checkUserAuthorization(conn, data, context, "Client")) {
-    return;
-  }
+  if (!checkUserAuthorization(conn, data, context, "Client"))
+    throw "[WS] User is not an authorized Client.";
   tryTurnAction(conn, data, context, async () => {
     const correct = await questionAnswer(
       connections[context.gameID],
@@ -642,9 +647,8 @@ async function gameConsequenceEnded(
   data: any,
   context: Context
 ) {
-  if (!checkUserAuthorization(conn, data, context, "Client")) {
-    return;
-  }
+  if (!checkUserAuthorization(conn, data, context, "Client"))
+    throw "[WS] User is not an authorized Client.";
   await tryTurnAction(conn, data, context, () =>
     handleConsequence(connections[context.gameID], data, context, true)
   );
@@ -704,7 +708,14 @@ function checkUserAuthorization(
   goalUserType: string
 ): boolean {
   if (context.userType !== goalUserType) {
-    sendError(conn, data, context, "[WS] User not authorized.", null, true);
+    sendError(
+      conn,
+      data,
+      context,
+      `[WS] User not authorized. Expected ${goalUserType}, got ${context.userType}.`,
+      null,
+      true
+    );
     return false;
   }
   return true;
@@ -714,12 +725,20 @@ async function tryTurnAction(
   conn: SocketStream,
   data: any,
   context: Context,
-  action: () => Promise<void>
+  action: () => Promise<boolean | void>
 ) {
   try {
-    await action();
+    const res = await action();
+    return res;
   } catch (err) {
-    sendError(conn, data, context, err, "[WS] Turn has failed.", true);
+    sendError(
+      conn,
+      data,
+      context,
+      err,
+      "[WS] Turn, from tryTurnAction, has failed.",
+      true
+    );
   }
 }
 
