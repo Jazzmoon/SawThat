@@ -10,7 +10,7 @@ export default defineConfig(({ command, mode }) => {
   return {
     plugins: [vue(), svgLoader()],
     test: {
-      // TODO
+      environment: "happy-dom",
     },
     resolve: {
       alias: {

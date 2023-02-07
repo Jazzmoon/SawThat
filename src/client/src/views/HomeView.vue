@@ -1,3 +1,18 @@
+<template>
+  <main>
+    <div id="root">
+      <img id="icon" :src="LogoSVG" />
+      <h1 id="title">SawThat?</h1>
+      <div id="inputs">
+        <p id="hint">Enter your game code to start:</p>
+        <input type="text" v-model="gameCode" placeholder="Game Code" />
+        <input type="text" v-model="playerName" placeholder="Your Name" />
+        <button @click="submit()">Go!</button>
+      </div>
+    </div>
+  </main>
+</template>
+
 <script setup lang="ts">
 import LogoSVG from "@/assets/logo.svg";
 import { HTTP_API } from "@/middleware/HTTP_API";
@@ -36,21 +51,6 @@ async function submit() {
   emit("joined", playerName);
 }
 </script>
-
-<template>
-  <main>
-    <div id="root">
-      <img id="icon" :src="LogoSVG" />
-      <h1 id="title">SawThat?</h1>
-      <div id="inputs">
-        <p id="hint">Enter your game code to start:</p>
-        <input type="text" v-model="gameCode" placeholder="Game Code" />
-        <input type="text" v-model="playerName" placeholder="Your Name" />
-        <button @click="submit()">Go!</button>
-      </div>
-    </div>
-  </main>
-</template>
 
 <style scoped>
 #root {

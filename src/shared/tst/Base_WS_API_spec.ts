@@ -1,5 +1,5 @@
 
-test('Test Base_WS_API is created properly when setting up a connection', () => {
+test('Test Base_WS_API is created properly when setting up a connection', () => { // TODO IMPLEMENT ALL THESE
     expect(1+2).toBe(3);
 });
 

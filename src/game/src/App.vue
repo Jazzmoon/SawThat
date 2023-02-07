@@ -54,12 +54,12 @@ onMounted(() => {
     switch (message.type) {
       case WebsocketType.Error:
         if (message.data.fatal) {
-          alert(`An error has occured when trying to communicate with the server:\n${message.data.message}\nServer's response: ${JSON.stringify(message.data)}`);
+          alert(`A fatal error has occured when trying to communicate with the server:\n${message.data.message}\nServer's response: ${JSON.stringify(message.data)}`);
           WS_API.resetConnection();
           currentGameState.value = GameState.NONE;
         } else {
-          alert(`A fatal error has occured when trying to communicate with the server:\n${message.data.message}\nServer's response: ${JSON.stringify(message.data)}`);
-          currentGameState.value = GameState.RUNNING;
+          alert(`An error has occured when trying to communicate with the server:\n${message.data.message}\nServer's response: ${JSON.stringify(message.data)}`);
+          currentGameState.value = currentGameState.value === GameState.SHOWING_QUESTION ? GameState.RUNNING : currentGameState.value;
         }
         break;
       case WebsocketType.QuestionAck:
@@ -95,7 +95,9 @@ onMounted(() => {
         }
         break;
       case WebsocketType.NextPlayerAck:
-        currentPlayer.value = players.value.findIndex((player) => player.username === message.data.username);
+        currentPlayer.value = players.value.findIndex(
+          (player) => player.username === message.data.player.username
+        );
         break;
     }
   });

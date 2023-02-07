@@ -7,7 +7,8 @@ import { assert, vi, it } from 'vitest'
 it.each([
     [0, "HomeView"],
     [1, "MainView"],
-    [2, "MultiChoiceQuestion"],
+    [2, "QuestionView"],
+    [3, "FinalStandings"],
   ])("App renders proper screen when necessary", (state, page) => {
     const app = shallowMount(App);
 
@@ -30,6 +31,9 @@ it.each([
     // start in answering state
     [{type: WebsocketType.Error, data: {message: "test", fatal: true}}, 2, 0],
     [{type: WebsocketType.Error, data: {message: "test", fatal: false}}, 2, 1],
+    // start in ended state
+    [{type: WebsocketType.Error, data: {message: "test", fatal: true}}, 3, 0],
+    [{type: WebsocketType.Error, data: {message: "test", fatal: false}}, 3, 3],
   ])('App handles error messages properly (%s, %i, %i)', async (message, startState, expectedState) => {
     const app = shallowMount(App);
 
@@ -78,6 +82,39 @@ it('App handles question messages properly', (message) => {
     
     // @ts-ignore
     assert.equal(app.getCurrentComponent().setupState.currentGameState, 1);
+    // @ts-ignore
+    assert.equal(app.getCurrentComponent().setupState.players.length, 1);
+});
+
+it('App handles consequence messages properly', (message) => {
+    const app = shallowMount(App);
+    const dummyData = {data: 'test'};
+
+    // run the game
+    // @ts-ignore
+    app.getCurrentComponent().setupState.currentGameState = 1;
+    
+    // send a question message
+    WS_API.sendMessageToCallbacks({
+        type: WebsocketType.ConsequenceAck,
+        data: dummyData
+    });
+    
+    // check that we are seeing a consequence now
+    // @ts-ignore
+    assert.equal(app.getCurrentComponent().setupState.consequenceShown, true);
+    // @ts-ignore
+    assert.equal(JSON.stringify(app.getCurrentComponent().setupState.consequenceData), JSON.stringify(dummyData));
+    
+    // send question ended ack and show that a new player was added after the round
+    // (simulate player movement in a lazy way basically)
+    WS_API.sendMessageToCallbacks({
+        type: WebsocketType.ConsequenceEndedAck,
+        data: {players: [{username: 1, color: "red", position: 5}]}
+    });
+    
+    // @ts-ignore
+    assert.equal(app.getCurrentComponent().setupState.consequenceShown, false);
     // @ts-ignore
     assert.equal(app.getCurrentComponent().setupState.players.length, 1);
 });
