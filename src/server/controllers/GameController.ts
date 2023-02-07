@@ -543,6 +543,8 @@ export const questionAnswer = async (
     })`
   );
 
+  throw "FUCK EVERYTHING"; // todo remove - this is just to test if we reach this point
+
   const correct: boolean = await validateAnswer(
     game.theme_pack,
     (data.data as QuestionAnswerData).id,
