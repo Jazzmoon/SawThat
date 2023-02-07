@@ -4,11 +4,7 @@
  * Router dedicated to handling websocket interactions.
  */
 import { SocketStream } from "@fastify/websocket";
-import {
-  FastifyInstance,
-  FastifyPluginCallback,
-  FastifyRequest,
-} from "fastify";
+import { FastifyPluginCallback, FastifyRequest } from "fastify";
 import jwt, { Secret } from "jsonwebtoken";
 
 import { WebsocketType } from "../../shared/enums/WebsocketTypes";
@@ -25,6 +21,7 @@ import {
 import Game from "../models/Game";
 import User, { UserType } from "../models/User";
 
+import { Connections } from "../controllers/WebSocketController";
 import {
   nextPlayer,
   startGame,
@@ -37,30 +34,13 @@ import { Context } from "../../shared/types/Context";
 import { Player } from "../../shared/types/Player";
 
 // Create Record to match WS to GameID
-type ClientConn = {
-  username: string;
-  conn: SocketStream;
-};
-
-let connections: Record<
-  string,
-  {
-    host: ClientConn;
-    clients: ClientConn[];
-    turn?: {
-      turn_start: number;
-      timeout?: NodeJS.Timeout;
-      movement_die: number;
-      answered: ClientConn[];
-    };
-  }
-> = {};
+let connections: Connections = {};
 
 /**
  * The handling function for the websocket router.
  * It receives a request and various parameters, and handles it appropriately.
- * @param {FastifyInstance} fastify - The root fastify instance that the router is attaching itself to.
- * @param {Record} opts - Configuration options relevant to only this specific sub-router.
+ * @param fastify - The root fastify instance that the router is attaching itself to.
+ * @param opts - Configuration options relevant to only this specific sub-router.
  * @param done - Function that indicates the end of definitions.
  */
 const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
@@ -185,9 +165,7 @@ async function tryGetGame(
     .orFail()
     .exec();
 
-  console.log(
-    `[WS] Populated Game information: ${game.hostId} | ${game.players}`
-  );
+  // console.log(`[WS] Populated Game information: ${game.hostId} | ${game.players}`);
 
   // Find all user data related to the game
   const user =
@@ -672,7 +650,6 @@ async function gameConsequenceEnded(
   );
 }
 
-// TODO: ALSO, if you use classes, not only will testing (less shim-ing) be easier but all we could store the connection and other parameters as class-level globals
 async function handleMessage(conn: SocketStream, data: any, context: Context) {
   switch (data.type) {
     case WebsocketType.GameSetup: {
