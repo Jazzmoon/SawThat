@@ -95,19 +95,17 @@ async function createGame() {
   } else {
     gameCode.value = requestResult.gameID;
   }
-
+  
   WS_API.setUserToken(requestResult.userToken);
-
+  
   // setup the websocket connection
   const requestSuccess = await WS_API.setupWebSocketConnection(gameCode.value);
-
   if (!requestSuccess) {
     alert("An error occurred while trying to upgrade the connection with the server.");
     return;
   }
-
+  
   const request2Success = await WS_API.sendCreateGameRequest();
-
   if (!request2Success || request2Success.type === WebsocketType.Error) {
     alert(`An error occurred while trying to create the game.${request2Success.data}`);
     return;
@@ -122,7 +120,7 @@ async function createGame() {
       case WebsocketType.GameJoinAck:
         playerCounter++;
         break;
-      case WebsocketType.PlayerDisconnectAck:
+        case WebsocketType.PlayerDisconnectAck:
         playerCounter--;
         break;
       }
