@@ -22,7 +22,11 @@ onMounted(() => {
     playersOnTile = Array(38).fill(0);
     for (const player of props.players) {
         const prevPlayersSpot = props.previousTurnPlayers.find((oldPlayer) => oldPlayer.username === player.username);
-        createPiece(player, Math.max(0, Math.min(39, prevPlayersSpot?.position ?? 0)));
+        if (prevPlayersSpot) {
+            createPiece(player, Math.max(0, Math.min(39, prevPlayersSpot!.position)));
+        } else {
+            createPiece(player, 0);
+        }
     }
 });
 
