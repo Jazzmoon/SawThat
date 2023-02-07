@@ -543,43 +543,42 @@ export const questionAnswer = async (
     })`
   );
 
-  throw "FUCK EVERYTHING"; // todo remove - this is just to test if we reach this point
+  const correct: boolean = await validateAnswer(
+    game.theme_pack,
+    (data.data as QuestionAnswerData).id,
+    (data.data as QuestionAnswerData).category,
+    (data.data as QuestionAnswerData).answer,
+    (data.data as QuestionAnswerData).question_type
+  ).catch((err) => {
+    console.log(`[GC] Validate answer encountered the following error:`, err);
+    return false;
+  });
+  if (correct) {
+    console.log(`[GC] User ${context.username} was correct.`);
+    // If it is the players turn. Move them.
+    if (game.players[0].username === context.username) {
+      const movement = await movePlayer(
+        context.gameID,
+        connections.turn.movement_die
+      );
+      console.log(`[GC] Player moved: ${movement}`);
+      throw "FUCK EVERYTHING"; // todo remove - this is just to test if we reach this point
+    }
+    // If correct, kill the timeout and move player accordingly
+    const question_end = await questionEnd(connections, data, context, true);
+    console.log(`[GC] Ending Question Early: ${question_end}`);
+  }
 
-  // const correct: boolean = await validateAnswer(
-  //   game.theme_pack,
-  //   (data.data as QuestionAnswerData).id,
-  //   (data.data as QuestionAnswerData).category,
-  //   (data.data as QuestionAnswerData).answer,
-  //   (data.data as QuestionAnswerData).question_type
-  // ).catch((err) => {
-  //   console.log(`[GC] Validate answer encountered the following error:`, err);
-  //   return false;
-  // });
-  // if (correct) {
-  //   console.log(`[GC] User ${context.username} was correct.`);
-  //   // If it is the players turn. Move them.
-  //   if (game.players[0].username === context.username) {
-  //     const movement = await movePlayer(
-  //       context.gameID,
-  //       connections.turn.movement_die
-  //     );
-  //     console.log(`[GC] Player moved: ${movement}`);
-  //   }
-  //   // If correct, kill the timeout and move player accordingly
-  //   const question_end = await questionEnd(connections, data, context, true);
-  //   console.log(`[GC] Ending Question Early: ${question_end}`);
-  // }
-
-  // // If this player was the last player required before timeout, kill the question
-  // if (
-  //   (connections.turn.all_play === false &&
-  //     connections.turn.answered.length === 1) ||
-  //   connections.turn.answered.length === game.players.length
-  // ) {
-  //   const question_end = await questionEnd(connections, data, context, true);
-  //   console.log(`[GC] Ending Question Early: ${question_end}`);
-  // }
-  // return correct;
+  // If this player was the last player required before timeout, kill the question
+  if (
+    (connections.turn.all_play === false &&
+      connections.turn.answered.length === 1) ||
+    connections.turn.answered.length === game.players.length
+  ) {
+    const question_end = await questionEnd(connections, data, context, true);
+    console.log(`[GC] Ending Question Early: ${question_end}`);
+  }
+  return correct;
 };
 
 /**
