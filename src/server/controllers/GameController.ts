@@ -588,8 +588,6 @@ export const questionAnswer = async (
  */
 export const movePlayer = async (gameID: string, movement_die: number) => {
   // Fetch the game's player
-  throw gameID; // todo remove - this is just to test if we reach this point
-  
   const player_list = await Game.findOne({
     game_code: gameID,
   })
