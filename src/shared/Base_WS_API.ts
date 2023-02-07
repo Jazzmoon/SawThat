@@ -86,17 +86,15 @@ export default class Base_WS_API {
         try {
             await promise;
         } catch (exception) {
-            for (const callback of Object.values(Base_WS_API.incomingMessageCallbacks)) {
-                callback({
-                    type: WebsocketType.Error,
-                    requestId: requestId,
-                    data: {
-                        error: exception,
-                        message: "An error occured with the connection to the server",
-                        fatal: true
-                    } as ErrorData
-                });
-            }
+            this.sendMessageToCallbacks({
+                type: WebsocketType.Error,
+                requestId: requestId,
+                data: {
+                    error: exception,
+                    message: "An error occured with the connection to the server",
+                    fatal: true
+                } as ErrorData
+            });
         }
 
         return Base_WS_API.socket.readyState === WebSocket.OPEN;
@@ -116,9 +114,7 @@ export default class Base_WS_API {
             delete Base_WS_API.pendingRequests[data.requestId];
         }
 
-        for (const callback of Object.values(Base_WS_API.incomingMessageCallbacks)) {
-            callback(data);
-        }
+        this.sendMessageToCallbacks(data);
     }
 
     /**
@@ -174,5 +170,15 @@ export default class Base_WS_API {
      */
     private static createRequestId(type: WebsocketType | string): string {
         return `${type}${Date.now()}`;
+    }
+
+    /**
+     * Sends a message to all registered callbacks
+     * @param data the data to send to the callbacks
+     */
+    public static sendMessageToCallbacks(data: WebsocketMessage): void {
+        for (const callback of Object.values(Base_WS_API.incomingMessageCallbacks)) {
+            callback(data);
+        }
     }
 }

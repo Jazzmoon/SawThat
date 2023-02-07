@@ -59,7 +59,7 @@ onMounted(() => {
             WS_API.resetConnection();
             currentGameState.value = GameState.NONE;
           } else {
-            currentGameState.value = GameState.RUNNING;
+            currentGameState.value = currentGameState.value === GameState.ANSWERING_QUESTION ? GameState.RUNNING : currentGameState.value;
           }
           break;
         case WebsocketType.QuestionAck:
