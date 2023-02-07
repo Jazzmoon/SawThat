@@ -562,7 +562,6 @@ export const questionAnswer = async (
         connections.turn.movement_die
       );
       console.log(`[GC] Player moved: ${movement}`);
-      throw "FUCK EVERYTHING"; // todo remove - this is just to test if we reach this point
     }
     // If correct, kill the timeout and move player accordingly
     const question_end = await questionEnd(connections, data, context, true);
@@ -596,6 +595,8 @@ export const movePlayer = async (gameID: string, movement_die: number) => {
     .get("players")
     .exec();
 
+  throw "FUCK EVERYTHING"; // todo remove - this is just to test if we reach this point
+
   // Update the first player's movement
   const worked = await User.findByIdAndUpdate(player_list[0], {
     $inc: {
@@ -604,6 +605,7 @@ export const movePlayer = async (gameID: string, movement_die: number) => {
   })
     .orFail()
     .exec();
+  
   return worked;
 };
 
