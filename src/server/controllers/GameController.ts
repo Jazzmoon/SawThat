@@ -16,7 +16,7 @@ import {
   validateAnswer,
 } from "./QuizController";
 
-import Game, { GameType } from "../models/Game";
+import Game from "../models/Game";
 import User, { UserType } from "../models/User";
 import {
   ConsequenceData,
@@ -493,6 +493,7 @@ export const turn = async (
       questionEnd(connections, data, context, false);
     }
   }, Math.abs(Date.now() - res_data.timer_start + res_data.timer_length * 1000));
+  return connections.turn;
 };
 
 /**
@@ -556,19 +557,26 @@ export const questionAnswer = async (
     console.log(`[GC] User ${context.username} was correct.`);
     // If it is the players turn. Move them.
     if (game.players[0].username === context.username) {
-      await movePlayer(context.gameID, connections.turn.movement_die);
+      const movement = await movePlayer(
+        context.gameID,
+        connections.turn.movement_die
+      );
+      console.log(`[GC] Player moved: ${movement}`);
     }
     // If correct, kill the timeout and move player accordingly
-    await questionEnd(connections, data, context, true);
+    const question_end = await questionEnd(connections, data, context, true);
+    console.log(`[GC] Ending Question Early: ${question_end}`);
   }
 
   // If this player was the last player required before timeout, kill the question
   if (
-    (connections.turn.all_play === true &&
+    (connections.turn.all_play === false &&
       connections.turn.answered.length === 1) ||
     connections.turn.answered.length === game.players.length
-  )
-    await questionEnd(connections, data, context, true);
+  ) {
+    const question_end = await questionEnd(connections, data, context, true);
+    console.log(`[GC] Ending Question Early: ${question_end}`);
+  }
   return correct;
 };
 
@@ -611,9 +619,9 @@ export const questionEnd = async (
   data: WebsocketRequest,
   context: Context,
   early: boolean
-): Promise<void> => {
-  if (connections.turn === undefined) return;
-  if (connections.turn.timeout === undefined) return;
+): Promise<boolean> => {
+  if (connections.turn === undefined) return false;
+  if (connections.turn.timeout === undefined) return false;
   // Force the timeout to be undefined so no other requests go through
   clearTimeout(connections.turn.timeout!);
   connections.turn = undefined;
@@ -626,7 +634,9 @@ export const questionEnd = async (
   const players = await User.find({
     userType: "Client",
     game: game._id,
-  }).exec();
+  })
+    .orFail()
+    .exec();
   connections.host.conn.socket.send(
     JSON.stringify({
       type: early
@@ -667,6 +677,7 @@ export const questionEnd = async (
       } as WebsocketResponse)
     );
   });
+  return true;
 };
 
 /**
@@ -682,9 +693,9 @@ export const handleConsequence = async (
   data: WebsocketRequest,
   context: Context,
   early: boolean
-) => {
-  if (connections.turn === undefined) return;
-  if (connections.turn.timeout === undefined) return;
+): Promise<boolean> => {
+  if (connections.turn === undefined) return false;
+  if (connections.turn.timeout === undefined) return false;
   // Force the timeout to be undefined so no other requests go through
   clearTimeout(connections.turn?.timeout!);
   connections.turn = undefined;
@@ -699,11 +710,15 @@ export const handleConsequence = async (
   const players = await User.find({
     userType: "Client",
     game: game._id,
-  }).exec();
+  })
+    .orFail()
+    .exec();
   // Messages
   connections.host.conn.socket.send(
     JSON.stringify({
-      type: WebsocketType.ConsequenceEndedAck,
+      type: early
+        ? WebsocketType.ConsequenceTimeOut
+        : WebsocketType.ConsequenceEndedAck,
       requestId: data.requestId,
       data: {
         players: players.map((p) => {
@@ -719,7 +734,9 @@ export const handleConsequence = async (
   connections.clients.forEach((c) => {
     c.conn.socket.send(
       JSON.stringify({
-        type: WebsocketType.ConsequenceEndedAck,
+        type: early
+          ? WebsocketType.ConsequenceTimeOut
+          : WebsocketType.ConsequenceEndedAck,
         requestId: data.requestId,
         data: {
           players: players.map((p) => {
@@ -733,6 +750,7 @@ export const handleConsequence = async (
       } as WebsocketResponse)
     );
   });
+  return true;
 };
 
 /**
@@ -747,11 +765,11 @@ export const checkWinner = async (
   let game = await Game.findOne({ game_code: gameID })
     .populate<{ hostId: UserType }>("hostId")
     .populate<{ players: UserType[] }>("players")
+    .orFail()
     .exec();
 
   // Perform error checks.
-  if (!game) throw "[GC] There is no game with this game id.";
-  if (!game!.started) throw "[GC] The game has not yet started.";
+  if (game.started === false) throw "[GC] The game has not yet started.";
   if (game.players.length < 2)
     throw "[GC] There is not enough players to perform this task.";
   if (
@@ -764,10 +782,10 @@ export const checkWinner = async (
   const winners = game.players.filter((p) => p.position >= 41);
   if (winners.length === 0) {
     // A winner does not exist
-    return Promise.resolve(false);
+    return false;
   } else if (winners.length === 1) {
     // A winner was found, return their username
-    return Promise.resolve(winners[0].username);
+    return winners[0].username;
   } else {
     throw "[GC] An error state has been detected.";
   }

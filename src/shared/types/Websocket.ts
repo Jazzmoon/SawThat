@@ -48,8 +48,10 @@ export type WebsocketResponse = WebsocketMessage & {
     | WebsocketType.QuestionAck
     | WebsocketType.QuestionTimerTickAck
     | WebsocketType.QuestionEndedAck
+    | WebsocketType.QuestionTimeOut
     | WebsocketType.ConsequenceAck
     | WebsocketType.ConsequenceEndedAck
+    | WebsocketType.ConsequenceTimeOut
     | WebsocketType.PlayerDisconnectAck
     | WebsocketType.NextPlayerAck
     | WebsocketType.Pong;

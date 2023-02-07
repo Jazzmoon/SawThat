@@ -34,6 +34,7 @@ export enum WebsocketType {
   ConsequenceAck = 16,
   ConsequenceEndedAck = 18,
   QuestionTimeOut = 19,
+  ConsequenceTimeOut = 25,
   PlayerDisconnectAck = 22,
   NextPlayerAck = 7,
   Pong = 21,
