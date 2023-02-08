@@ -598,9 +598,10 @@ export const movePlayer = async (gameID: string, movement_die: number) => {
   // Update the first player's movement
   let user = await User.findById(game.players[0]).orFail().exec();
     
-  throw "test error ------------------"
-
   user.position = MathUtil.bound(0, 41, user.position + movement_die);
+  
+  throw `test error ---------${MathUtil.bound(0, 41, user.position + movement_die)}---------`
+
   const save = await user.save();
 
   return save;
