@@ -476,7 +476,7 @@ async function gameStartRequest(
             requestId: data.requestId,
             data: {
               error: err,
-              message: "[WS] Turn, from gameStartRequest, has failed.",
+              message: "[WS] First Turn has failed.",
               token: context.token,
               fatal: true,
             } as ErrorData,
@@ -616,9 +616,10 @@ async function gameQuestionRequest(
   data: any,
   context: Context
 ) {
-  if (!checkUserAuthorization(conn, data, context, "Game"))
+  if (!checkUserAuthorization(conn, data, context, "Game")) {
     throw "[WS] User is not an authorized Game.";
-  await tryTurnAction(conn, data, context, async () => {
+  }
+  await tryTurnAction(conn, data, context, "Question Request", async () => {
     const _ = await turn(connections[context.gameID], data, context);
   });
 }
@@ -628,9 +629,10 @@ async function gameQuestionAnswer(
   data: any,
   context: Context
 ) {
-  if (!checkUserAuthorization(conn, data, context, "Client"))
+  if (!checkUserAuthorization(conn, data, context, "Client")) {
     throw "[WS] User is not an authorized Client.";
-  tryTurnAction(conn, data, context, async () => {
+  }
+  tryTurnAction(conn, data, context, "Question Answered", async () => {
     const correct = await questionAnswer(
       connections[context.gameID],
       data,
@@ -647,9 +649,10 @@ async function gameConsequenceEnded(
   data: any,
   context: Context
 ) {
-  if (!checkUserAuthorization(conn, data, context, "Client"))
+  if (!checkUserAuthorization(conn, data, context, "Client")) {
     throw "[WS] User is not an authorized Client.";
-  await tryTurnAction(conn, data, context, () =>
+  }
+  await tryTurnAction(conn, data, context, "Consequence ended", () =>
     handleConsequence(connections[context.gameID], data, context, true)
   );
 }
@@ -725,20 +728,14 @@ async function tryTurnAction(
   conn: SocketStream,
   data: any,
   context: Context,
+  actionName: string,
   action: () => Promise<boolean | void>
 ) {
   try {
     const res = await action();
     return res;
   } catch (err) {
-    sendError(
-      conn,
-      data,
-      context,
-      err,
-      "[WS] Turn, from tryTurnAction, has failed.",
-      true
-    );
+    sendError(conn, data, context, err, `[WS] Turn has failed while executing ${actionName}`, true);
   }
 }
 

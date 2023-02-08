@@ -594,6 +594,7 @@ export const movePlayer = async (gameID: string, movement_die: number) => {
     .orFail()
     .exec();
 
+
   // Update the first player's movement
   const worked = await User.findByIdAndUpdate(game.players[0], {
     $inc: {
@@ -602,6 +603,7 @@ export const movePlayer = async (gameID: string, movement_die: number) => {
   })
     .orFail()
     .exec();
+  
   return worked;
 };
 
