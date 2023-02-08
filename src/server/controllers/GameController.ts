@@ -568,18 +568,16 @@ export const questionAnswer = async (
     console.log(`[GC] Ending Question Early: ${question_end}`);
   }
 
-  throw "test----------";
-
   // If this player was the last player required before timeout, kill the question
-  // if (
-  //   (connections.turn.all_play === false &&
-  //     connections.turn.answered.length === 1) ||
-  //   connections.turn.answered.length === game.players.length
-  // ) {
-  //   const question_end = await questionEnd(connections, data, context, true);
-  //   console.log(`[GC] Ending Question Early: ${question_end}`);
-  // }
-  // return correct;
+  else if (
+    (connections.turn.all_play === false &&
+      connections.turn.answered.length === 1) ||
+    connections.turn.answered.length === game.players.length
+  ) {
+    const question_end = await questionEnd(connections, data, context, true);
+    console.log(`[GC] Ending Question Early: ${question_end}`);
+  }
+  return correct;
 };
 
 /**
