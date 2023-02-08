@@ -594,16 +594,11 @@ export const movePlayer = async (gameID: string, movement_die: number) => {
     .orFail()
     .exec();
 
-    
   // Update the first player's movement
   let user = await User.findById(game.players[0]).orFail().exec();
-    
   user.position = MathUtil.bound(0, 41, user.position + movement_die);
   
   const save = await user.save();
-  
-  throw `test error ---------${MathUtil.bound(0, 41, user.position + movement_die)}---------`
-
   return save;
 };
 
@@ -631,54 +626,57 @@ export const questionEnd = async (
   })
     .orFail()
     .exec();
+
+  throw "test----------"
+
   // Get updated players array
-  const players = await User.find({
-    userType: "Client",
-    game: game._id,
-  })
-    .orFail()
-    .exec();
-  connections.host.conn.socket.send(
-    JSON.stringify({
-      type: early
-        ? WebsocketType.QuestionEndedAck
-        : WebsocketType.QuestionTimeOut,
-      requestId: data.requestId,
-      data: {
-        players: players
-          .map((p) => {
-            return {
-              username: p.username,
-              color: p.color,
-              position: p.position,
-            } as Player;
-          })
-          .sort((a, b) => a.position - b.position),
-      },
-    } as WebsocketResponse)
-  );
-  connections.clients.forEach((c) => {
-    c.conn.socket.send(
-      JSON.stringify({
-        type: early
-          ? WebsocketType.QuestionEndedAck
-          : WebsocketType.QuestionTimeOut,
-        requestId: data.requestId,
-        data: {
-          players: players
-            .map((p) => {
-              return {
-                username: p.username,
-                color: p.color,
-                position: p.position,
-              } as Player;
-            })
-            .sort((a, b) => a.position - b.position),
-        },
-      } as WebsocketResponse)
-    );
-  });
-  return true;
+  // const players = await User.find({
+  //   userType: "Client",
+  //   game: game._id,
+  // })
+  //   .orFail()
+  //   .exec();
+  // connections.host.conn.socket.send(
+  //   JSON.stringify({
+  //     type: early
+  //       ? WebsocketType.QuestionEndedAck
+  //       : WebsocketType.QuestionTimeOut,
+  //     requestId: data.requestId,
+  //     data: {
+  //       players: players
+  //         .map((p) => {
+  //           return {
+  //             username: p.username,
+  //             color: p.color,
+  //             position: p.position,
+  //           } as Player;
+  //         })
+  //         .sort((a, b) => a.position - b.position),
+  //     },
+  //   } as WebsocketResponse)
+  // );
+  // connections.clients.forEach((c) => {
+  //   c.conn.socket.send(
+  //     JSON.stringify({
+  //       type: early
+  //         ? WebsocketType.QuestionEndedAck
+  //         : WebsocketType.QuestionTimeOut,
+  //       requestId: data.requestId,
+  //       data: {
+  //         players: players
+  //           .map((p) => {
+  //             return {
+  //               username: p.username,
+  //               color: p.color,
+  //               position: p.position,
+  //             } as Player;
+  //           })
+  //           .sort((a, b) => a.position - b.position),
+  //       },
+  //     } as WebsocketResponse)
+  //   );
+  // });
+  // return true;
 };
 
 /**
