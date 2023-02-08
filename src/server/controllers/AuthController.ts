@@ -52,7 +52,7 @@ export const generateJWT = async (requestData: {
     return accessToken;
   } else {
     // Find the Game in the database to link to user
-    const game = await Game.findOne({ game_code: requestData.gameCode }).lean();
+    const game = await Game.findOne({ game_code: requestData.gameCode }).exec();
     if (game) {
       // Create User
       let user = new User({

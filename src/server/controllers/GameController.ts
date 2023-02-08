@@ -588,15 +588,14 @@ export const questionAnswer = async (
  */
 export const movePlayer = async (gameID: string, movement_die: number) => {
   // Fetch the game's player
-  const player_list = await Game.findOne({
+  const game = await Game.findOne({
     game_code: gameID,
   })
     .orFail()
-    .get("players")
     .exec();
 
   // Update the first player's movement
-  const worked = await User.findByIdAndUpdate(player_list[0], {
+  const worked = await User.findByIdAndUpdate(game.players[0], {
     $inc: {
       position: movement_die,
     },

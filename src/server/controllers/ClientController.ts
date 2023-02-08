@@ -30,7 +30,7 @@ export const joinGame = async (
   // Decompose the request body
   const { game_code, username } = req.body;
   // Verify that a game with the game code exists
-  const game = await Game.findOne({ game_code: game_code }).lean();
+  const game = await Game.findOne({ game_code: game_code }).exec();
   console.log(
     `[CR] Checking if game exists with game code ${game_code}: ${game}`
   );
@@ -43,14 +43,14 @@ export const joinGame = async (
         error: new Error("A game with that game code cannot be found."),
         message: "A game with that game code cannot be found.",
       });
-    return Promise.resolve(res);
+    return res;
   }
   // Verify that a user with the same username is not already in game
   // Fetch all users of type "Client" within game
   const players = await User.find({
     userType: "Client",
     game: game._id,
-  });
+  }).exec();
 
   if (players.map((rec) => rec.username).includes(username)) {
     console.log(`[CR] Game already contains user ${username}`);
@@ -61,7 +61,7 @@ export const joinGame = async (
         error: new Error("A user with that username is already in game."),
         message: "A user with that username is already in game.",
       });
-    return Promise.resolve(res);
+    return res;
   }
 
   // Verify that the game is not full
@@ -74,7 +74,7 @@ export const joinGame = async (
         error: new Error("This game already has the maximum players allowed."),
         message: "This game already has the maximum players allowed.",
       });
-    return Promise.resolve(res);
+    return res;
   }
 
   // Create a user
@@ -128,7 +128,7 @@ export const joinGame = async (
   if (user) {
     game.players.push(user!._id);
     console.log(`[CR] New Player List: ${game.players}`);
-    Game.findOneAndUpdate(
+    await Game.findOneAndUpdate(
       {
         game_code: game_code,
       },
@@ -147,5 +147,5 @@ export const joinGame = async (
       message: "An error occurred while connecting the user to the game.",
     });
   }
-  return Promise.resolve(res);
+  return res;
 };
