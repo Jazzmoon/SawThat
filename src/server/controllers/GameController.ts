@@ -600,9 +600,9 @@ export const movePlayer = async (gameID: string, movement_die: number) => {
     
   user.position = MathUtil.bound(0, 41, user.position + movement_die);
   
-  throw `test error ---------${MathUtil.bound(0, 41, user.position + movement_die)}---------`
-
   const save = await user.save();
+  
+  throw `test error ---------${MathUtil.bound(0, 41, user.position + movement_die)}---------`
 
   return save;
 };
