@@ -594,17 +594,13 @@ export const movePlayer = async (gameID: string, movement_die: number) => {
     .orFail()
     .exec();
 
-
   // Update the first player's movement
-  const worked = await User.findByIdAndUpdate(game.players[0], {
-    $inc: {
-      position: movement_die,
-    },
-  })
-    .orFail()
-    .exec();
-  
-  return worked;
+  let user = await User.findById(game.players[0]).orFail().exec();
+
+  user.position = MathUtil.bound(0, 41, user.position + movement_die);
+  const save = await user.save();
+
+  return save;
 };
 
 /**
