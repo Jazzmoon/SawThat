@@ -594,6 +594,8 @@ export const movePlayer = async (gameID: string, movement_die: number) => {
     .orFail()
     .exec();
 
+  throw "test error ------------------"
+
   // Update the first player's movement
   let user = await User.findById(game.players[0]).orFail().exec();
 
