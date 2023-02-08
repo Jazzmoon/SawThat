@@ -568,16 +568,18 @@ export const questionAnswer = async (
     console.log(`[GC] Ending Question Early: ${question_end}`);
   }
 
+  throw "test----------";
+
   // If this player was the last player required before timeout, kill the question
-  if (
-    (connections.turn.all_play === false &&
-      connections.turn.answered.length === 1) ||
-    connections.turn.answered.length === game.players.length
-  ) {
-    const question_end = await questionEnd(connections, data, context, true);
-    console.log(`[GC] Ending Question Early: ${question_end}`);
-  }
-  return correct;
+  // if (
+  //   (connections.turn.all_play === false &&
+  //     connections.turn.answered.length === 1) ||
+  //   connections.turn.answered.length === game.players.length
+  // ) {
+  //   const question_end = await questionEnd(connections, data, context, true);
+  //   console.log(`[GC] Ending Question Early: ${question_end}`);
+  // }
+  // return correct;
 };
 
 /**
@@ -635,48 +637,47 @@ export const questionEnd = async (
     .orFail()
     .exec();
 
-    throw "test----------"
-  // connections.host.conn.socket.send(
-  //   JSON.stringify({
-  //     type: early
-  //       ? WebsocketType.QuestionEndedAck
-  //       : WebsocketType.QuestionTimeOut,
-  //     requestId: data.requestId,
-  //     data: {
-  //       players: players
-  //         .map((p) => {
-  //           return {
-  //             username: p.username,
-  //             color: p.color,
-  //             position: p.position,
-  //           } as Player;
-  //         })
-  //         .sort((a, b) => a.position - b.position),
-  //     },
-  //   } as WebsocketResponse)
-  // );
-  // connections.clients.forEach((c) => {
-  //   c.conn.socket.send(
-  //     JSON.stringify({
-  //       type: early
-  //         ? WebsocketType.QuestionEndedAck
-  //         : WebsocketType.QuestionTimeOut,
-  //       requestId: data.requestId,
-  //       data: {
-  //         players: players
-  //           .map((p) => {
-  //             return {
-  //               username: p.username,
-  //               color: p.color,
-  //               position: p.position,
-  //             } as Player;
-  //           })
-  //           .sort((a, b) => a.position - b.position),
-  //       },
-  //     } as WebsocketResponse)
-  //   );
-  // });
-  // return true;
+  connections.host.conn.socket.send(
+    JSON.stringify({
+      type: early
+        ? WebsocketType.QuestionEndedAck
+        : WebsocketType.QuestionTimeOut,
+      requestId: data.requestId,
+      data: {
+        players: players
+          .map((p) => {
+            return {
+              username: p.username,
+              color: p.color,
+              position: p.position,
+            } as Player;
+          })
+          .sort((a, b) => a.position - b.position),
+      },
+    } as WebsocketResponse)
+  );
+  connections.clients.forEach((c) => {
+    c.conn.socket.send(
+      JSON.stringify({
+        type: early
+          ? WebsocketType.QuestionEndedAck
+          : WebsocketType.QuestionTimeOut,
+        requestId: data.requestId,
+        data: {
+          players: players
+            .map((p) => {
+              return {
+                username: p.username,
+                color: p.color,
+                position: p.position,
+              } as Player;
+            })
+            .sort((a, b) => a.position - b.position),
+        },
+      } as WebsocketResponse)
+    );
+  });
+  return true;
 };
 
 /**
