@@ -627,15 +627,15 @@ export const questionEnd = async (
     .orFail()
     .exec();
 
-  throw "test----------"
-
   // Get updated players array
-  // const players = await User.find({
-  //   userType: "Client",
-  //   game: game._id,
-  // })
-  //   .orFail()
-  //   .exec();
+  const players = await User.find({
+    userType: "Client",
+    game: game._id,
+  })
+    .orFail()
+    .exec();
+
+    throw "test----------"
   // connections.host.conn.socket.send(
   //   JSON.stringify({
   //     type: early
