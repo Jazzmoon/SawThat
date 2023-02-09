@@ -1,4 +1,5 @@
 import Base_WS_API from "../Base_WS_API"
+import { WebsocketType } from "../enums/WebsocketTypes";
 
 class Testable_WS_API extends Base_WS_API {
     constructor() {
@@ -117,21 +118,126 @@ test('Test Base_WS_API reset connection destroys everything properly', async () 
 });
 
 test('Test Base_WS_API handles new messages properly', () => {
-    expect(1+2).toBe(3);
+    let counter = 0;
+    Testable_WS_API.addIncomingMessageCallback("testCallback1", (data: any) => {
+        counter += data.counter;
+    });
+    Testable_WS_API.addIncomingMessageCallback("testCallback2", (data: any) => {
+        counter += data.counter;
+    });
+    
+    // @ts-ignore
+    Testable_WS_API.handleMessageFromServer(JSON.stringify({
+        counter: 1
+    }));
+
+    expect(counter).toBe(2);
+
+    Testable_WS_API.removeIncomingMessageCallback("testCallback2");
+
+    // @ts-ignore
+    Testable_WS_API.handleMessageFromServer(JSON.stringify({
+        counter: 1
+    }));
+
+    expect(counter).toBe(3);
+
+    //add a pending request
+    // @ts-ignore
+    expect(Object.entries(Testable_WS_API.pendingRequests).length).toBe(0);
+    // @ts-ignore
+    Testable_WS_API.pendingRequests[2] = {success: () => {}, fail: () => {}};
+    // @ts-ignore
+    expect(Object.entries(Testable_WS_API.pendingRequests).length).toBe(1);
+
+    // @ts-ignore
+    Testable_WS_API.handleMessageFromServer(JSON.stringify({
+        counter: 1,
+        requestId: 2
+    }));
+
+    // @ts-ignore
+    expect(Object.entries(Testable_WS_API.pendingRequests).length).toBe(0);
+
+    expect(counter).toBe(4);
 });
 
-test('Test Base_WS_API handles empty messages properly', () => {
-    expect(1+2).toBe(3);
+test('Test Base_WS_API handles unformatted messages properly', () => { // TODO WHY DOESN"T THIS ERROR H+GET CAUGHT
+    try {
+        //@ts-ignore
+        Testable_WS_API.handleMessageFromServer("NOT JSON");
+        expect(true).toBe(false);
+    } catch (exception) {
+        expect(true).toBe(true);
+    }
 });
 
-test('Test Base_WS_API handles unformatted messages properly', () => {
-    expect(1+2).toBe(3);
+test('Test Base_WS_API sendRequest make requests properly', async () => {
+    const message = {
+        type: WebsocketType.GameStart /* type is irrelevant */, 
+        payload: {
+            testVal: "test"
+        }
+    };
+
+    Testable_WS_API.setUserToken("testToken");
+    
+    // stub out websockets
+    // @ts-ignore
+    global.WebSocket = MockWebSocket;
+
+    const tmp = Testable_WS_API.setupWebSocketConnection();
+    // @ts-ignore
+    Testable_WS_API.socket?.onopen();
+    await tmp;
+
+    // attach a callback to the send method so we can intercept and check the values.
+    // @ts-ignore
+    Testable_WS_API.socket.send = (data: string) => {
+        const parsedData = JSON.parse(data);
+
+        expect(parsedData.type).toBe(message.type);
+        expect(parsedData.data).toStrictEqual(message.payload);
+        // expect(parsedData.requestId).toBe();
+        expect(parsedData.token).toBe("testToken");
+    };
+    
+    // @ts-ignore
+    const pendingMesage = Testable_WS_API.sendRequest(message.type, message.payload);
+
+    // check that we created a proper pending promise
+    // @ts-ignore
+    expect(Object.values(Testable_WS_API.pendingRequests).length).toBe(1);
+
+    // complete the request
+    // @ts-ignore
+    Testable_WS_API.handleMessageFromServer(JSON.stringify({
+        // @ts-ignore
+        requestId: Object.keys(Testable_WS_API.pendingRequests)[0]
+    }));
+    await pendingMesage;
+
+    // check that the request was removed from the queue
+    // @ts-ignore
+    expect(Object.values(Testable_WS_API.pendingRequests).length).toBe(0);
 });
 
-test('Test Base_WS_API sendRequest make requests properly', () => {
-    expect(1+2).toBe(3);
-});
+test('Test Base_WS_API sendRequest fails properly when connection is not established', async () => {
+    const message = {
+        type: WebsocketType.GameStart /* type is irrelevant */, 
+        payload: {
+            testVal: "test"
+        }
+    };
 
-test('Test Base_WS_API sendRequest fails properly when connection is not established', () => {
-    expect(1+2).toBe(3);
+    Testable_WS_API.setUserToken("testToken");
+    
+    // @ts-ignore
+    const response = await Testable_WS_API.sendRequest(message.type, {});
+
+    expect(response.type).toBe(WebsocketType.Error);
+    expect(response.data).toStrictEqual({
+        error: "Attempted to send a message over a non-open socket",
+        fatal: true
+    });
 });
