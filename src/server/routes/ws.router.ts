@@ -12,11 +12,7 @@ import {
   WebsocketRequest,
   WebsocketResponse,
 } from "../../shared/types/Websocket";
-import {
-  ErrorData,
-  GameJoinAckData,
-  NextPlayerData,
-} from "../../shared/apis/WebSocketAPIType";
+import { ErrorData, GameJoinAckData } from "../../shared/apis/WebSocketAPIType";
 
 import Game from "../models/Game";
 import User, { UserType } from "../models/User";
@@ -29,6 +25,7 @@ import {
   questionAnswer,
   handleConsequence,
   checkWinner,
+  playerTurnOrder,
 } from "../controllers/GameController";
 import { Context } from "../../shared/types/Context";
 import { Player } from "../../shared/types/Player";
@@ -211,13 +208,10 @@ async function handleDisconnect(conn: SocketStream, gameID: string) {
   // Check if close was host or clients
   if (connections[gameID].host.conn === conn) {
     // Get rankings
-    const ranking: Player[] = game!.players.map((p) => {
-      return {
-        username: p.username,
-        color: p.color,
-        position: p.position,
-      } as Player;
-    });
+    const ranking: Player[] = await playerTurnOrder(
+      { gameID: gameID } as Context,
+      2
+    );
     // If Host, disconnect all clients and send message
     connections[gameID].host.conn.socket.send(
       JSON.stringify({
@@ -423,25 +417,15 @@ async function gameStartRequest(
   context: Context
 ) {
   try {
-    const game = await Game.findOne({ game_code: context.gameID })
-      .populate<{ hostId: UserType }>("hostId")
-      .populate<{ players: UserType[] }>("players")
-      .orFail()
-      .exec();
-    const first_player = await startGame(context.gameID);
+    const res = await startGame(context);
     // Notify all players that the game has started and who the first player is
-    const player = game.players.find((u) => u.username === first_player);
     connections[context.gameID].host.conn.socket.send(
       JSON.stringify({
         type: WebsocketType.GameStartAck,
         requestId: data.requestId,
         data: {
-          player: {
-            username: player!.username,
-            color: player!.color,
-            position: player!.position,
-          },
-        } as NextPlayerData,
+          players: res,
+        } as GameJoinAckData,
       } as WebsocketResponse)
     );
     connections[context.gameID].clients.forEach((c) => {
@@ -450,12 +434,8 @@ async function gameStartRequest(
           type: WebsocketType.GameStartAck,
           requestId: data.requestId,
           data: {
-            player: {
-              username: player!.username,
-              color: player!.color,
-              position: player!.position,
-            },
-          } as NextPlayerData,
+            players: res,
+          } as GameJoinAckData,
         } as WebsocketResponse)
       );
     });
@@ -506,25 +486,15 @@ async function gameNextPlayerRequest(
   context: Context
 ) {
   try {
-    const game = await Game.findOne({ game_code: context.gameID })
-      .populate<{ hostId: UserType }>("hostId")
-      .populate<{ players: UserType[] }>("players")
-      .orFail()
-      .exec();
-    const res = await nextPlayer(context.gameID);
+    const res = await nextPlayer(context);
     // Notify all players that the game has started and who the next player is
-    const player = game.players.find((u) => u.username === res);
     connections[context.gameID].host.conn.socket.send(
       JSON.stringify({
         type: WebsocketType.NextPlayerAck,
         requestId: data.requestId,
         data: {
-          player: {
-            username: player!.username,
-            color: player!.color,
-            position: player!.position,
-          },
-        } as NextPlayerData,
+          players: res,
+        } as GameJoinAckData,
       } as WebsocketResponse)
     );
     connections[context.gameID].clients.forEach((c) => {
@@ -533,31 +503,21 @@ async function gameNextPlayerRequest(
           type: WebsocketType.NextPlayerAck,
           requestId: data.requestId,
           data: {
-            player: {
-              username: player!.username,
-              color: player!.color,
-              position: player!.position,
-            },
-          } as NextPlayerData,
+            players: res,
+          } as GameJoinAckData,
         } as WebsocketResponse)
       );
     });
     setTimeout(async () => {
       // Check if there is a winner
       try {
-        const winner = await checkWinner(context.gameID);
+        const winner = await checkWinner(context);
         if (winner === false) {
           // No winner, continue game
           await turn(connections[context.gameID], data, context);
         } else {
           // Winner
-          const ranking: Player[] = game!.players.map((p) => {
-            return {
-              username: p.username,
-              color: p.color,
-              position: p.position,
-            } as Player;
-          });
+          const ranking: Player[] = await playerTurnOrder(context, 2);
           // If Host, disconnect all clients and send message
           connections[context.gameID].host.conn.socket.send(
             JSON.stringify({
@@ -735,7 +695,14 @@ async function tryTurnAction(
     const res = await action();
     return res;
   } catch (err) {
-    sendError(conn, data, context, err, `[WS] Turn has failed while executing ${actionName}`, true);
+    sendError(
+      conn,
+      data,
+      context,
+      err,
+      `[WS] Turn has failed while executing ${actionName}`,
+      true
+    );
   }
 }
 
