@@ -63,26 +63,26 @@ onMounted(() => {
         }
         break;
       case WebsocketType.QuestionAck:
-        currentGameState.value = GameState.SHOWING_QUESTION;
         currentQuestionData = message.data;
+        currentGameState.value = GameState.SHOWING_QUESTION;
         break;
       case WebsocketType.QuestionTimeOut:
       case WebsocketType.QuestionAnswer:
       case WebsocketType.QuestionEndedAck:
-        currentGameState.value = GameState.RUNNING;
         completeGameStep(message);
+        currentGameState.value = GameState.RUNNING;
         break;
       case WebsocketType.ConsequenceAck:
         consequenceShown.value = true;
         consequenceData.value = message.data;
         break;
       case WebsocketType.ConsequenceEndedAck:
-        consequenceShown.value = false;
         completeGameStep(message);
+        consequenceShown.value = false;
         break;
       case WebsocketType.GameEndedAck:
-        currentGameState.value = GameState.ENDED;
         topPlayers.value = message.data.ranking;
+        currentGameState.value = GameState.ENDED;
         WS_API.resetConnection();
         break;
       case WebsocketType.GameJoinAck:
