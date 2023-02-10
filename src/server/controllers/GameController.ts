@@ -656,6 +656,7 @@ export const movePlayer = async (gameID: string, movement_die: number) => {
  * @param data - Information related to the request, such as request id.
  * @param context - The populated game instance to fetch information about the current game state.
  * @param early - Is this request ending the game before the timeout?
+ * @param question - Are we ending a question or consequence?
  * @returns This is a mutation function in which modifies the next game state and sends it to the players.
  */
 export const questionEnd = async (
