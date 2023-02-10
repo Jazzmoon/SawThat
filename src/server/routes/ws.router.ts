@@ -23,9 +23,9 @@ import {
   startGame,
   turn,
   questionAnswer,
-  handleConsequence,
   checkWinner,
   playerTurnOrder,
+  questionEnd,
 } from "../controllers/GameController";
 import { Context } from "../../shared/types/Context";
 import { Player } from "../../shared/types/Player";
@@ -312,7 +312,7 @@ async function gameSetupRequest(
               username: u.username,
               color: u.color,
               position: u.position,
-            };
+            } as Player;
           }),
         } as GameJoinAckData,
       } as WebsocketResponse)
@@ -377,7 +377,7 @@ async function gameJoinRequest(
               username: u.username,
               color: u.color,
               position: u.position,
-            };
+            } as Player;
           }),
         } as GameJoinAckData,
       } as WebsocketResponse)
@@ -393,7 +393,7 @@ async function gameJoinRequest(
                 username: u.username,
                 color: u.color,
                 position: u.position,
-              };
+              } as Player;
             }),
           } as GameJoinAckData,
         } as WebsocketResponse)
@@ -613,7 +613,7 @@ async function gameConsequenceEnded(
     throw "[WS] User is not an authorized Client.";
   }
   await tryTurnAction(conn, data, context, "Consequence ended", () =>
-    handleConsequence(connections[context.gameID], data, context, true)
+    questionEnd(connections[context.gameID], data, context, true, false)
   );
 }
 
