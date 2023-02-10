@@ -50,6 +50,7 @@ const generateGameID = async (): Promise<string> => {
   let gameID: string = "";
   for (let i = 0; i < 4; i++)
     gameID += characters.charAt(Math.floor(Math.random() * characters.length));
+  if (gameID === "0000") gameID = "0001"; // Testing ID
   console.log(`Starting GameID: ${gameID}`);
 
   // Check if Game object can be found by Mongoose using this id
