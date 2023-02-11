@@ -244,6 +244,7 @@ async function handleDisconnect(conn: SocketStream, gameID: string) {
         game: game!._id,
       });
     });
+    await game.delete();
     conn.end();
   } else {
     // If Client, just DC and alert everyone else
