@@ -211,7 +211,6 @@ export const createGame = async (
 export const playerTurnOrder = async (context: Context, method: 0 | 1 | 2) => {
   // Look-Up the game in the database
   let game = await Game.findOne({ game_code: context.gameID })
-    .populate<{ hostId: UserType }>("hostId")
     .populate<{ players: UserType[] }>("players")
     .orFail()
     .exec();
@@ -219,13 +218,12 @@ export const playerTurnOrder = async (context: Context, method: 0 | 1 | 2) => {
   // If rotate - initiate next turn logic
   if (method === 1) {
     // Shift the player list left
-    let current_player = game.players.shift();
-    game.players.push(current_player!);
+    game.players = game.players.concat(game.players.shift()!);
     await game.save();
   }
 
   // Convert the UserType[] to Player[]
-  let players = game.players.map((player) => {
+  const players = game.players.map((player) => {
     return {
       username: player.username,
       color: player.color,
@@ -233,12 +231,10 @@ export const playerTurnOrder = async (context: Context, method: 0 | 1 | 2) => {
     } as Player;
   });
 
-  if (method === 2) {
-    players = players.sort((a, b) => a.position - b.position);
-  }
-
   // Return players
-  return players;
+  return method === 2
+    ? players.sort((a, b) => a.position - b.position)
+    : players;
 };
 
 /**
