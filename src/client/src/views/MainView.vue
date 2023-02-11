@@ -75,7 +75,7 @@ const selfIndex = computed(() => {
   padding: 6px;
 }
 
-#players:first-child {
+.player:first-of-type {
   border-radius: 15px;
   border: 5px solid #003fa3;
 }

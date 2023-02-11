@@ -51,7 +51,7 @@ const props = defineProps<{
     margin-left: 12px;
 }
 
-#players:first-child {
+.player:first-of-type {
     border-radius: 15px;
     border: 5px solid #003fa3;
 }
