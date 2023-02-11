@@ -80,16 +80,10 @@ export type ConnectionEstablished = {
 
 /**
  * When a player connects to the websocket, send a player list to everyone to notify them.
+ * Used also for turn order.
  */
 export type GameJoinAckData = {
   players: Player[];
-};
-
-/**
- * When the game progresses to the next turn, the game node must know whose turn it is next.
- */
-export type NextPlayerData = {
-  player: Player;
 };
 
 /**

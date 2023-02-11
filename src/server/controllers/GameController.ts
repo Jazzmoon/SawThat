@@ -20,6 +20,7 @@ import Game from "../models/Game";
 import User, { UserType } from "../models/User";
 import {
   ConsequenceData,
+  GameJoinAckData,
   QuestionAnswerData,
   QuestionData,
 } from "../../shared/apis/WebSocketAPIType";
@@ -49,6 +50,7 @@ const generateGameID = async (): Promise<string> => {
   let gameID: string = "";
   for (let i = 0; i < 4; i++)
     gameID += characters.charAt(Math.floor(Math.random() * characters.length));
+  if (gameID === "0000") gameID = "0001"; // Testing ID
   console.log(`Starting GameID: ${gameID}`);
 
   // Check if Game object can be found by Mongoose using this id
@@ -201,16 +203,55 @@ export const createGame = async (
 };
 
 /**
+ * Returns the player list in the turn order.
+ * @param context - The context of the user and game the message are connected to.
+ * @param method - Indicates function operation method. 0 for game start, 1 for next player, 2 for game rankings.
+ * @returns A player list, sorted according to the method.
+ */
+export const playerTurnOrder = async (context: Context, method: 0 | 1 | 2) => {
+  // Look-Up the game in the database
+  let game = await Game.findOne({ game_code: context.gameID })
+    .populate<{ hostId: UserType }>("hostId")
+    .populate<{ players: UserType[] }>("players")
+    .orFail()
+    .exec();
+
+  // If rotate - initiate next turn logic
+  if (method === 1) {
+    // Shift the player list left
+    let current_player = game.players.shift();
+    game.players.push(current_player!);
+    await game.save();
+  }
+
+  // Convert the UserType[] to Player[]
+  let players = game.players.map((player) => {
+    return {
+      username: player.username,
+      color: player.color,
+      position: player.position,
+    } as Player;
+  });
+
+  if (method === 2) {
+    players = players.sort((a, b) => a.position - b.position);
+  }
+
+  // Return players
+  return players;
+};
+
+/**
  * Given a game id, prepare to start the game. To do so:
  * 1. Randomize the player array to determine turn order.
  * 2. Change the boolean in the game model to be True.
  * 3. Return the username of the first player in the turn order.
- * @param gameID - The Model Game ID within the database.
- * @return The username of the player first in the rotation.
+ * @param context - The context of the user who sent the message, and the game it is connected to.
+ * @return The the player order, with the first in the list being the player who has first turn.
  */
-export const startGame = async (gameID: string): Promise<string> => {
+export const startGame = async (context: Context): Promise<Player[]> => {
   // Look-Up the game in the database
-  let game = await Game.findOne({ game_code: gameID })
+  let game = await Game.findOne({ game_code: context.gameID })
     .populate<{ hostId: UserType }>("hostId")
     .populate<{ players: UserType[] }>("players")
     .orFail()
@@ -228,21 +269,20 @@ export const startGame = async (gameID: string): Promise<string> => {
   // Randomize the players array and save it
   game.players = MathUtil.shuffle(game!.players);
   game.started = true;
-  return game
-    .save()
-    .then(() => Promise.resolve(game!.players[0].username))
-    .catch((e) => Promise.reject(e));
+  await game.save();
+  // Return the player order, with the first in the list being the player who has first turn.
+  return await playerTurnOrder(context, 0);
 };
 
 /**
  * Given a game id, shift the player list left and return the next player
  * in the turn order.
- * @param gameID - The Model Game ID within the database.
- * @return The username of the player next in the rotation.
+ * @param context - The context of the user who sent the message, and the game it is connected to.
+ * @return The the player order, with the first in the list being the player who has first turn.
  */
-export const nextPlayer = async (gameID: string): Promise<string> => {
+export const nextPlayer = async (context: Context): Promise<Player[]> => {
   // Look-Up the game in the database
-  let game = await Game.findOne({ game_code: gameID })
+  let game = await Game.findOne({ game_code: context.gameID })
     .populate<{ hostId: UserType }>("hostId")
     .populate<{ players: UserType[] }>("players")
     .orFail()
@@ -259,13 +299,8 @@ export const nextPlayer = async (gameID: string): Promise<string> => {
   )
     throw "[GC] The players didn't populate";
 
-  // Verify that the game isn't already started
-  // Shift the player list left
-  let current_player = game.players.shift();
-  game.players.push(current_player!);
-  await game.save();
-
-  return game.players[0].username;
+  // Return the player order, with the first in the list being the player who has first turn.
+  return await playerTurnOrder(context, 1);
 };
 
 /**
@@ -487,12 +522,14 @@ export const turn = async (
       );
   }
   connections.turn.timeout = setTimeout(() => {
-    if (res_type === WebsocketType.ConsequenceAck) {
-      handleConsequence(connections, data, context, false);
-    } else {
-      questionEnd(connections, data, context, false);
-    }
-  }, Math.abs(Date.now() - res_data.timer_start + res_data.timer_length * 1000));
+    questionEnd(
+      connections,
+      data,
+      context,
+      false,
+      res_type === WebsocketType.QuestionAck
+    );
+  }, Math.abs(Date.now() - (res_data.timer_start + res_data.timer_length * 1000)));
   return connections.turn;
 };
 
@@ -564,7 +601,13 @@ export const questionAnswer = async (
       console.log(`[GC] Player moved: ${movement}`);
     }
     // If correct, kill the timeout and move player accordingly
-    const question_end = await questionEnd(connections, data, context, true);
+    const question_end = await questionEnd(
+      connections,
+      data,
+      context,
+      true,
+      true
+    );
     console.log(`[GC] Ending Question Early: ${question_end}`);
   }
 
@@ -574,7 +617,13 @@ export const questionAnswer = async (
       connections.turn.answered.length === 1) ||
     connections.turn.answered.length === game.players.length
   ) {
-    const question_end = await questionEnd(connections, data, context, true);
+    const question_end = await questionEnd(
+      connections,
+      data,
+      context,
+      true,
+      true
+    );
     console.log(`[GC] Ending Question Early: ${question_end}`);
   }
   return correct;
@@ -597,7 +646,7 @@ export const movePlayer = async (gameID: string, movement_die: number) => {
   // Update the first player's movement
   let user = await User.findById(game.players[0]).orFail().exec();
   user.position = MathUtil.bound(0, 41, user.position + movement_die);
-  
+
   const save = await user.save();
   return save;
 };
@@ -608,13 +657,15 @@ export const movePlayer = async (gameID: string, movement_die: number) => {
  * @param data - Information related to the request, such as request id.
  * @param context - The populated game instance to fetch information about the current game state.
  * @param early - Is this request ending the game before the timeout?
+ * @param question - Are we ending a question or consequence?
  * @returns This is a mutation function in which modifies the next game state and sends it to the players.
  */
 export const questionEnd = async (
   connections: Connection,
   data: WebsocketRequest,
   context: Context,
-  early: boolean
+  early: boolean,
+  question: boolean
 ): Promise<boolean> => {
   if (connections.turn === undefined) return false;
   if (connections.turn.timeout === undefined) return false;
@@ -637,9 +688,13 @@ export const questionEnd = async (
 
   connections.host.conn.socket.send(
     JSON.stringify({
-      type: early
-        ? WebsocketType.QuestionEndedAck
-        : WebsocketType.QuestionTimeOut,
+      type: question
+        ? early
+          ? WebsocketType.QuestionEndedAck
+          : WebsocketType.QuestionTimeOut
+        : early
+        ? WebsocketType.ConsequenceEndedAck
+        : WebsocketType.ConsequenceTimeOut,
       requestId: data.requestId,
       data: {
         players: players
@@ -657,9 +712,13 @@ export const questionEnd = async (
   connections.clients.forEach((c) => {
     c.conn.socket.send(
       JSON.stringify({
-        type: early
-          ? WebsocketType.QuestionEndedAck
-          : WebsocketType.QuestionTimeOut,
+        type: question
+          ? early
+            ? WebsocketType.QuestionEndedAck
+            : WebsocketType.QuestionTimeOut
+          : early
+          ? WebsocketType.ConsequenceEndedAck
+          : WebsocketType.ConsequenceTimeOut,
         requestId: data.requestId,
         data: {
           players: players
@@ -679,88 +738,13 @@ export const questionEnd = async (
 };
 
 /**
- * Handle consequence timeout or ending early.
- * @param connections - The websocket information of all players connected to the specific game.
- * @param game - The populated game instance to fetch information about the current game state.
- * @param data - Information related to the request, such as request id.
- * @param early - Is this request ending the game before the timeout?
- * @returns This is a mutation function in which modifies the next game state and sends it to the players.
- */
-export const handleConsequence = async (
-  connections: Connection,
-  data: WebsocketRequest,
-  context: Context,
-  early: boolean
-): Promise<boolean> => {
-  if (connections.turn === undefined) return false;
-  if (connections.turn.timeout === undefined) return false;
-  // Force the timeout to be undefined so no other requests go through
-  clearTimeout(connections.turn?.timeout!);
-  connections.turn = undefined;
-  const game = await Game.findOne({
-    game_code: context.gameID,
-  })
-    .populate<{ hostId: UserType }>("hostId")
-    .populate<{ players: UserType[] }>("players")
-    .orFail()
-    .exec();
-  // Get updated players array
-  const players = await User.find({
-    userType: "Client",
-    game: game._id,
-  })
-    .orFail()
-    .exec();
-  // Messages
-  connections.host.conn.socket.send(
-    JSON.stringify({
-      type: early
-        ? WebsocketType.ConsequenceTimeOut
-        : WebsocketType.ConsequenceEndedAck,
-      requestId: data.requestId,
-      data: {
-        players: players.map((p) => {
-          return {
-            username: p.username,
-            color: p.color,
-            position: p.position,
-          } as Player;
-        }),
-      },
-    } as WebsocketResponse)
-  );
-  connections.clients.forEach((c) => {
-    c.conn.socket.send(
-      JSON.stringify({
-        type: early
-          ? WebsocketType.ConsequenceTimeOut
-          : WebsocketType.ConsequenceEndedAck,
-        requestId: data.requestId,
-        data: {
-          players: players.map((p) => {
-            return {
-              username: p.username,
-              color: p.color,
-              position: p.position,
-            } as Player;
-          }),
-        },
-      } as WebsocketResponse)
-    );
-  });
-  return true;
-};
-
-/**
  * Check if any players are in the winner state.
- * @param gameID - The game code string for the game you want to check the winner of.
+ * @param gameID - The context of the user and game of origin.
  * @returns Whether there is a winning player in the game.
  */
-export const checkWinner = async (
-  gameID: string
-): Promise<string | boolean> => {
+export const checkWinner = async (context: Context): Promise<boolean> => {
   // Get the game
-  let game = await Game.findOne({ game_code: gameID })
+  const game = await Game.findOne({ game_code: context.gameID })
     .populate<{ hostId: UserType }>("hostId")
     .populate<{ players: UserType[] }>("players")
     .orFail()
@@ -778,13 +762,9 @@ export const checkWinner = async (
 
   // Check if any players report a position of 41 (Victory Space)
   const winners = game.players.filter((p) => p.position >= 41);
-  if (winners.length === 0) {
-    // A winner does not exist
-    return false;
-  } else if (winners.length === 1) {
-    // A winner was found, return their username
-    return winners[0].username;
+  if (0 === winners.length || winners.length === 1) {
+    return winners.length === 1; // true means winner. false means none.
   } else {
-    throw "[GC] An error state has been detected.";
+    throw "[GC] An winning error state has been detected.";
   }
 };
