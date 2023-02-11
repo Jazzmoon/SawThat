@@ -3,13 +3,13 @@
     <div id="root">
       <div>
         <img id="logo" :src="LogoSVG" />
-        <h2 id="title">Leaderboard</h2>
+        <h2 id="title">Turn Order</h2>
       </div>
       <div id="players">
         <div
           v-for="(player, index) in props.players"
           :key="player.username"
-          :class="['player', props.currentPlayerIndex === index ? 'currentTurn' : '']"
+          class="player"
         >
           <div
             class="colorIndicator"
@@ -75,7 +75,7 @@ const selfIndex = computed(() => {
   padding: 6px;
 }
 
-.player.currentTurn {
+.player:first {
   border-radius: 15px;
   border: 5px solid #003fa3;
 }

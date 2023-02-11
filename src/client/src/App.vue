@@ -79,21 +79,11 @@ onMounted(() => {
           currentGameState.value = GameState.NONE;
           WS_API.resetConnection();
           break;
+        // when the player list is updated
         case WebsocketType.GameJoinAck:
-          players.value = message.data.players;
-          break;
         case WebsocketType.PlayerDisconnectAck:
-          const index = players.value.findIndex(
-            (player) => player.username === message.data.username
-          );
-          if (index > -1) {
-            players.value.splice(index, 1);
-          }
-          break;
         case WebsocketType.NextPlayerAck:
-          currentPlayer.value = players.value.findIndex(
-            (player) => player.username === message.data.player.username
-          );
+          players.value = message.data.players;
           break;
       }
     }
