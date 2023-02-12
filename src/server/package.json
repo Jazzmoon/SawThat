@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "compile": "tsc -w & nodemon index.js",
+    "test": "jest --detectOpenHandles",
     "start": "node index.js"
   },
   "keywords": [],
