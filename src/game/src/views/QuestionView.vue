@@ -1,20 +1,24 @@
 <script setup lang="ts">
 import type { QuestionData } from "../../../shared/apis/WebSocketAPIType";
+import type { Player } from "../../../shared/types/Player";
 const props = defineProps<{
   data: QuestionData;
+  players: Player[];
+  currentPlayerIndex: number;
 }>();
 </script>
 
 <template>
   <main id="parent">
     <div id="gradient">
-      <p id="questionInfo">
-        {{
-          props.data.all_play
-            ? "All Play! Anyone"
-            : `My Play! Only (TODO: Player Name)`
-        }}
-        may answer to move {{ props.data.movement_die }} spaces!
+      <p class="questionInfo" v-if="props.data.all_play">
+        All Play; anyone may answer!
+        {{ props.players[currentPlayerIndex].username }} will move
+        {{ props.data.movement_die }} spaces if they answer correctly!
+      </p>
+      <p class="questionInfo" v-else>
+        My Play; only {{ props.players[currentPlayerIndex].username }} may
+        answer, moving {{ props.data.movement_die }} spaces if correct!
       </p>
       <p id="questionText">{{ props.data.question }}</p>
     </div>
@@ -39,11 +43,11 @@ const props = defineProps<{
   left: 24px;
   right: 24px;
   text-align: start;
-  font-size: 65px;
+  font-size: 64px;
 }
-#questionInfo {
-  text-align: center;
-  font-size: 65px;
+.questionInfo {
+  text-align: start;
+  font-size: 48px;
 }
 #gradient {
   background: linear-gradient(
