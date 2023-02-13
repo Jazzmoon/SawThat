@@ -45,9 +45,13 @@ const props = defineProps<{
   font-size: 64px;
 }
 .questionInfo {
+  vertical-align: bottom;
+  position: absolute;
+  bottom: 175px;
+  left: 24px;
+  right: 24px;
   text-align: start;
-  font-size: 48px;
-  margin: 24px;
+  font-size: 24px;
 }
 #gradient {
   background: linear-gradient(
