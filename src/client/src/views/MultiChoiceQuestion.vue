@@ -1,6 +1,6 @@
 <template>
   <main id="backgroundImage">
-    <p id="questiontext">{{props.data.question}}</p>
+    <p id="questionText">{{props.data.question}}</p>
     <div id="choices">
       <button class="btnBlue" @click="submit(0)">{{ props.data.options[0] }}</button>
       <button class="btnRed" @click="submit(1)">{{ props.data.options[1] }}</button>
@@ -33,7 +33,7 @@ async function submit(choice: number){
 </script>
 
 <style scoped>
-#questiontext {
+#questionText {
   margin-bottom: 24px;
 }
 #choices {
