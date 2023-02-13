@@ -10,7 +10,6 @@
       <QuestionView
         v-else-if="currentView == QuestionView.__name"
         :players="players"
-        :current-player-index="currentPlayer"
         :data="currentQuestionData"
       />
       <MainView

@@ -18,7 +18,9 @@
           <p class="playerName">
             {{
               `${player.username}${selfIndex === index ? " (You)" : ""}${
-                props.currentPlayerIndex === index ? " (Current Turn)" : ""
+                player.username === props.players[0].username
+                  ? " (Current Turn)"
+                  : ""
               }`
             }}
           </p>

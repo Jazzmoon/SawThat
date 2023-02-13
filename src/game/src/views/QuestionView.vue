@@ -4,7 +4,6 @@ import type { Player } from "../../../shared/types/Player";
 const props = defineProps<{
   data: QuestionData;
   players: Player[];
-  currentPlayerIndex: number;
 }>();
 </script>
 
@@ -13,12 +12,12 @@ const props = defineProps<{
     <div id="gradient">
       <p class="questionInfo" v-if="props.data.all_play">
         All Play; anyone may answer!
-        {{ props.players[currentPlayerIndex].username }} will move
+        {{ props.players[0].username }} will move
         {{ props.data.movement_die }} spaces if they answer correctly!
       </p>
       <p class="questionInfo" v-else>
-        My Play; only {{ props.players[currentPlayerIndex].username }} may
-        answer, moving {{ props.data.movement_die }} spaces if correct!
+        My Play; only {{ props.players[0].username }} may answer, moving
+        {{ props.data.movement_die }} spaces if correct!
       </p>
       <p id="questionText">{{ props.data.question }}</p>
     </div>
