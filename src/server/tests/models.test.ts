@@ -5,6 +5,7 @@
  */
 
 import mongoose from "mongoose";
+import { Color } from "../../shared/enums/Color";
 import Game from "../models/Game";
 import User, { UserType } from "../models/User";
 
@@ -13,7 +14,7 @@ const DATABASE_URL = `mongodb://localhost:27017`,
   DATABASE_PASS = `sawthatsecretpass`;
 
 // Constants and Variables
-const theme_pack = "disney";
+const theme_pack = "test";
 
 // Set-Up and Teardown
 beforeAll(async () => {
@@ -36,28 +37,31 @@ beforeAll(async () => {
       game: game._id,
       token: "Game-game0000-0000",
     }),
-    newUser1 = new User({
-      userType: "Client",
-      username: "user0000_1",
-      game: game._id,
-      token: "Client-user0000_1-0000",
-      color: "#FF0000",
-      position: 0,
-    }),
-    newUser2 = new User({
-      userType: "Client",
-      username: "user0000_2",
-      game: game._id,
-      token: "Client-user0000_2-0000",
-      color: "#FF0000",
-      position: 0,
-    });
-  const host = await newHost.save(),
-    user1 = await newUser1.save(),
-    user2 = await newUser2.save();
+    host = await newHost.save();
+  for (let i = 0; i < 2; i++) {
+    let color: Color = {
+        0: Color.RED,
+        1: Color.ORANGE,
+        2: Color.YELLOW,
+        3: Color.GREEN,
+        4: Color.BLUE,
+        5: Color.PURPLE,
+        6: Color.PINK,
+        7: Color.BROWN,
+      }[i]!,
+      newUser = new User({
+        userType: "Client",
+        username: `user0000_${i + 1}`,
+        game: game._id,
+        token: `Client-user0000_${i + 1}-0000`,
+        color: color,
+        position: 0,
+      }),
+      user = await newUser.save();
+    game.players = game.players.concat(user._id);
+  }
   // Link the game to the host
   game.hostId = host._id;
-  game.players = [user1._id, user2._id];
   game = await game.save();
   return;
 });
@@ -72,14 +76,11 @@ afterAll(async () => {
     username: "game0000",
     token: "Game-game0000-0000",
   }).exec();
-  await User.findOneAndDelete({
-    username: "user0000_1",
-    token: "Client-user0000_1-0000",
-  }).exec();
-  await User.findOneAndDelete({
-    username: "user0000_2",
-    token: "Client-user0000_2-0000",
-  }).exec();
+  for (let i = 0; i < 2; i++)
+    await User.findOneAndDelete({
+      username: `user0000_${i + 1}`,
+      token: `Client-user0000_${i + 1}-0000`,
+    }).exec();
   // Disconnect mongoose
   await mongoose.disconnect();
 });
