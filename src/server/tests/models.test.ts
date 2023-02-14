@@ -1,5 +1,5 @@
 /**
- * @file ModelTest.ts
+ * @file models.test.ts
  * @author Mark Hutchison
  * Tests the Game Logic and Mongoose interactions.
  */

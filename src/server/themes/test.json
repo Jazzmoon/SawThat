@@ -1,0 +1,107 @@
+{
+  "questions": {
+    "Take Three": [
+      {
+        "id": 1,
+        "question_type": "Multiple Choice",
+        "question": "What is the last name of the superhero family whose kids are named <_>, <_>, and <_>.",
+        "answer": "Parr",
+        "clue_list": ["Violet", "Dashiel", "Jack Jack"],
+        "fake_answers": [
+          "Peterson",
+          "Phillips",
+          "Parker",
+          "Perry",
+          "Powell",
+          "Patterson",
+          "Porter",
+          "Palmer",
+          "Peters",
+          "Price",
+          "Pierce",
+          "Payne"
+        ],
+        "media_type": "image",
+        "media_url": "https://d2j1wkp1bavyfs.cloudfront.net/wp-content/legacy/posts/82bd36d7-0027-4666-921c-f74928785e04.jpg?q=80"
+      }
+    ],
+    "Musical": [
+      {
+        "id": 2,
+        "question_type": "Multiple Choice",
+        "question": "What classic character muses that things are getting \"<_>\".",
+        "answer": "Alice",
+        "clue_list": ["Curiouser and curiouser"],
+        "fake_answers": [
+          "Anna",
+          "Ariel",
+          "Aurora",
+          "Belle",
+          "Cinderella",
+          "Dot",
+          "Elsa",
+          "Merida",
+          "Mulan",
+          "Snow White",
+          "Tiana"
+        ],
+        "media_type": null,
+        "media_url": null
+      }
+    ],
+    "Miscellaneous": [
+      {
+        "id": 3,
+        "question_type": "Multiple Choice",
+        "question": "Where does Disney's 101 Dalmatians take place?",
+        "answer": "England",
+        "clue_list": [],
+        "fake_answers": ["America", "France", "Germany", "Spain"],
+        "media_type": "image",
+        "media_url": "https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/A7985D9BF379DE15F82293F034CFC045A17B88449EE56DB9770BD7AE5AA69825/scale?width=1200&aspectRatio=1.78&format=jpeg"
+      }
+    ]
+  },
+  "consequences": [
+    {
+      "id": 1,
+      "consequenceType": 0,
+      "story": "Your super suit gets destroyed in an elevator mishap, but edna Mode agrees to design a new one for you!"
+    },
+    {
+      "id": 2,
+      "consequenceType": 0,
+      "story": "Thomas O'Malley leads you across the Paris rooftops and safely back home to Adelaide's house."
+    },
+    {
+      "id": 3,
+      "consequenceType": 1,
+      "story": "Don't believe in ghost stories? Time to start, 'cause you're in one!"
+    },
+    {
+      "id": 4,
+      "consequenceType": 1,
+      "story": "Queen Narissa has banished you from Andalasia into te streets of New York City."
+    },
+    {
+      "id": 5,
+      "consequenceType": 2,
+      "story": "This time you KNOW the sky is falling, but the citizens of Oakey Oaks won't believe you!"
+    },
+    {
+      "id": 6,
+      "consequenceType": 2,
+      "story": "The Beast agrees to let you take your father's place as his prisoner."
+    },
+    {
+      "id": 7,
+      "consequenceType": 3,
+      "story": "You realize that you still have a wish to ask of your Fairy God Mother!"
+    },
+    {
+      "id": 8,
+      "consequenceType": 3,
+      "story": "Look at that! Andy has elected a new favourite toy... and it's you!"
+    }
+  ]
+}
