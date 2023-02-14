@@ -109,4 +109,95 @@ test("Fetch Used Consequence", async () => {
   }
 });
 
-test("Validate answer", async () => {});
+describe("Validate Answer", () => {
+  test("Correct answers", () => {
+    expect(
+      validateAnswer(theme_pack, 1, "Take Three", "Parr", "Multiple Choice")
+    ).resolves.toBe(true);
+    expect(
+      validateAnswer(theme_pack, 2, "Musical", "Alice", "Multiple Choice")
+    ).resolves.toBe(true);
+    expect(
+      validateAnswer(
+        theme_pack,
+        3,
+        "Miscellaneous",
+        "England",
+        "Multiple Choice"
+      )
+    ).resolves.toBe(true);
+  });
+  test("Incorrect answers", () => {
+    for (let user_answer in [
+      "Peterson",
+      "Phillips",
+      "Parker",
+      "Perry",
+      "Powell",
+      "Patterson",
+      "Porter",
+      "Palmer",
+      "Peters",
+      "Price",
+      "Pierce",
+      "Payne",
+    ])
+      expect(
+        validateAnswer(
+          theme_pack,
+          1,
+          "Take Three",
+          user_answer,
+          "Multiple Choice"
+        )
+      ).resolves.toBe(false);
+
+    for (let user_answer in [
+      "Anna",
+      "Ariel",
+      "Aurora",
+      "Belle",
+      "Cinderella",
+      "Dot",
+      "Elsa",
+      "Merida",
+      "Mulan",
+      "Snow White",
+      "Tiana",
+    ])
+      expect(
+        validateAnswer(theme_pack, 2, "Musical", user_answer, "Multiple Choice")
+      ).resolves.toBe(false);
+
+    for (let user_answer in ["America", "France", "Germany", "Spain"])
+      expect(
+        validateAnswer(
+          theme_pack,
+          3,
+          "Miscellaneous",
+          user_answer,
+          "Multiple Choice"
+        )
+      ).resolves.toBe(false);
+  });
+  test("Invalid id-category combos", () => {
+    for (let i = 2; i < 10; i++)
+      expect(
+        validateAnswer(theme_pack, i, "Take Three", "Parr", "Multiple Choice")
+      ).rejects.toBe(`No question in Take Three has ID number ${i}.`);
+    for (let i = 3; i < 10; i++)
+      expect(
+        validateAnswer(theme_pack, i, "Musical", "Alice", "Multiple Choice")
+      ).rejects.toBe(`No question in Musical has ID number ${i}.`);
+    for (let i = 4; i < 10; i++)
+      expect(
+        validateAnswer(
+          theme_pack,
+          i,
+          "Miscellaneous",
+          "England",
+          "Multiple Choice"
+        )
+      ).rejects.toBe(`No question in Miscellaneous has ID number ${i}.`);
+  });
+});
