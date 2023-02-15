@@ -9,13 +9,10 @@ import { Server } from "mock-socket";
 import Game from "../models/Game";
 import User, { UserType } from "../models/User";
 
-import { ClientConn, Connections } from "../controllers/WebSocketController";
 import { playerTurnOrder } from "../controllers/GameController";
 
 import { Color } from "../../shared/enums/Color";
-import { WebsocketType } from "../../shared/enums/WebsocketTypes";
 import { Context } from "../../shared/types/Context";
-import { WebsocketRequest } from "../../shared/types/Websocket";
 import { Player } from "../../shared/types/Player";
 
 const DATABASE_URL = `mongodb://localhost:27017`,
@@ -199,7 +196,10 @@ describe("Test Player Turn Order", () => {
     // Increment the position without wait
     for (let i = 0; i < 10; i++) {
       // Increment the position using method 1
-      users = users.concat(users.shift()!);
+      let current = users.shift();
+      if (current) {
+        users.push(current);
+      } else throw new Error("Shift resulted in undefined");
       expect(playerTurnOrder(context, 1)).resolves.toEqual(
         users.map((u: UserType) => {
           return {
@@ -221,19 +221,15 @@ describe("Test Player Turn Order", () => {
     };
     const game = await Game.findOne({
       game_code: "0000",
-    }).exec();
-    if (!game) throw new Error("Game not found");
+    })
+      .orFail()
+      .exec();
     let users: (mongoose.Document<unknown, any, UserType> &
       UserType & {
         _id: mongoose.Types.ObjectId;
-      })[] = [];
-    for (let i = 0; i < 8; i++) {
-      const user = await User.findOne({
-        username: `user0000_${i + 1}`,
-        token: `Client-user0000_${i + 1}-0000`,
-      }).exec();
-      if (user) users.push(user);
-    }
+      })[] = await User.find({ game: game._id, userType: "Client" })
+      .orFail()
+      .exec();
     // Everyone starts at position 0
     expect(playerTurnOrder(context, 2)).resolves.toEqual(
       users.map((u: UserType) => {
@@ -246,9 +242,21 @@ describe("Test Player Turn Order", () => {
     );
     // Manually set the positions of the users
     for (let i = 0; i < 8; i++) {
-      users[i].position = i + 1;
-      await users[i].save();
+      await User.findOneAndUpdate(
+        {
+          username: `user0000_${i + 1}`,
+          token: `Client-user0000_${i + 1}-0000`,
+        },
+        {
+          $inc: {
+            position: i + 1,
+          },
+        }
+      ).exec();
     }
+    users = await User.find({ game: game._id, userType: "Client" })
+      .orFail()
+      .exec();
     // Check the rankings
     expect(playerTurnOrder(context, 2)).resolves.toEqual(
       users

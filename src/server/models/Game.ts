@@ -16,6 +16,7 @@ export type GameType = {
   used_questions: Array<number>;
   used_consequences: Array<number>;
   players: Array<mongoose.Types.ObjectId>;
+  turn: number;
   started: boolean;
 };
 
@@ -39,6 +40,7 @@ const GameSchema = new Schema({
       required: true,
     },
   ],
+  turn: { type: Number, require: true, default: 0 },
   started: { type: Boolean, require: true, default: false },
 });
 

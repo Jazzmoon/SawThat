@@ -212,7 +212,7 @@ export const playerTurnOrder = async (
   context: Context,
   method: 0 | 1 | 2
 ): Promise<Player[]> => {
-  // Look-Up the game in the database
+  // Populate the player list
   let game = await Game.findOne({ game_code: context.gameID })
     .populate<{ players: UserType[] }>("players")
     .orFail()
@@ -221,18 +221,21 @@ export const playerTurnOrder = async (
   // If rotate - initiate next turn logic
   if (method === 1) {
     // Shift the player list left
-    game.players = game.players.concat(game.players.shift()!);
+    game.turn = (game.turn + 1) % game.players.length;
     await game.save();
   }
 
   // Convert the UserType[] to Player[]
-  const players = game.players.map((player) => {
+  let players = game.players.map((player) => {
     return {
       username: player.username,
       color: player.color,
       position: player.position,
     } as Player;
   });
+
+  // Shift the player list to the current player
+  players = players.slice(game.turn).concat(players.slice(0, game.turn));
 
   // Return players
   return method === 2
@@ -435,7 +438,7 @@ export const turn = async (
   // Return Turn Modifier for Question Generation
   let turn_modifier: TurnModifier = TurnModifier.Normal,
     movement_die: number = MathUtil.randInt(1, 6);
-  switch (game.players[0].position) {
+  switch (game.players[game.turn].position) {
     case 9:
     case 19:
     case 28:
@@ -511,7 +514,7 @@ export const turn = async (
   } else {
     // My Play
     connections.clients
-      .find((c) => c.username === game.players[0].username)!
+      .find((c) => c.username === game.players[game.turn].username)!
       .conn.socket.send(
         JSON.stringify({
           type: res_type,
@@ -592,7 +595,7 @@ export const questionAnswer = async (
   if (correct) {
     console.log(`[GC] User ${context.username} was correct.`);
     // If it is the players turn. Move them.
-    if (game.players[0].username === context.username) {
+    if (game.players[game.turn].username === context.username) {
       const movement = await movePlayer(
         context.gameID,
         connections.turn.movement_die
@@ -642,8 +645,8 @@ export const movePlayer = async (gameID: string, movement_die: number) => {
     .orFail()
     .exec();
 
-  // Update the first player's movement
-  let user = await User.findById(game.players[0]).orFail().exec();
+  // Update the player's movement
+  let user = await User.findById(game.players[game.turn]).orFail().exec();
   user.position = MathUtil.bound(0, 41, user.position + movement_die);
 
   const save = await user.save();
