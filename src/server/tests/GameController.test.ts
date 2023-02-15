@@ -148,7 +148,10 @@ describe("Test Player Turn Order", () => {
       token: "Game-game0000-0000",
       gameID: "0000",
     };
-    let users: UserType[] = [];
+    let users: (mongoose.Document<unknown, any, UserType> &
+      UserType & {
+        _id: mongoose.Types.ObjectId;
+      })[] = [];
     for (let i = 0; i < 8; i++) {
       const user = await User.findOne({
         username: `user0000_${i + 1}`,
@@ -192,6 +195,20 @@ describe("Test Player Turn Order", () => {
           })
         );
       }
+    }
+    // Increment the position without wait
+    for (let i = 0; i < 10; i++) {
+      // Increment the position using method 1
+      users = users.concat(users.shift()!);
+      expect(playerTurnOrder(context, 1)).resolves.toEqual(
+        users.map((u: UserType) => {
+          return {
+            username: u.username,
+            color: u.color,
+            position: u.position,
+          } as Player;
+        })
+      );
     }
   });
   test("Test Rankings", async () => {
