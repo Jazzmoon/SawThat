@@ -4,20 +4,57 @@
  * Tests the quiz question and consequence generation functions.
  */
 import mongoose from "mongoose";
+import { SocketStream } from "@fastify/websocket";
+import { Server } from "mock-socket";
+
 import Game from "../models/Game";
 import User, { UserType } from "../models/User";
+
+import { ClientConn, Connections } from "../controllers/WebSocketController";
 import {} from "../controllers/GameController";
+
 import { Color } from "../../shared/enums/Color";
+import { WebsocketType } from "../../shared/enums/WebsocketTypes";
+import { Context } from "../../shared/types/Context";
+import { WebsocketRequest } from "../../shared/types/Websocket";
 
 const DATABASE_URL = `mongodb://localhost:27017`,
   DATABASE_USER = `sawthat`,
-  DATABASE_PASS = `sawthatsecretpass`;
+  DATABASE_PASS = `sawthatsecretpass`,
+  APP_PORT = 3000,
+  SERVER_URL = `ws://localhost:${APP_PORT}/ws`;
 
 // Constants and Variables
 const theme_pack = "test";
+let mockServer: Server,
+  connections: Connections = {};
+
+const deconstructToken = (token: string) => {
+  const [userType, username, gameID] = token.split("-");
+  return {
+    userType: userType,
+    username: username,
+    gameID: gameID,
+  };
+};
 
 // Set-Up and Teardown
 beforeAll(async () => {
+  // Create mock-server
+  mockServer = new Server(SERVER_URL);
+  mockServer.on("connection", (conn) => {
+    conn.on("message", (message) => {
+      const data: WebsocketRequest = JSON.parse(message.toString());
+      switch (data.type) {
+        case WebsocketType.GameSetup:
+          break;
+        case WebsocketType.GameJoin:
+          break;
+      }
+    });
+  });
+
+  // Establish connection to database
   await mongoose.connect(DATABASE_URL, {
     user: DATABASE_USER,
     pass: DATABASE_PASS,
@@ -86,3 +123,16 @@ afterAll(async () => {
 });
 
 // Run Tests on the mock data
+describe("Test Player Turn Order", () => {
+  test("Test starting order", async () => {
+    // Build context for the test
+    const context: Context = {
+      username: "game0000",
+      userType: "Game",
+      token: "Game-game0000-0000",
+      gameID: "0000",
+    };
+  });
+  test("Test Turn Order Incrementally", () => {});
+  test("Test Rankings", () => {});
+});

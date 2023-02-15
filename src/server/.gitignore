@@ -142,4 +142,7 @@ dist
 .svelte-kit
 
 # Prevent JS files from copying since they're built
-*.js
+controllers/*.js
+models/*.js
+tests/*.js
+index.js
