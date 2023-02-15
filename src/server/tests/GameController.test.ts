@@ -4,19 +4,19 @@
  * Tests the quiz question and consequence generation functions.
  */
 import mongoose from "mongoose";
-import { SocketStream } from "@fastify/websocket";
 import { Server } from "mock-socket";
 
 import Game from "../models/Game";
 import User, { UserType } from "../models/User";
 
 import { ClientConn, Connections } from "../controllers/WebSocketController";
-import {} from "../controllers/GameController";
+import { playerTurnOrder } from "../controllers/GameController";
 
 import { Color } from "../../shared/enums/Color";
 import { WebsocketType } from "../../shared/enums/WebsocketTypes";
 import { Context } from "../../shared/types/Context";
 import { WebsocketRequest } from "../../shared/types/Websocket";
+import { Player } from "../../shared/types/Player";
 
 const DATABASE_URL = `mongodb://localhost:27017`,
   DATABASE_USER = `sawthat`,
@@ -26,8 +26,7 @@ const DATABASE_URL = `mongodb://localhost:27017`,
 
 // Constants and Variables
 const theme_pack = "test";
-let mockServer: Server,
-  connections: Connections = {};
+let mockServer: Server;
 
 const deconstructToken = (token: string) => {
   const [userType, username, gameID] = token.split("-");
@@ -42,18 +41,6 @@ const deconstructToken = (token: string) => {
 beforeAll(async () => {
   // Create mock-server
   mockServer = new Server(SERVER_URL);
-  mockServer.on("connection", (conn) => {
-    conn.on("message", (message) => {
-      const data: WebsocketRequest = JSON.parse(message.toString());
-      switch (data.type) {
-        case WebsocketType.GameSetup:
-          break;
-        case WebsocketType.GameJoin:
-          break;
-      }
-    });
-  });
-
   // Establish connection to database
   await mongoose.connect(DATABASE_URL, {
     user: DATABASE_USER,
@@ -132,7 +119,148 @@ describe("Test Player Turn Order", () => {
       token: "Game-game0000-0000",
       gameID: "0000",
     };
+    let users: UserType[] = [];
+    for (let i = 0; i < 8; i++) {
+      const user = await User.findOne({
+        username: `user0000_${i + 1}`,
+        token: `Client-user0000_${i + 1}-0000`,
+      }).exec();
+      if (user) users.push(user);
+    }
+    // This order will never change
+    for (let i = 0; i < 100; i++) {
+      let pto = await playerTurnOrder(context, 0);
+      expect(pto).toEqual(
+        users.map((u: UserType) => {
+          return {
+            username: u.username,
+            color: u.color,
+            position: u.position,
+          } as Player;
+        })
+      );
+    }
   });
-  test("Test Turn Order Incrementally", () => {});
-  test("Test Rankings", () => {});
+  test("Test Turn Order Incrementally", async () => {
+    // Build context for the test
+    const context: Context = {
+      username: "game0000",
+      userType: "Game",
+      token: "Game-game0000-0000",
+      gameID: "0000",
+    };
+    let users: UserType[] = [];
+    for (let i = 0; i < 8; i++) {
+      const user = await User.findOne({
+        username: `user0000_${i + 1}`,
+        token: `Client-user0000_${i + 1}-0000`,
+      }).exec();
+      if (user) users.push(user);
+    }
+    // This order will never change
+    for (let i = 0; i < 100; i++) {
+      let pto = await playerTurnOrder(context, 0);
+      expect(pto).toEqual(
+        users.map((u: UserType) => {
+          return {
+            username: u.username,
+            color: u.color,
+            position: u.position,
+          } as Player;
+        })
+      );
+    }
+    // Increment the position using method 1
+    users = users.concat(users.shift()!);
+    let pto = await playerTurnOrder(context, 1);
+    expect(pto).toEqual(
+      users.map((u: UserType) => {
+        return {
+          username: u.username,
+          color: u.color,
+          position: u.position,
+        } as Player;
+      })
+    );
+    for (let i = 0; i < 100; i++) {
+      let pto = await playerTurnOrder(context, 0);
+      expect(pto).toEqual(
+        users.map((u: UserType) => {
+          return {
+            username: u.username,
+            color: u.color,
+            position: u.position,
+          } as Player;
+        })
+      );
+    }
+    // Increment the position using method 1 repeatedly
+    for (let i = 0; i < 100; i++) {
+      // Increment the position using method 1
+      users = users.concat(users.shift()!);
+      let pto = await playerTurnOrder(context, 1);
+      expect(pto).toEqual(
+        users.map((u: UserType) => {
+          return {
+            username: u.username,
+            color: u.color,
+            position: u.position,
+          } as Player;
+        })
+      );
+    }
+  });
+  test("Test Rankings", async () => {
+    // Build context for the test
+    const context: Context = {
+      username: "game0000",
+      userType: "Game",
+      token: "Game-game0000-0000",
+      gameID: "0000",
+    };
+    const game = await Game.findOne({
+      game_code: "0000",
+    }).exec();
+    if (!game) throw new Error("Game not found");
+    let users: (mongoose.Document<unknown, any, UserType> &
+      UserType & {
+        _id: mongoose.Types.ObjectId;
+      })[] = [];
+    for (let i = 0; i < 8; i++) {
+      const user = await User.findOne({
+        username: `user0000_${i + 1}`,
+        token: `Client-user0000_${i + 1}-0000`,
+      }).exec();
+      if (user) users.push(user);
+    }
+    // Everyone starts at position 0
+    let rankings = await playerTurnOrder(context, 2);
+    expect(rankings).toEqual(
+      users.map((u: UserType) => {
+        return {
+          username: u.username,
+          color: u.color,
+          position: u.position,
+        } as Player;
+      })
+    );
+    // Manually set the positions of the users
+    for (let i = 0; i < 8; i++) {
+      users[i].position = i + 1;
+      await users[i].save();
+    }
+    // Check the rankings
+    rankings = await playerTurnOrder(context, 2);
+    expect(rankings).toEqual(
+      users
+        .map((u: UserType) => {
+          return {
+            username: u.username,
+            color: u.color,
+            position: u.position,
+          } as Player;
+        })
+        .sort((a: Player, b: Player) => a.position - b.position)
+    );
+  });
 });

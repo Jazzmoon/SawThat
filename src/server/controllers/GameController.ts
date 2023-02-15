@@ -208,7 +208,10 @@ export const createGame = async (
  * @param method - Indicates function operation method. 0 for game start, 1 for next player, 2 for game rankings.
  * @returns A player list, sorted according to the method.
  */
-export const playerTurnOrder = async (context: Context, method: 0 | 1 | 2) => {
+export const playerTurnOrder = async (
+  context: Context,
+  method: 0 | 1 | 2
+): Promise<Player[]> => {
   // Look-Up the game in the database
   let game = await Game.findOne({ game_code: context.gameID })
     .populate<{ players: UserType[] }>("players")
