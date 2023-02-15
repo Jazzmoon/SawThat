@@ -129,8 +129,7 @@ describe("Test Player Turn Order", () => {
     }
     // This order will never change
     for (let i = 0; i < 100; i++) {
-      let pto = await playerTurnOrder(context, 0);
-      expect(pto).toEqual(
+      expect(playerTurnOrder(context, 0)).resolves.toEqual(
         users.map((u: UserType) => {
           return {
             username: u.username,
@@ -159,32 +158,7 @@ describe("Test Player Turn Order", () => {
     }
     // This order will never change
     for (let i = 0; i < 100; i++) {
-      let pto = await playerTurnOrder(context, 0);
-      expect(pto).toEqual(
-        users.map((u: UserType) => {
-          return {
-            username: u.username,
-            color: u.color,
-            position: u.position,
-          } as Player;
-        })
-      );
-    }
-    // Increment the position using method 1
-    users = users.concat(users.shift()!);
-    let pto = await playerTurnOrder(context, 1);
-    expect(pto).toEqual(
-      users.map((u: UserType) => {
-        return {
-          username: u.username,
-          color: u.color,
-          position: u.position,
-        } as Player;
-      })
-    );
-    for (let i = 0; i < 100; i++) {
-      let pto = await playerTurnOrder(context, 0);
-      expect(pto).toEqual(
+      expect(playerTurnOrder(context, 0)).resolves.toEqual(
         users.map((u: UserType) => {
           return {
             username: u.username,
@@ -198,8 +172,7 @@ describe("Test Player Turn Order", () => {
     for (let i = 0; i < 100; i++) {
       // Increment the position using method 1
       users = users.concat(users.shift()!);
-      let pto = await playerTurnOrder(context, 1);
-      expect(pto).toEqual(
+      expect(playerTurnOrder(context, 1)).resolves.toEqual(
         users.map((u: UserType) => {
           return {
             username: u.username,
@@ -208,6 +181,17 @@ describe("Test Player Turn Order", () => {
           } as Player;
         })
       );
+      for (let i = 0; i < 10; i++) {
+        expect(playerTurnOrder(context, 0)).resolves.toEqual(
+          users.map((u: UserType) => {
+            return {
+              username: u.username,
+              color: u.color,
+              position: u.position,
+            } as Player;
+          })
+        );
+      }
     }
   });
   test("Test Rankings", async () => {
@@ -234,8 +218,7 @@ describe("Test Player Turn Order", () => {
       if (user) users.push(user);
     }
     // Everyone starts at position 0
-    let rankings = await playerTurnOrder(context, 2);
-    expect(rankings).toEqual(
+    expect(playerTurnOrder(context, 2)).resolves.toEqual(
       users.map((u: UserType) => {
         return {
           username: u.username,
@@ -250,8 +233,7 @@ describe("Test Player Turn Order", () => {
       await users[i].save();
     }
     // Check the rankings
-    rankings = await playerTurnOrder(context, 2);
-    expect(rankings).toEqual(
+    expect(playerTurnOrder(context, 2)).resolves.toEqual(
       users
         .map((u: UserType) => {
           return {
