@@ -1,10 +1,10 @@
 /**
- * @file ws.router.ts
+ * @file game.router.ts
  * @author Mark Hutchison
  * Router dedicated to handling game node interactions.
  */
 import { FastifyInstance, FastifyPluginCallback } from "fastify";
-import { createGame } from "../controllers/GameController";
+import { createGame, getThemePacksAPI } from "../controllers/GameController";
 
 /**
  * The handling function for the game node router.
@@ -18,6 +18,26 @@ const GameRouter: FastifyPluginCallback = async (
   opts,
   done
 ) => {
+  fastify.route({
+    method: "GET",
+    url: "/themes",
+    schema: {
+      body: {},
+      response: {
+        200: {
+          type: "array",
+        },
+        400: {
+          type: "object",
+          properties: {
+            error: { type: "string" },
+            message: { type: "string" },
+          },
+        },
+      },
+    },
+    handler: getThemePacksAPI,
+  });
   fastify.route({
     method: "POST",
     url: "/create",

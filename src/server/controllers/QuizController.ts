@@ -5,7 +5,7 @@
  * This module handles the interaction between the Themes module
  * and the remainder of the system.
  */
-import { readFile } from "fs/promises";
+import { readFile, readdir } from "fs/promises";
 import { resolve } from "path";
 
 import { Consequence } from "../../shared/types/Consequence";
@@ -197,6 +197,25 @@ export const formatConsequence = async (
       let consequence = MathUtil.choice(consequences, 1) as Consequence;
 
       return Promise.resolve(consequence);
+    })
+    .catch((err) => {
+      return Promise.reject(err);
+    });
+};
+
+export const getThemePacks = async (): Promise<string[]> => {
+  const theme_path: string = resolve(__dirname, "..", "themes");
+  return readdir(theme_path)
+    .then((files) => {
+      return Promise.resolve(
+        files
+          .filter(
+            (file) =>
+              file.includes(".json") &&
+              (!file.includes("test") || file.includes("test"))
+          )
+          .map((file) => file.replace(".json", ""))
+      );
     })
     .catch((err) => {
       return Promise.reject(err);

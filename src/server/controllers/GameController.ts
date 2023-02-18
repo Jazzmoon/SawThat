@@ -13,6 +13,7 @@ import { generateJWT } from "./AuthController";
 import {
   formatConsequence,
   formatQuestion,
+  getThemePacks,
   validateAnswer,
 } from "./QuizController";
 
@@ -71,6 +72,26 @@ const generateGameID = async (): Promise<string> => {
     if (err instanceof Error) throw err.message;
     throw err;
   }
+};
+
+export const getThemePacksAPI = async (
+  req: FastifyRequest,
+  res: FastifyReply
+) => {
+  try {
+    const themePacks = await getThemePacks();
+    res.code(200).type("application/json").send(themePacks);
+  } catch (err) {
+    res
+      .code(400)
+      .type("application/json")
+      .send(
+        err instanceof Error
+          ? { error: err, message: `[GC] Get Theme Packs: ${err.message}` }
+          : { error: err, message: "[GC] Get Theme Packs: Unknown Error Type" }
+      );
+  }
+  return res;
 };
 
 /**
