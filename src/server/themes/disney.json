@@ -23,9 +23,154 @@
         ],
         "media_type": "image",
         "media_url": "https://d2j1wkp1bavyfs.cloudfront.net/wp-content/legacy/posts/82bd36d7-0027-4666-921c-f74928785e04.jpg?q=80"
+      },
+      {
+        "id": 2,
+        "question_type": "Multiple Choice",
+        "question": "What is the name of the toy in Toy Story with the following traits? <_>, <_>, and <_>.",
+        "answer": "Woody",
+        "clue_list": [
+          "He is Andy's favorite toy",
+          "He has a pull-string on his back",
+          "He is voiced by Tom Hanks",
+          "Their is a snake in his boot",
+          "He appears in all four Toy Story movies",
+          "He is a cowboy"
+        ],
+        "fake_answers": [
+          "Buzz Lightyear",
+          "Slinky Dog",
+          "Mr. Potato Head",
+          "Rex",
+          "Bo Peep",
+          "Hamm",
+          "Sarge",
+          "Slinky Dog",
+          "Mr. Pricklepants",
+          "Bullseye",
+          "Jessie",
+          "Ranger Doug",
+          "Barbie",
+          "Ken",
+          "Mr. Spell",
+          "Chatter Telephone",
+          "Slinky Dog"
+        ],
+        "media_type": "image",
+        "media_url": "https://static.wikia.nocookie.net/pixar/images/5/55/58_Toys.PNG/revision/latest?cb=20181103222318"
+      },
+      {
+        "id": 3,
+        "question_type": "Multiple Choice",
+        "question": "Who in Monster's Inc. <_>, <_>, and <_>?",
+        "answer": "Sully",
+        "clue_list": [
+          "is afraid of children at first",
+          "has blue fur",
+          "is the top scarer at Monsters, Inc.",
+          "is voiced by John Goodman",
+          "is best friends with Mike Wazowski"
+        ],
+        "media_type": "image",
+        "media_url": "https://i.pinimg.com/736x/b7/b3/b0/b7b3b03715be30c158a66c23f1c3a276--homecoming-decorations-moodboard.jpg"
+      },
+      {
+        "id": 4,
+        "question_type": "Multiple Choice",
+        "question": "What is the clan name from Disney's Brave with <_>, <_>, and <_>?",
+        "answer": "Dunbroch",
+        "clue_list": ["Merida", "Queen Elinor", "King Fergus"],
+        "fake_answers": [
+          "Edinburgh",
+          "Eilean Donan",
+          "Blarney",
+          "Dunluce",
+          "Neuschwanstein",
+          "Balmoral",
+          "Bran",
+          "Hohenzollern",
+          "Windsor",
+          "Warwick"
+        ],
+        "media_type": "image",
+        "media_url": "https://static.wikia.nocookie.net/disney/images/3/31/Merida_stands_up_for_herself.jpg/revision/latest?cb=20120621220412"
+      },
+      {
+        "id": 5,
+        "question_type": "Multiple Choice",
+        "question": "In Finding Nemo, who <_>, <_>, and <_>?",
+        "answer": "Nemo",
+        "clue_list": [
+          "has a small fin",
+          "hase a dad named Marlin",
+          "gets lost",
+          "is voiced by Alexander Gould",
+          "is a clownfish"
+        ],
+        "media_type": "image",
+        "media_url": "https://i.pinimg.com/originals/85/d5/04/85d5048419fa3af1fadaf073198301c6.jpg"
+      },
+      {
+        "id": 6,
+        "question_type": "Multiple Choice",
+        "question": "In the Good Dinosaur, what is the name of the dinosaur who <_>, <_>, and <_>?",
+        "answer": "Arlo",
+        "clue_list": [
+          "is a young Apatosaurus",
+          "is voiced by Raymond Ochoa",
+          "is afraid of water",
+          "is best friends with Spot"
+        ],
+        "fake_answers": [
+          "Spot",
+          "Butch",
+          "Duke",
+          "Buck",
+          "Arno",
+          "Ariel",
+          "Connor",
+          "Dakota"
+        ],
+        "media_type": "image",
+        "media_url": "https://www.gannett-cdn.com/-mm-/d2791cc33862a5092dfe7fe0fbbee8ae43937cb8/c=651-0-3655-1697/local/-/media/2015/11/15/USATODAY/USATODAY/635832148141270323-family-silo-exc.jpg"
+      },
+      {
+        "id": 7,
+        "question_type": "Multiple Choice",
+        "question": "What is the name of the robot in Wall-E who <_>, <_>, and <_>?",
+        "answer": "Eve",
+        "clue_list": [
+          "is voiced by Elissa Knight",
+          "is a love interest for Wall-E",
+          "has the full name Extraterrestrial Vegetation Evaluator"
+        ],
+        "fake_answers": ["M-O", "Axiom", "ExVee", "Ellie", "Vanessa"],
+        "media_type": "image",
+        "media_url": "https://miro.medium.com/max/1024/1*Ms4DlzupS1ul8j8fafsa3g.jpeg"
       }
     ],
     "Musical": [
+      {
+        "id": 1,
+        "question_type": "Multiple Choice",
+        "question": "In The Little Mermaid, which character sings <_> and <_>?",
+        "answer": "Ariel",
+        "clue_list": ["Under the Sea", "Kiss the Girl"],
+        "fake_answers": [
+          "Belle",
+          "Cinderella",
+          "Jasmine",
+          "Mulan",
+          "Pocahontas",
+          "Rapunzel",
+          "Snow White",
+          "Tiana",
+          "Moana",
+          "Elsa"
+        ],
+        "media_type": null,
+        "media_url": null
+      },
       {
         "id": 2,
         "question_type": "Multiple Choice",
@@ -47,9 +192,94 @@
         ],
         "media_type": null,
         "media_url": null
+      },
+      {
+        "id": 3,
+        "question_type": "Multiple Choice",
+        "question": "In Frozen, which character has the lines \"<_>\", \"<_>\", and \"<_>\"?",
+        "answer": "Elsa",
+        "clue_list": [
+          "You Can't Marry A Man You Just Met",
+          "We're Never Closing Them Again",
+          "Let It Go",
+          "Love Will Thaw",
+          "The Cold Never Bothered Me Anyway"
+        ],
+        "fake_answers": [
+          "Anna",
+          "Kristoff",
+          "Hans",
+          "Olaf",
+          "Sven",
+          "Marshmallow",
+          "Grand Pabbie",
+          "King Agnarr",
+          "Queen Iduna",
+          "Yelana",
+          "Duke of Weselton"
+        ],
+        "media_type": null,
+        "media_url": null
+      },
+      {
+        "id": 4,
+        "question_type": "Multiple Choice",
+        "question": "In Aladdin, which character sings the songs <_> and <_>?",
+        "answer": "Genie",
+        "clue_list": ["Never had a friend like me", "Prince Ali"],
+        "fake_answers": [
+          "Jasmine",
+          "Aladdin",
+          "Abu",
+          "Jafar",
+          "Iago",
+          "Sultan",
+          "Rajah",
+          "Carpet",
+          "Cassim",
+          "Sadira"
+        ],
+        "media_type": null,
+        "media_url": null
       }
     ],
     "Miscellaneous": [
+      {
+        "id": 1,
+        "question_type": "Multiple Choice",
+        "question": "In Toy Story, what is the name of the kid who owns <_> and <_>?",
+        "answer": "Andy",
+        "clue_list": [
+          "Woody",
+          "Buzz",
+          "Jessie",
+          "Mr. Potato Head",
+          "Slinky Dog",
+          "Rex",
+          "Hamm"
+        ],
+        "fake_answers": ["Allen", "Aiden", "Bobby", "Brett", "Tim", "Tom"],
+        "media_type": null,
+        "media_url": null
+      },
+      {
+        "id": 2,
+        "question_type": "Multiple Choice",
+        "question": "In Up, what is the name of the dog who helps Carl and Russell?",
+        "answer": "Dug",
+        "clue_list": [],
+        "fake_answers": [
+          "Spot",
+          "Rover",
+          "Fido",
+          "Max",
+          "Buddy",
+          "Spike",
+          "Don"
+        ],
+        "media_type": "image",
+        "media_url": "https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/A7985D9BF379DE15F82293F034CFC045A17B88449EE56DB9770BD7AE5AA69825/scale?width=1200&aspectRatio=1.78&format=jpeg"
+      },
       {
         "id": 3,
         "question_type": "Multiple Choice",
