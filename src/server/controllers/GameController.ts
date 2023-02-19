@@ -69,7 +69,9 @@ const generateGameID = async (): Promise<string> => {
     }
     return gameID;
   } catch (err) {
-    if (err instanceof Error) throw err.message;
+    if (err instanceof Error) {
+      throw err.message;
+    }
     throw err;
   }
 };
@@ -280,15 +282,21 @@ export const startGame = async (context: Context): Promise<Player[]> => {
     .orFail()
     .exec();
   // Perform Error Checking
-  if (!game) throw "[GC] There is no game with this game id.";
-  if (game!.started === true) throw "[GC] The game has already started.";
+  if (!game) {
+    throw "[GC] There is no game with this game id.";
+  }
+  if (game!.started === true) {
+    throw "[GC] The game has already started.";
+  }
   if (
     game!.players[0] instanceof mongoose.Types.ObjectId ||
     game!.players[0] === null
-  )
+  ) {
     throw "[GC] The players didn't populate";
-  if (game.players.length < 2)
+  }
+  if (game.players.length < 2) {
     throw `[GC] The game doesn't have enough players to start yet. ${game.players.length}/2 connected.`;
+  }
   // Randomize the players array and save it
   game.players = MathUtil.shuffle(game!.players);
   game.started = true;
@@ -312,15 +320,21 @@ export const nextPlayer = async (context: Context): Promise<Player[]> => {
     .exec();
 
   // Perform error checks.
-  if (!game) throw "[GC] There is no game with this game id.";
-  if (!game!.started) throw "[GC] The game has not yet started.";
-  if (game.players.length < 2)
+  if (!game) {
+    throw "[GC] There is no game with this game id.";
+  }
+  if (game.started === false) {
+    throw "[GC] The game has not yet started.";
+  }
+  if (game.players.length < 2) {
     throw "[GC] There is not enough players to perform this task.";
+  }
   if (
     game!.players[0] instanceof mongoose.Types.ObjectId ||
     game!.players[0] === null
-  )
+  ) {
     throw "[GC] The players didn't populate";
+  }
 
   // Return the player order, with the first in the list being the player who has first turn.
   return await playerTurnOrder(context, 1);
@@ -418,8 +432,14 @@ export const generateQuestion = async (
         options: question.options,
         media_type: question.media_type,
         media_url: question.media_url,
-        all_play: 0 <= challenge_die && challenge_die >= 2,
-        movement_die: movement_die,
+        all_play:
+          challenge_die === QuestionCategory.TakeThreeAllPlay ||
+          challenge_die === QuestionCategory.MusicalAllPlay ||
+          challenge_die === QuestionCategory.MiscellaneousAllPlay,
+        movement_die:
+          turn_modifier === TurnModifier.DoubleFeature
+            ? movement_die * 2
+            : movement_die,
         challenge_die: challenge_die,
         timer_length: 15,
       };
@@ -774,14 +794,18 @@ export const checkWinner = async (context: Context): Promise<boolean> => {
     .exec();
 
   // Perform error checks.
-  if (game.started === false) throw "[GC] The game has not yet started.";
-  if (game.players.length < 2)
+  if (game.started === false) {
+    throw "[GC] The game has not yet started.";
+  }
+  if (game.players.length < 2) {
     throw "[GC] There is not enough players to perform this task.";
+  }
   if (
     game!.players[0] instanceof mongoose.Types.ObjectId ||
     game!.players[0] === null
-  )
+  ) {
     throw "[GC] The players didn't populate";
+  }
 
   // Check if any players report a position of 41 (Victory Space)
   const winners = game.players.filter((p) => p.position >= 41);
