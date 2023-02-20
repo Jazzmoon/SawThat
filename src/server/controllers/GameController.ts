@@ -249,7 +249,7 @@ export const playerTurnOrder = async (
   }
 
   // Convert the UserType[] to Player[]
-  let players = game.players.map((player) => {
+  let players = [...game.players].map((player) => {
     return {
       username: player.username,
       color: player.color,

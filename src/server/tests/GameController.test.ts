@@ -11,7 +11,6 @@ import User, { UserType } from "../models/User";
 import {
   checkWinner,
   generateQuestion,
-  nextPlayer,
   playerTurnOrder,
   startGame,
 } from "../controllers/GameController";
