@@ -203,6 +203,10 @@ export const formatConsequence = async (
     });
 };
 
+/**
+ * Gets a list of all available theme pack options for the game.
+ * @returns {Promise<string[]>} A list of all available theme packs.
+ */
 export const getThemePacks = async (): Promise<string[]> => {
   const theme_path: string = resolve(__dirname, "..", "themes");
   return readdir(theme_path)

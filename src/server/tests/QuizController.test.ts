@@ -7,6 +7,7 @@ import MathUtil from "../../shared/util/MathUtil";
 import {
   formatConsequence,
   formatQuestion,
+  getThemePacks,
   validateAnswer,
 } from "../controllers/QuizController";
 
@@ -200,4 +201,12 @@ describe("Validate Answer", () => {
         )
       ).rejects.toBe(`No question in Miscellaneous has ID number ${i}.`);
   });
+});
+
+test("Fetch theme packs", async () => {
+  // This test case must be updated if the number of theme packs changes
+  let theme_packs = await getThemePacks();
+  expect(theme_packs).toHaveLength(2);
+  expect(theme_packs).toContain("disney");
+  expect(theme_packs).toContain("test");
 });
