@@ -213,11 +213,7 @@ export const getThemePacks = async (): Promise<string[]> => {
     .then((files) => {
       return Promise.resolve(
         files
-          .filter(
-            (file) =>
-              file.includes(".json") &&
-              (!file.includes("test") || file.includes("test"))
-          )
+          .filter((file) => file.includes(".json") && !file.includes("test"))
           .map((file) => file.replace(".json", ""))
       );
     })

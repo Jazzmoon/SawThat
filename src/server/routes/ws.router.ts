@@ -50,6 +50,20 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
       // Get params and data
       const { gameID } = req.params as { gameID: string };
 
+      // If gameID contains illegal characters, reject connection
+      if (!gameID.match(/^[A-Z0-9]{4,}$/)) {
+        sendError(
+          conn,
+          null,
+          { username: "", userType: "", token: "", gameID: gameID } as Context,
+          new Error("[WS] Illegal game code in the URL."),
+          "[WS] Illegal game code in the URL.",
+          true
+        );
+        conn.end();
+        return null;
+      }
+
       /*
       | Message:
       * 1. Validate connection via JWT
@@ -715,18 +729,34 @@ function sendError(
   message: string | null,
   fatal: boolean
 ) {
-  conn.socket.send(
-    JSON.stringify({
-      type: WebsocketType.Error,
-      requestId: data.requestId ?? "",
-      data: {
-        error: err,
-        message: message,
-        token: context.token ?? "",
-        fatal: fatal,
-      } as ErrorData,
-    } as WebsocketResponse)
-  );
+  try {
+    conn.socket.send(
+      JSON.stringify({
+        type: WebsocketType.Error,
+        requestId:
+          data === null || data === undefined ? "" : data.requestId ?? "",
+        data: {
+          error: err,
+          message: message,
+          token: context.token ?? "",
+          fatal: fatal,
+        } as ErrorData,
+      } as WebsocketResponse)
+    );
+  } catch (error) {
+    conn.socket.send(
+      JSON.stringify({
+        type: WebsocketType.Error,
+        requestId: "",
+        data: {
+          error: err,
+          message: message,
+          token: "",
+          fatal: fatal,
+        } as ErrorData,
+      } as WebsocketResponse)
+    );
+  }
 }
 
 export default WSRouter;

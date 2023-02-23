@@ -29,13 +29,15 @@ export const joinGame = async (
 ) => {
   // Decompose the request body
   const { game_code, username } = req.body;
+  // Convert the game code to uppercase
+  const game_code_upper = game_code.toUpperCase();
   // Verify that a game with the game code exists
-  const game = await Game.findOne({ game_code: game_code }).exec();
+  const game = await Game.findOne({ game_code: game_code_upper }).exec();
   console.log(
-    `[CR] Checking if game exists with game code ${game_code}: ${game}`
+    `[CR] Checking if game exists with game code ${game_code_upper}: ${game}`
   );
   if (!game) {
-    console.log(`[CR] Game with game code ${game_code} not found.`);
+    console.log(`[CR] Game with game code ${game_code_upper} not found.`);
     res
       .code(400)
       .type("application/json")
@@ -111,7 +113,7 @@ export const joinGame = async (
 
   const accessToken = await generateJWT({
     username: username,
-    gameCode: game_code,
+    gameCode: game_code_upper,
     userType: "Client",
     color: color,
   });
@@ -130,7 +132,7 @@ export const joinGame = async (
     console.log(`[CR] New Player List: ${game.players}`);
     await Game.findOneAndUpdate(
       {
-        game_code: game_code,
+        game_code: game_code_upper,
       },
       {
         players: game.players,

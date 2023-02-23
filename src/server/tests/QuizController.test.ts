@@ -206,7 +206,7 @@ describe("Validate Answer", () => {
 test("Fetch theme packs", async () => {
   // This test case must be updated if the number of theme packs changes
   let theme_packs = await getThemePacks();
-  expect(theme_packs).toHaveLength(2);
+  expect(theme_packs).toHaveLength(1);
   expect(theme_packs).toContain("disney");
-  expect(theme_packs).toContain("test");
+  expect(theme_packs).not.toContain("test");
 });
