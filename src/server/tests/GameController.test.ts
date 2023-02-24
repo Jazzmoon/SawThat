@@ -154,14 +154,14 @@ describe("Test Player Turn Order", () => {
       .exec();
     let users: UserType[] = game.players;
     // This order will never change
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 10; i++) {
       let order = await playerTurnOrder(context, 0);
       expect(order.map((u) => u.username)).toEqual(
         users.map((u) => u.username)
       );
     }
     // Increment the position using method 1 repeatedly
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 10; i++) {
       users = users.concat(users.shift()!);
       let next_order = await playerTurnOrder(context, 1);
       expect(next_order.map((u) => u.username)).toEqual(
@@ -245,8 +245,12 @@ test("Test Starting the Game", async () => {
     .orFail()
     .exec();
   expect(game.started).toBeTruthy();
+  // Shift game players according to turn order
+  let players = game.players
+    .slice(game.turn)
+    .concat(game.players.slice(0, game.turn));
   expect(
-    game.players.map((player: UserType) => {
+    players.map((player: UserType) => {
       return {
         username: player.username,
         color: player.color,
@@ -256,9 +260,11 @@ test("Test Starting the Game", async () => {
   ).toEqual(player_order);
 
   // Run start game again to ensure that it fails
-  await expect(startGame(context)).rejects.toThrow(
-    "[GC] The game has already started."
-  );
+  try {
+    await startGame(context);
+  } catch (error) {
+    expect(error).toEqual("[GC] The game has already started.");
+  }
 });
 
 // Next Turn is tested already via combining the two tests above

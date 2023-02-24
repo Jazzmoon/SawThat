@@ -450,8 +450,9 @@ export const generateQuestion = async (
     if (
       updated_game.used_questions[updated_game.used_questions.length - 1] !==
       question.id
-    )
+    ) {
       throw "Questions did not update properly";
+    }
     return [WebsocketType.QuestionAck, question_data];
   }
 };

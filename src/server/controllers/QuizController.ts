@@ -181,10 +181,9 @@ export const formatConsequence = async (
   return readFile(theme_path, "utf-8")
     .then((fstream) => {
       let themePack = JSON.parse(fstream);
-      if (!themePack.consequences || themePack.consequences.length < 1)
-        return Promise.reject(
-          new Error("The desired theme pack has no consequnces.")
-        );
+      if (!themePack.consequences || themePack.consequences.length < 1) {
+        return Promise.reject("The desired theme pack has no consequnces.");
+      }
 
       // All consequences given, allow repeats.
       let consequences: Consequence[] = themePack.consequences.filter(
