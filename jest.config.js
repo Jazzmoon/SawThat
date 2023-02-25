@@ -4,4 +4,5 @@ module.exports = {
   testEnvironment: "node",
   testRegex: "/(test|tst)s?/.*\\.(test|spec)?\\.(ts|tsx)$",
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
+  modulePathIgnorePatterns: ["src/client", "src/game"]
 };
