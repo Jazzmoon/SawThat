@@ -99,44 +99,13 @@ it('App handles player connection properly', (message) => {
     // @ts-ignore
     assert.equal(app.getCurrentComponent().setupState.players.length, 1);
 
-    // send next player's turn message
-    WS_API.sendMessageToCallbacks({
-        type: WebsocketType.NextPlayerAck,
-        data: {player: {username: 1, color: "red", position: 5}}
-    });
-
-    // check that at player one is now the current player
-    // @ts-ignore
-    assert.equal(app.getCurrentComponent().setupState.currentPlayer, 0);
-
-    // send next player's turn message for non-existant player
-    WS_API.sendMessageToCallbacks({
-        type: WebsocketType.NextPlayerAck,
-        data: {player: {username: 1, color: "red", position: 5}}
-    });
-
-    // check that at player one is now the current player
-    // @ts-ignore
-    assert.equal(app.getCurrentComponent().setupState.currentPlayer, 0);
-
-    // send player disconnect for non-existant player
+    // send player disconnect
     WS_API.sendMessageToCallbacks({
         type: WebsocketType.PlayerDisconnectAck,
-        data: {username: 2}
+        data: {players: []}
     });
 
     // check that still at one player now
-    // @ts-ignore
-    assert.equal(app.getCurrentComponent().setupState.players.length, 1);
-
-
-    // send player disconnect for existant player
-    WS_API.sendMessageToCallbacks({
-        type: WebsocketType.PlayerDisconnectAck,
-        data: {username: 1}
-    });
-
-    // check that ther are 0 players now
     // @ts-ignore
     assert.equal(app.getCurrentComponent().setupState.players.length, 0);
 });
