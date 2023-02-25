@@ -30,6 +30,7 @@ export type QuestionData = {
   all_play?: boolean;
   movement_die: number;
   challenge_die: QuestionCategory;
+  recipient_name?: string;
 } & TimedData;
 
 /**
@@ -41,6 +42,7 @@ export type ConsequenceData = {
   story: string;
 
   movement_die: number;
+  recipient_name?: string;
 } & TimedData;
 
 /**

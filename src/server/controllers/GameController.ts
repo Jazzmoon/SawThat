@@ -1,6 +1,6 @@
 /**
  * @file GameController.ts
- * @author Mark Hutchison
+ * @author Mark Hutchison, Luna Yao
  * The Game Controller controls the logic for a game.
  * It handles the modification of the Games within the Models module,
  * as well as handles the logic for a standard turn in game.
@@ -534,6 +534,9 @@ export const turn = async (
     answered: [],
   };
   res_data.timer_start = connections.turn.turn_start;
+  res_data.recipient_name = connections.turn.all_play
+    ? undefined
+    : game.players[game.turn].username;
   // Send data blast
   connections.host.conn.socket.send(
     JSON.stringify({
@@ -543,6 +546,9 @@ export const turn = async (
     } as WebsocketResponse)
   );
   if (connections.turn.all_play) {
+    if ((res_data as QuestionData).question) {
+      console.log("[GC] Sending All Play question");
+    }
     // All Play
     connections.clients.forEach((c) => {
       c.conn.socket.send(
@@ -554,9 +560,11 @@ export const turn = async (
       );
     });
   } else {
+    console.log(`[GC] Sending My Play to Player ${res_data.recipient_name}`);
     // My Play
+    // As such, recipient_name should always be defined
     connections.clients
-      .find((c) => c.username === game.players[game.turn].username)!
+      .find((c) => c.username === res_data.recipient_name)!
       .conn.socket.send(
         JSON.stringify({
           type: res_type,
