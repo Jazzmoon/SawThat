@@ -22,10 +22,10 @@ const GameRouter: FastifyPluginCallback = async (
     method: "GET",
     url: "/themes",
     schema: {
-      body: {},
       response: {
         200: {
           type: "array",
+          items: "string",
         },
         400: {
           type: "object",
