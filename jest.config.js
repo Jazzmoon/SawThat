@@ -2,7 +2,8 @@
 module.exports = {
   preset: "ts-jest",
   testEnvironment: "node",
-  testRegex: "/(test|tst)s?/.*\\.(test|spec)?\\.(ts|tsx)$",
+  testRegex: ".*(spec|test)\\.(ts|tsx)$",
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   modulePathIgnorePatterns: ["src/client", "src/game", "src/server"],
+  modulePaths: ["src/shared"],
 };
