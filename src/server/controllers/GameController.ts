@@ -851,7 +851,11 @@ export const checkWinner = async (context: Context): Promise<boolean> => {
   }
 
   // Check if any players report a position of 41 (Victory Space)
-  const winners = game.players.filter((p) => p.position >= 41);
+  const winners = await User.find({
+    game: game._id,
+    position: { $gte: 41 },
+  }).exec();
+  if (winners === null) return false;
   if (0 === winners.length || winners.length === 1) {
     return winners.length === 1; // true means winner. false means none.
   } else {
