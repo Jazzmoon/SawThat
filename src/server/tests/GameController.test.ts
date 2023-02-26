@@ -13,6 +13,7 @@ import {
   generateQuestion,
   playerTurnOrder,
   startGame,
+  movePlayer,
 } from "../controllers/GameController";
 
 import { Color } from "../../shared/enums/Color";
@@ -582,5 +583,42 @@ describe("Check Winner", () => {
     );
     const winner = await checkWinner(context);
     expect(winner).toBeFalsy();
+  });
+});
+
+describe("Check Movement", () => {
+  test("Assert no negative movement", async () => {
+    // Create context for the game
+    const context: Context = {
+      username: "game0000",
+      userType: "Game",
+      token: "Game-game0000-0000",
+      gameID: "0000",
+    };
+    await Game.findOneAndUpdate(
+      { game_code: context.gameID },
+      {
+        started: true,
+      }
+    ).exec();
+    const game = await Game.findOne({ game_code: context.gameID })
+      .orFail()
+      .exec();
+    expect(game.started).toBeTruthy();
+    // Move everyone to start
+    await User.updateMany(
+      {
+        userType: "Client",
+        game: game._id,
+      },
+      { position: 0 }
+    );
+    let oob_users = await User.find({ position: { $lt: 0 } }).exec();
+    // Sanity check
+    expect(oob_users).toHaveLength(0);
+    // Position shouldn't be negative even if updated
+    movePlayer(context.gameID, -10);
+    oob_users = await User.find({ position: { $lt: 0 } }).exec();
+    expect(oob_users).toHaveLength(0);
   });
 });
