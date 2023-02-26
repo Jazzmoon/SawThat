@@ -47,7 +47,7 @@ const props = defineProps<{
 .questionInfo {
   vertical-align: bottom;
   position: absolute;
-  bottom: 175px;
+  bottom: 5px;
   left: 24px;
   right: 24px;
   text-align: start;
