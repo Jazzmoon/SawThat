@@ -115,11 +115,7 @@ describe("Population and De-Population", () => {
 // Test Changing Turn Order
 describe("Turn Order", () => {
   test("Game Order", async () => {
-    const game = await Game.findOne({ game_code: "0000" })
-        .populate<UserType>("hostId")
-        .populate<UserType[]>("players")
-        .orFail()
-        .exec(),
+    let game = await Game.findOne({ game_code: "0000" }).orFail().exec(),
       user1 = await User.findOne({
         username: "user0000_1",
         token: "Client-user0000_1-0000",
@@ -132,10 +128,37 @@ describe("Turn Order", () => {
       })
         .orFail()
         .exec();
-    expect(game.players.map((p) => p._id)).toEqual([user1._id, user2._id]);
-    game.players = game.players.concat(game.players.shift()!);
-    await game.save();
-    expect(game.players.map((p) => p._id)).toEqual([user2._id, user1._id]);
+    for (let i = 0; i < 2; i++) {
+      expect(game.players).toEqual([user1._id, user2._id]);
+      game = await Game.findByIdAndUpdate(
+        game._id,
+        {
+          players: game.players.concat(game.players.shift()!),
+        },
+        { returnDocument: "after" }
+      )
+        .orFail()
+        .exec();
+      expect(game.players).toEqual([user2._id, user1._id]);
+      game = await Game.findByIdAndUpdate(
+        game._id,
+        {
+          players: game.players.concat(game.players.shift()!),
+        },
+        { returnDocument: "after" }
+      )
+        .orFail()
+        .exec();
+    }
+    game = await Game.findByIdAndUpdate(
+      game._id,
+      {
+        players: game.players.concat(game.players.shift()!),
+      },
+      { returnDocument: "after" }
+    )
+      .orFail()
+      .exec();
   });
   test("Game Order Remains Saved", async () => {
     const game = await Game.findOne({ game_code: "0000" })

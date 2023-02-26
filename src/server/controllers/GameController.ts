@@ -7,7 +7,7 @@
  */
 
 import { FastifyReply, FastifyRequest } from "fastify";
-import mongoose from "mongoose";
+import mongoose, { Mongoose } from "mongoose";
 
 import { generateJWT } from "./AuthController";
 import {
@@ -243,9 +243,15 @@ export const playerTurnOrder = async (
 
   // If rotate - initiate next turn logic
   if (method === 1) {
-    // Shift the player list left
-    game.turn = (game.turn + 1) % game.players.length;
-    await game.save();
+    // Shift the player list left{ turn: (game.turn + 1) % game.players.length }
+    game = await Game.findByIdAndUpdate(
+      game._id,
+      { turn: (game.turn + 1) % game.players.length },
+      { returnDocument: "after" }
+    )
+      .populate<{ players: UserType[] }>("players")
+      .orFail()
+      .exec();
   }
 
   // Convert the UserType[] to Player[]
@@ -298,9 +304,18 @@ export const startGame = async (context: Context): Promise<Player[]> => {
     throw `[GC] The game doesn't have enough players to start yet. ${game.players.length}/2 connected.`;
   }
   // Randomize the players array and save it
-  game.players = MathUtil.shuffle(game!.players);
-  game.started = true;
-  await game.save();
+  game = await Game.findByIdAndUpdate(
+    game._id,
+    {
+      players: MathUtil.shuffle(game!.players),
+      started: true,
+    },
+    { returnDocument: "after" }
+  )
+    .populate<{ hostId: UserType }>("hostId")
+    .populate<{ players: UserType[] }>("players")
+    .orFail()
+    .exec();
   // Return the player order, with the first in the list being the player who has first turn.
   return await playerTurnOrder(context, 0);
 };
@@ -406,14 +421,19 @@ export const generateQuestion = async (
       timer_length: 10,
     };
     // Add consequence ID to used list
-    game.used_consequences.push(consequence.id);
-    let updated_game = await game.save();
-    if (
-      updated_game.used_consequences[
-        updated_game.used_consequences.length - 1
-      ] !== consequence.id
+    game = await Game.findByIdAndUpdate(
+      game._id,
+      { used_consequences: game.used_consequences.concat(consequence.id) },
+      { returnDocument: "after" }
     )
-      throw "Consequences did not update properly";
+      .orFail()
+      .exec();
+    if (
+      game.used_consequences[game.used_consequences.length - 1] !==
+      consequence.id
+    ) {
+      throw "[GC] Consequences did not update properly";
+    }
     // Move the player
     await movePlayer(context.gameID, movement_die);
     return [WebsocketType.ConsequenceAck, consequence_data];
@@ -445,12 +465,16 @@ export const generateQuestion = async (
       };
 
     // Add question ID to used list
-    game.used_questions.push(question.id);
-    let updated_game = await game.save();
-    if (
-      updated_game.used_questions[updated_game.used_questions.length - 1] !==
-      question.id
-    ) {
+    game = await Game.findByIdAndUpdate(
+      game._id,
+      {
+        used_questions: game.used_questions.concat(question.id),
+      },
+      { returnDocument: "after" }
+    )
+      .orFail()
+      .exec();
+    if (game.used_questions[game.used_questions.length - 1] !== question.id) {
       throw "Questions did not update properly";
     }
     return [WebsocketType.QuestionAck, question_data];
@@ -692,15 +716,25 @@ export const movePlayer = async (gameID: string, movement_die: number) => {
   const game = await Game.findOne({
     game_code: gameID,
   })
+    .populate<{ players: (UserType & mongoose.Document)[] }>("players")
     .orFail()
     .exec();
 
   // Update the player's movement
-  let user = await User.findById(game.players[game.turn]).orFail().exec();
-  user.position = MathUtil.bound(0, 41, user.position + movement_die);
-
-  const save = await user.save();
-  return save;
+  let user = await User.findByIdAndUpdate(
+    game.players[game.turn]._id,
+    {
+      position: MathUtil.bound(
+        0,
+        41,
+        game.players[game.turn].position + movement_die
+      ),
+    },
+    { returnDocument: "after" }
+  )
+    .orFail()
+    .exec();
+  return user;
 };
 
 /**
@@ -817,7 +851,11 @@ export const checkWinner = async (context: Context): Promise<boolean> => {
   }
 
   // Check if any players report a position of 41 (Victory Space)
-  const winners = game.players.filter((p) => p.position >= 41);
+  const winners = await User.find({
+    game: game._id,
+    position: { $gte: 41 },
+  }).exec();
+  if (winners === null) return false;
   if (0 === winners.length || winners.length === 1) {
     return winners.length === 1; // true means winner. false means none.
   } else {

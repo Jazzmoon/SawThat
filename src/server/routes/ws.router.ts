@@ -215,7 +215,7 @@ async function handleDisconnect(conn: SocketStream, gameID: string) {
     );
     return;
   }
-  const game = await Game.findOne({ game_code: gameID })
+  let game = await Game.findOne({ game_code: gameID })
     .populate<{ players: UserType[] }>("players")
     .orFail()
     .exec();
@@ -289,8 +289,9 @@ async function handleDisconnect(conn: SocketStream, gameID: string) {
         } as WebsocketResponse)
       );
     });
-    game.players = game.players.filter((p) => p.username !== dis_username);
-    await game.save();
+    await Game.findByIdAndUpdate(game._id, {
+      players: game.players.filter((p) => p.username !== dis_username),
+    }).exec();
     // Delete user
     await User.findOneAndDelete({
       username: dis_username,
@@ -464,7 +465,7 @@ async function gameStartRequest(
         );
         console.log(`[WS] Turn didn't error: ${turn_data}`);
       } catch (err) {
-        console.log(`[WS] gameStartRequest inner try failed.`);
+        console.log(`[WS] gameStartRequest inner try failed.\n`, err);
         conn.socket.send(
           JSON.stringify({
             type: WebsocketType.Error,
