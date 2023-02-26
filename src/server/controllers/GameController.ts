@@ -542,7 +542,7 @@ export const turn = async (
     turn_modifier === TurnModifier.Normal ||
     turn_modifier === TurnModifier.DoubleFeature
       ? MathUtil.randInt(0, 7)
-      : (MathUtil.choice([0, 1, 2, 4, 5, 6], 1) as number);
+      : MathUtil.choice([0, 1, 2, 4, 5, 6], 1)[0];
 
   let [res_type, res_data] = await generateQuestion(
     context,

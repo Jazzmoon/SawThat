@@ -116,8 +116,9 @@ export const formatQuestion = async (
       console.log(`[QC] Selecting Question Options: ${question_ids}`);
 
       // Choose random question from list to ask:
+      const question_id: number = MathUtil.choice(question_ids, 1)[0];
       let question: Question = themePack.questions[category].find(
-        (q: Question) => q.id === MathUtil.choice(question_ids, 1)
+        (q: Question) => q.id === question_id
       );
       console.log(`[QC] Preparing Question: ${question}`);
 
@@ -198,7 +199,7 @@ export const formatConsequence = async (
       console.log(`[QC] Selecting Consequence Options: ${consequences}`);
 
       // Pick random consequence
-      let consequence = MathUtil.choice(consequences, 1) as Consequence;
+      let consequence = MathUtil.choice(consequences, 1)[0];
       console.log(`[QC] Selecting Consequence: ${consequence}`);
 
       return Promise.resolve(consequence);

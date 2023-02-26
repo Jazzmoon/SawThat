@@ -47,8 +47,10 @@ export default class MathUtil {
    * @param {Array<T>} choices - Options to choose from.
    * @returns {T} The randomly selected option from the array.
    */
-  public static choice<T>(choices: Array<T>, amount: number = 1): Array<T> | T {
+  public static choice<T>(choices: Array<T>, amount: number = 1): Array<T> {
+    console.log(`[MU] Selecting ${amount} Choice(s) from: ${choices}`);
     let randomized_arr = this.shuffle(choices);
-    return amount === 1 ? randomized_arr[0] : choices.splice(0, amount);
+    console.log(`[MU] Selecting Choice: ${randomized_arr.splice(0, amount)}`);
+    return randomized_arr.slice(0, amount);
   }
 }
