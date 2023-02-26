@@ -317,6 +317,7 @@ export const startGame = async (context: Context): Promise<Player[]> => {
     .populate<{ players: UserType[] }>("players")
     .orFail()
     .exec();
+  console.log(`[GC] Game ${game.game_code} has started.`);
   // Return the player order, with the first in the list being the player who has first turn.
   return await playerTurnOrder(context, 0);
 };

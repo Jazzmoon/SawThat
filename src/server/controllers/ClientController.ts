@@ -125,11 +125,11 @@ export const joinGame = async (
     username: username,
     token: accessToken,
   }).exec();
-  console.log(`[CR] User Fetched: ${user}`);
+  //console.log(`[CR] User Fetched: ${user}`);
 
   if (user) {
     game.players.push(user!._id);
-    console.log(`[CR] New Player List: ${game.players}`);
+    // console.log(`[CR] New Player List: ${game.players}`);
     await Game.findOneAndUpdate(
       {
         game_code: game_code_upper,

@@ -113,11 +113,13 @@ export const formatQuestion = async (
         question_ids = themePack.questions[category]
           .filter((q: Question) => q.question_type === question_type)
           .map((q: Question) => q.id);
+      console.log(`[QC] Selecting Question Options: ${question_ids}`);
 
       // Choose random question from list to ask:
       let question: Question = themePack.questions[category].find(
         (q: Question) => q.id === MathUtil.choice(question_ids, 1)
       );
+      console.log(`[QC] Preparing Question: ${question}`);
 
       // Plug clues into string where ever there is a "<_>" delimiter
       let number_clues = (question.question.match(/<_>/g) || []).length,
@@ -136,6 +138,7 @@ export const formatQuestion = async (
           )
         )
       );
+      console.log(`[QC] Preparing Clue List: ${clues}`);
 
       let question_text = question.question;
       for (let i = 0; i < number_clues; i++)
@@ -146,6 +149,7 @@ export const formatQuestion = async (
       const answers = MathUtil.shuffle(
         [question.answer].concat(MathUtil.choice(question.fake_answers, 3))
       );
+      console.log(`[QC] Selecting Fake Answer Options: ${answers}`);
 
       return Promise.resolve({
         id: question.id,
@@ -191,9 +195,11 @@ export const formatConsequence = async (
       ) as Consequence[];
       if (consequences.length === 0)
         consequences = themePack.consequences as Consequence[];
+      console.log(`[QC] Selecting Consequence Options: ${consequences}`);
 
       // Pick random consequence
       let consequence = MathUtil.choice(consequences, 1) as Consequence;
+      console.log(`[QC] Selecting Consequence: ${consequence}`);
 
       return Promise.resolve(consequence);
     })
