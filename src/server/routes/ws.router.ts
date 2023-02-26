@@ -215,7 +215,7 @@ async function handleDisconnect(conn: SocketStream, gameID: string) {
     );
     return;
   }
-  const game = await Game.findOne({ game_code: gameID })
+  let game = await Game.findOne({ game_code: gameID })
     .populate<{ players: UserType[] }>("players")
     .orFail()
     .exec();
@@ -289,8 +289,14 @@ async function handleDisconnect(conn: SocketStream, gameID: string) {
         } as WebsocketResponse)
       );
     });
-    game.players = game.players.filter((p) => p.username !== dis_username);
-    await game.save();
+    await game
+      .update(
+        {
+          players: game.players.filter((p) => p.username !== dis_username),
+        },
+        { new: true }
+      )
+      .exec();
     // Delete user
     await User.findOneAndDelete({
       username: dis_username,

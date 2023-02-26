@@ -51,7 +51,7 @@ beforeAll(async () => {
     used_consequences: [],
     used_questions: [],
   });
-  let game = await newGame.save();
+  var game = await newGame.save();
   const newHost = new User({
       userType: "Game",
       username: "game0000",
@@ -79,11 +79,11 @@ beforeAll(async () => {
         position: 0,
       }),
       user = await newUser.save();
-    game.players = game.players.concat(user._id);
+    game.players.push(user._id);
   }
   // Link the game to the host
   game.hostId = host._id;
-  game = await game.save();
+  game.save();
   return;
 });
 
@@ -442,11 +442,13 @@ describe("Check Winner", () => {
       token: "Game-game0000-0000",
       gameID: "0000",
     };
-    let game = await Game.findOne({ game_code: context.gameID })
+    let game = await Game.findOneAndUpdate(
+      { game_code: context.gameID },
+      { started: false },
+      { returnDocument: "after" }
+    )
       .orFail()
       .exec();
-    game.started = false;
-    await game.save();
     try {
       await checkWinner(context);
       expect(true).toBeFalsy();
