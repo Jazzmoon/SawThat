@@ -151,7 +151,7 @@
     ],
     "Musical": [
       {
-        "id": 1,
+        "id": 8,
         "question_type": "Multiple Choice",
         "question": "In The Little Mermaid, which character sings <_> and <_>?",
         "answer": "Ariel",
@@ -172,7 +172,7 @@
         "media_url": null
       },
       {
-        "id": 2,
+        "id": 9,
         "question_type": "Multiple Choice",
         "question": "What classic character muses that things are getting \"<_>\".",
         "answer": "Alice",
@@ -194,7 +194,7 @@
         "media_url": null
       },
       {
-        "id": 3,
+        "id": 10,
         "question_type": "Multiple Choice",
         "question": "In Frozen, which character has the lines \"<_>\", \"<_>\", and \"<_>\"?",
         "answer": "Elsa",
@@ -222,7 +222,7 @@
         "media_url": null
       },
       {
-        "id": 4,
+        "id": 11,
         "question_type": "Multiple Choice",
         "question": "In Aladdin, which character sings the songs <_> and <_>?",
         "answer": "Genie",
@@ -245,7 +245,7 @@
     ],
     "Miscellaneous": [
       {
-        "id": 1,
+        "id": 12,
         "question_type": "Multiple Choice",
         "question": "In Toy Story, what is the name of the kid who owns <_> and <_>?",
         "answer": "Andy",
@@ -263,7 +263,7 @@
         "media_url": null
       },
       {
-        "id": 2,
+        "id": 13,
         "question_type": "Multiple Choice",
         "question": "In Up, what is the name of the dog who helps Carl and Russell?",
         "answer": "Dug",
@@ -281,7 +281,7 @@
         "media_url": "https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/A7985D9BF379DE15F82293F034CFC045A17B88449EE56DB9770BD7AE5AA69825/scale?width=1200&aspectRatio=1.78&format=jpeg"
       },
       {
-        "id": 3,
+        "id": 14,
         "question_type": "Multiple Choice",
         "question": "Where does Disney's 101 Dalmatians take place?",
         "answer": "England",

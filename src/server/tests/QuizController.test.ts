@@ -45,7 +45,7 @@ test("Fetch Used Question", async () => {
 
   // I should be able to select questions at random infinite times and they will never be null
   for (let i = 0; i < 100; i++) {
-    let category = MathUtil.choice(categories, 1) as string,
+    let category = MathUtil.choice(categories, 1)[0],
       question = await formatQuestion(
         theme_pack,
         category,

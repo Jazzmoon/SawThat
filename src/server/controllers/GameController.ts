@@ -8,6 +8,7 @@
 
 import { FastifyReply, FastifyRequest } from "fastify";
 import mongoose, { Mongoose } from "mongoose";
+import { Mutex } from "async-mutex";
 
 import { generateJWT } from "./AuthController";
 import {
@@ -316,6 +317,7 @@ export const startGame = async (context: Context): Promise<Player[]> => {
     .populate<{ players: UserType[] }>("players")
     .orFail()
     .exec();
+  console.log(`[GC] Game ${game.game_code} has started.`);
   // Return the player order, with the first in the list being the player who has first turn.
   return await playerTurnOrder(context, 0);
 };
@@ -540,7 +542,7 @@ export const turn = async (
     turn_modifier === TurnModifier.Normal ||
     turn_modifier === TurnModifier.DoubleFeature
       ? MathUtil.randInt(0, 7)
-      : (MathUtil.choice([0, 1, 2, 4, 5, 6], 1) as number);
+      : MathUtil.choice([0, 1, 2, 4, 5, 6], 1)[0];
 
   let [res_type, res_data] = await generateQuestion(
     context,
@@ -550,6 +552,7 @@ export const turn = async (
   );
 
   // Prepare turn in connections record
+  const release = await connections.mutex.acquire();
   connections.turn = {
     turn_start: Date.now(),
     turn_modifier: turn_modifier,
@@ -557,55 +560,59 @@ export const turn = async (
     movement_die: res_data.movement_die,
     answered: [],
   };
-  res_data.timer_start = connections.turn.turn_start;
-  res_data.recipient_name = connections.turn.all_play
-    ? undefined
-    : game.players[game.turn].username;
-  // Send data blast
-  connections.host.conn.socket.send(
-    JSON.stringify({
-      type: res_type,
-      requestId: data.requestId,
-      data: res_data,
-    } as WebsocketResponse)
-  );
-  if (connections.turn.all_play) {
-    if ((res_data as QuestionData).question) {
-      console.log("[GC] Sending All Play question");
-    }
-    // All Play
-    connections.clients.forEach((c) => {
-      c.conn.socket.send(
-        JSON.stringify({
-          type: res_type,
-          requestId: data.requestId,
-          data: res_data,
-        } as WebsocketResponse)
-      );
-    });
-  } else {
-    console.log(`[GC] Sending My Play to Player ${res_data.recipient_name}`);
-    // My Play
-    // As such, recipient_name should always be defined
-    connections.clients
-      .find((c) => c.username === res_data.recipient_name)!
-      .conn.socket.send(
-        JSON.stringify({
-          type: res_type,
-          requestId: data.requestId,
-          data: res_data,
-        } as WebsocketResponse)
-      );
-  }
-  connections.turn.timeout = setTimeout(() => {
-    questionEnd(
-      connections,
-      data,
-      context,
-      false,
-      res_type === WebsocketType.QuestionAck
+  try {
+    res_data.timer_start = connections.turn.turn_start;
+    res_data.recipient_name = connections.turn.all_play
+      ? undefined
+      : game.players[game.turn].username;
+    // Send data blast
+    connections.host.conn.socket.send(
+      JSON.stringify({
+        type: res_type,
+        requestId: data.requestId,
+        data: res_data,
+      } as WebsocketResponse)
     );
-  }, Math.abs(Date.now() - (res_data.timer_start + res_data.timer_length * 1000)));
+    if (connections.turn.all_play) {
+      if ((res_data as QuestionData).question) {
+        console.log("[GC] Sending All Play question");
+      }
+      // All Play
+      connections.clients.forEach((c) => {
+        c.conn.socket.send(
+          JSON.stringify({
+            type: res_type,
+            requestId: data.requestId,
+            data: res_data,
+          } as WebsocketResponse)
+        );
+      });
+    } else {
+      console.log(`[GC] Sending My Play to Player ${res_data.recipient_name}`);
+      // My Play
+      // As such, recipient_name should always be defined
+      connections.clients
+        .find((c) => c.username === res_data.recipient_name)!
+        .conn.socket.send(
+          JSON.stringify({
+            type: res_type,
+            requestId: data.requestId,
+            data: res_data,
+          } as WebsocketResponse)
+        );
+    }
+    connections.turn!.timeout = setTimeout(() => {
+      questionEnd(
+        connections,
+        data,
+        context,
+        false,
+        res_type === WebsocketType.QuestionAck
+      );
+    }, Math.abs(Date.now() - (res_data.timer_start + res_data.timer_length * 1000)));
+  } finally {
+    release();
+  }
   return connections.turn;
 };
 
@@ -632,75 +639,83 @@ export const questionAnswer = async (
     connections.turn.answered.includes(context.username)
   )
     return false;
-  const game = await Game.findOne({
-    game_code: context.gameID,
-  })
-    .populate<{ hostId: UserType }>("hostId")
-    .populate<{ players: UserType[] }>("players")
-    .orFail()
-    .exec();
-  if (
-    game.used_questions[game.used_questions.length - 1] !==
-    (data.data as QuestionAnswerData).id
-  )
-    return false;
-  // Add the user to the list of people who answered
-  connections.turn.answered.push(context.username);
+  // Acquire the turn mutex
+  const release = await connections.mutex.acquire();
+  // Determine if answer is correct
+  let correct: boolean = false;
+  try {
+    const game = await Game.findOne({
+      game_code: context.gameID,
+    })
+      .populate<{ hostId: UserType }>("hostId")
+      .populate<{ players: UserType[] }>("players")
+      .orFail()
+      .exec();
+    if (
+      game.used_questions[game.used_questions.length - 1] !==
+      (data.data as QuestionAnswerData).id
+    )
+      return false;
+    // Add the user to the list of people who answered
+    connections.turn.answered.push(context.username);
 
-  // Check user answer against actual answer
-  console.log(
-    `[GC] User ${context.username} has submitted answer ${
-      (data.data as QuestionAnswerData).answer
-    } for question (${(data.data as QuestionAnswerData).id} | ${
-      (data.data as QuestionAnswerData).category
-    })`
-  );
+    // Check user answer against actual answer
+    console.log(
+      `[GC] User ${context.username} has submitted answer ${
+        (data.data as QuestionAnswerData).answer
+      } for question (${(data.data as QuestionAnswerData).id} | ${
+        (data.data as QuestionAnswerData).category
+      })`
+    );
 
-  const correct: boolean = await validateAnswer(
-    game.theme_pack,
-    (data.data as QuestionAnswerData).id,
-    (data.data as QuestionAnswerData).category,
-    (data.data as QuestionAnswerData).answer,
-    (data.data as QuestionAnswerData).question_type
-  ).catch((err) => {
-    console.log(`[GC] Validate answer encountered the following error:`, err);
-    return false;
-  });
-  if (correct) {
-    console.log(`[GC] User ${context.username} was correct.`);
-    // If it is the players turn. Move them.
-    if (game.players[game.turn].username === context.username) {
-      const movement = await movePlayer(
-        context.gameID,
-        connections.turn.movement_die
+    correct = await validateAnswer(
+      game.theme_pack,
+      (data.data as QuestionAnswerData).id,
+      (data.data as QuestionAnswerData).category,
+      (data.data as QuestionAnswerData).answer,
+      (data.data as QuestionAnswerData).question_type
+    ).catch((err) => {
+      console.log(`[GC] Validate answer encountered the following error:`, err);
+      return false;
+    });
+    if (correct) {
+      console.log(`[GC] User ${context.username} was correct.`);
+      // If it is the players turn. Move them.
+      if (game.players[game.turn].username === context.username) {
+        const movement = await movePlayer(
+          context.gameID,
+          connections.turn.movement_die
+        );
+        console.log(`[GC] Player moved: ${movement}`);
+      }
+      // If correct, kill the timeout and move player accordingly
+      const question_end = await questionEnd(
+        connections,
+        data,
+        context,
+        true,
+        true
       );
-      console.log(`[GC] Player moved: ${movement}`);
+      console.log(`[GC] Ending Question Early: ${question_end}`);
     }
-    // If correct, kill the timeout and move player accordingly
-    const question_end = await questionEnd(
-      connections,
-      data,
-      context,
-      true,
-      true
-    );
-    console.log(`[GC] Ending Question Early: ${question_end}`);
-  }
 
-  // If this player was the last player required before timeout, kill the question
-  else if (
-    (connections.turn.all_play === false &&
-      connections.turn.answered.length === 1) ||
-    connections.turn.answered.length === game.players.length
-  ) {
-    const question_end = await questionEnd(
-      connections,
-      data,
-      context,
-      true,
-      true
-    );
-    console.log(`[GC] Ending Question Early: ${question_end}`);
+    // If this player was the last player required before timeout, kill the question
+    else if (
+      (connections.turn.all_play === false &&
+        connections.turn.answered.length === 1) ||
+      connections.turn.answered.length === game.players.length
+    ) {
+      const question_end = await questionEnd(
+        connections,
+        data,
+        context,
+        true,
+        true
+      );
+      console.log(`[GC] Ending Question Early: ${question_end}`);
+    }
+  } finally {
+    release();
   }
   return correct;
 };
@@ -753,50 +768,28 @@ export const questionEnd = async (
   early: boolean,
   question: boolean
 ): Promise<boolean> => {
-  if (connections.turn === undefined) return false;
-  if (connections.turn.timeout === undefined) return false;
-  // Force the timeout to be undefined so no other requests go through
-  clearTimeout(connections.turn.timeout!);
-  connections.turn = undefined;
-  const game = await Game.findOne({
-    game_code: context.gameID,
-  })
-    .orFail()
-    .exec();
+  const release = await connections.mutex.acquire();
+  try {
+    if (connections.turn === undefined) return false;
+    if (connections.turn.timeout === undefined) return false;
+    // Force the timeout to be undefined so no other requests go through
+    clearTimeout(connections.turn.timeout!);
+    connections.turn = undefined;
+    const game = await Game.findOne({
+      game_code: context.gameID,
+    })
+      .orFail()
+      .exec();
 
-  // Get updated players array
-  const players = await User.find({
-    userType: "Client",
-    game: game._id,
-  })
-    .orFail()
-    .exec();
+    // Get updated players array
+    const players = await User.find({
+      userType: "Client",
+      game: game._id,
+    })
+      .orFail()
+      .exec();
 
-  connections.host.conn.socket.send(
-    JSON.stringify({
-      type: question
-        ? early
-          ? WebsocketType.QuestionEndedAck
-          : WebsocketType.QuestionTimeOut
-        : early
-        ? WebsocketType.ConsequenceEndedAck
-        : WebsocketType.ConsequenceTimeOut,
-      requestId: data.requestId,
-      data: {
-        players: players
-          .map((p) => {
-            return {
-              username: p.username,
-              color: p.color,
-              position: p.position,
-            } as Player;
-          })
-          .sort((a, b) => a.position - b.position),
-      },
-    } as WebsocketResponse)
-  );
-  connections.clients.forEach((c) => {
-    c.conn.socket.send(
+    connections.host.conn.socket.send(
       JSON.stringify({
         type: question
           ? early
@@ -819,7 +812,34 @@ export const questionEnd = async (
         },
       } as WebsocketResponse)
     );
-  });
+    connections.clients.forEach((c) => {
+      c.conn.socket.send(
+        JSON.stringify({
+          type: question
+            ? early
+              ? WebsocketType.QuestionEndedAck
+              : WebsocketType.QuestionTimeOut
+            : early
+            ? WebsocketType.ConsequenceEndedAck
+            : WebsocketType.ConsequenceTimeOut,
+          requestId: data.requestId,
+          data: {
+            players: players
+              .map((p) => {
+                return {
+                  username: p.username,
+                  color: p.color,
+                  position: p.position,
+                } as Player;
+              })
+              .sort((a, b) => a.position - b.position),
+          },
+        } as WebsocketResponse)
+      );
+    });
+  } finally {
+    release();
+  }
   return true;
 };
 
