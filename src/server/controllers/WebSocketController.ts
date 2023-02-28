@@ -10,8 +10,8 @@ export type ClientConn = {
 export type Connection = {
   host: ClientConn;
   clients: ClientConn[];
+  mutex: MutexInterface;
   turn?: {
-    mutex: MutexInterface;
     turn_start: number;
     timeout?: NodeJS.Timeout;
     all_play: boolean;

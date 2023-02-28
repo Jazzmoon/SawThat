@@ -552,15 +552,14 @@ export const turn = async (
   );
 
   // Prepare turn in connections record
+  const release = await connections.mutex.acquire();
   connections.turn = {
-    mutex: new Mutex(),
     turn_start: Date.now(),
     turn_modifier: turn_modifier,
     all_play: 0 <= challenge_die && challenge_die <= 2,
     movement_die: res_data.movement_die,
     answered: [],
   };
-  const release = await connections.turn.mutex.acquire();
   try {
     res_data.timer_start = connections.turn.turn_start;
     res_data.recipient_name = connections.turn.all_play
@@ -641,7 +640,7 @@ export const questionAnswer = async (
   )
     return false;
   // Acquire the turn mutex
-  const release = await connections.turn.mutex.acquire();
+  const release = await connections.mutex.acquire();
   // Determine if answer is correct
   let correct: boolean = false;
   try {
@@ -769,50 +768,28 @@ export const questionEnd = async (
   early: boolean,
   question: boolean
 ): Promise<boolean> => {
-  if (connections.turn === undefined) return false;
-  if (connections.turn.timeout === undefined) return false;
-  // Force the timeout to be undefined so no other requests go through
-  clearTimeout(connections.turn.timeout!);
-  connections.turn = undefined;
-  const game = await Game.findOne({
-    game_code: context.gameID,
-  })
-    .orFail()
-    .exec();
+  const release = await connections.mutex.acquire();
+  try {
+    if (connections.turn === undefined) return false;
+    if (connections.turn.timeout === undefined) return false;
+    // Force the timeout to be undefined so no other requests go through
+    clearTimeout(connections.turn.timeout!);
+    connections.turn = undefined;
+    const game = await Game.findOne({
+      game_code: context.gameID,
+    })
+      .orFail()
+      .exec();
 
-  // Get updated players array
-  const players = await User.find({
-    userType: "Client",
-    game: game._id,
-  })
-    .orFail()
-    .exec();
+    // Get updated players array
+    const players = await User.find({
+      userType: "Client",
+      game: game._id,
+    })
+      .orFail()
+      .exec();
 
-  connections.host.conn.socket.send(
-    JSON.stringify({
-      type: question
-        ? early
-          ? WebsocketType.QuestionEndedAck
-          : WebsocketType.QuestionTimeOut
-        : early
-        ? WebsocketType.ConsequenceEndedAck
-        : WebsocketType.ConsequenceTimeOut,
-      requestId: data.requestId,
-      data: {
-        players: players
-          .map((p) => {
-            return {
-              username: p.username,
-              color: p.color,
-              position: p.position,
-            } as Player;
-          })
-          .sort((a, b) => a.position - b.position),
-      },
-    } as WebsocketResponse)
-  );
-  connections.clients.forEach((c) => {
-    c.conn.socket.send(
+    connections.host.conn.socket.send(
       JSON.stringify({
         type: question
           ? early
@@ -835,7 +812,34 @@ export const questionEnd = async (
         },
       } as WebsocketResponse)
     );
-  });
+    connections.clients.forEach((c) => {
+      c.conn.socket.send(
+        JSON.stringify({
+          type: question
+            ? early
+              ? WebsocketType.QuestionEndedAck
+              : WebsocketType.QuestionTimeOut
+            : early
+            ? WebsocketType.ConsequenceEndedAck
+            : WebsocketType.ConsequenceTimeOut,
+          requestId: data.requestId,
+          data: {
+            players: players
+              .map((p) => {
+                return {
+                  username: p.username,
+                  color: p.color,
+                  position: p.position,
+                } as Player;
+              })
+              .sort((a, b) => a.position - b.position),
+          },
+        } as WebsocketResponse)
+      );
+    });
+  } finally {
+    release();
+  }
   return true;
 };
 

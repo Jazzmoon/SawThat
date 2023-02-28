@@ -5,6 +5,7 @@
  */
 import { SocketStream } from "@fastify/websocket";
 import { FastifyPluginCallback, FastifyRequest } from "fastify";
+import { Mutex } from "async-mutex";
 import jwt, { Secret } from "jsonwebtoken";
 
 import { WebsocketType } from "../../shared/enums/WebsocketTypes";
@@ -317,6 +318,7 @@ async function gameSetupRequest(
     connections[context.gameID] = {
       host: { username: context.username, conn: conn },
       clients: [],
+      mutex: new Mutex(),
     };
     conn.socket.send(
       JSON.stringify({
