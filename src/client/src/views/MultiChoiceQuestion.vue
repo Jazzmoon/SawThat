@@ -2,10 +2,12 @@
   <main id="backgroundImage">
     <p id="questionText">{{props.data.question}}</p>
     <div id="choices">
-      <button class="btnBlue" @click="submit(0)">{{ props.data.options[0] }}</button>
-      <button class="btnRed" @click="submit(1)">{{ props.data.options[1] }}</button>
-      <button class="btnYellow" @click="submit(2)">{{ props.data.options[2] }}</button>
-      <button class="btnGreen" @click="submit(3)">{{ props.data.options[3] }}</button>
+      <button v-for="(option, index) in props.data.options" 
+        :key="option" 
+        :class="colors[index]" 
+        @click="submit(index)">
+          {{ option }}
+        </button>
     </div>
   </main>
 </template>
@@ -20,6 +22,15 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['answered']);
+
+const colors = [
+'btnLightBlue',
+'btnPink',
+'btnBlue',
+'btnRed',
+'btnYellow',
+'btnGreen',
+]
 
 async function submit(choice: number){
   emit('answered');
@@ -51,6 +62,14 @@ button {
   aspect-ratio: 1;
 }
 
+.btnLightBlue {
+  background: #038fdaa5;
+  border: 8px solid #038fda;
+}
+.btnPink {
+  background: #da03928f;
+  border: 8px solid #da0392;
+}
 .btnBlue {
   background: rgba(6, 86, 211, 0.5);
   border: 8px solid #0356DA;
