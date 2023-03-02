@@ -136,9 +136,9 @@ export const formatQuestion = async (
         question.clue_list.filter((c) => c !== question.answer),
         number_clues
         );
-      console.log(`[QC] -------- DURING: ${clues}`);
+      console.log(`[QC] -------- DURING: ${otherClues}`);
       const joinedClues = clues.concat(otherClues);
-      console.log(`[QC] -------- AFTER: ${clues}`);
+      console.log(`[QC] -------- AFTER: ${joinedClues}`);
       clues = MathUtil.shuffle(joinedClues);
       console.log(`[QC] Preparing Clue List: ${clues}`);
 
