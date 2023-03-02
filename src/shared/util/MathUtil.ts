@@ -51,6 +51,6 @@ export default class MathUtil {
     console.log(`[MU] Selecting ${amount} Choice(s) from: ${choices}`);
     let randomized_arr = this.shuffle(choices);
     console.log(`[MU] Selecting Choice: ${randomized_arr.splice(0, amount)}`);
-    return randomized_arr.slice(0, amount);
+    return randomized_arr.splice(0, amount);
   }
 }

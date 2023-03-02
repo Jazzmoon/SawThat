@@ -120,7 +120,7 @@ export const formatQuestion = async (
       let question: Question = themePack.questions[category].find(
         (q: Question) => q.id === question_id
       );
-      console.log(`[QC] Preparing Question: ${question}`);
+      console.log(`[QC] Preparing Question: ${JSON.stringify(question)}`);
 
       // Plug clues into string where ever there is a "<_>" delimiter
       let number_clues = (question.question.match(/<_>/g) || []).length,
