@@ -50,7 +50,8 @@ export default class MathUtil {
   public static choice<T>(choices: Array<T>, amount: number = 1): Array<T> {
     console.log(`[MU] Selecting ${amount} Choice(s) from: ${choices}`);
     let randomized_arr = this.shuffle(choices);
-    console.log(`[MU] Selecting Choice: ${randomized_arr.splice(0, amount)}`);
-    return randomized_arr.splice(0, amount);
+    let selectedArr = randomized_arr.splice(0, amount);
+    console.log(`[MU] Selecting Choice: ${selectedArr}`);
+    return selectedArr;
   }
 }

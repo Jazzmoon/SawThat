@@ -131,15 +131,11 @@ export const formatQuestion = async (
         clues = [question.answer];
       }
 
-      console.log(`[QC] -------- BEFORE: ${clues}`);
       const otherClues = MathUtil.choice(
         question.clue_list.filter((c) => c !== question.answer),
         number_clues
-        );
-      console.log(`[QC] -------- DURING: ${otherClues}`);
-      const joinedClues = clues.concat(otherClues);
-      console.log(`[QC] -------- AFTER: ${joinedClues}`);
-      clues = MathUtil.shuffle(joinedClues);
+      );
+      clues = MathUtil.shuffle(clues.concat(otherClues));
       console.log(`[QC] Preparing Clue List: ${clues}`);
 
       let question_text = question.question;
