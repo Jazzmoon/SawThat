@@ -789,15 +789,18 @@ export const questionEnd = async (
       .orFail()
       .exec();
 
+    console.log(`[GC] SENDING ${question ? 'QUESTION' : 'CONSEQUENCE'} ${early ? 'ENDED' : 'TIMEOUT'} ACK`);
     connections.host.conn.socket.send(
       JSON.stringify({
         type: question
-          ? early
+          ? (early
             ? WebsocketType.QuestionEndedAck
             : WebsocketType.QuestionTimeOut
-          : early
-          ? WebsocketType.ConsequenceEndedAck
-          : WebsocketType.ConsequenceTimeOut,
+          )
+          : (early
+            ? WebsocketType.ConsequenceEndedAck
+            : WebsocketType.ConsequenceTimeOut
+          ),
         requestId: data.requestId,
         data: {
           players: players
