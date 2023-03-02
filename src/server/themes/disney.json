@@ -71,6 +71,7 @@
           "is voiced by John Goodman",
           "is best friends with Mike Wazowski"
         ],
+        "fake_answers":["Abu", "Mike", "Butch", "Mark", "Philip", "Ramirez"],
         "media_type": "image",
         "media_url": "https://i.pinimg.com/736x/b7/b3/b0/b7b3b03715be30c158a66c23f1c3a276--homecoming-decorations-moodboard.jpg"
       },
@@ -107,6 +108,7 @@
           "is voiced by Alexander Gould",
           "is a clownfish"
         ],
+        "fake_answers": ["Walrus", "Marlin", "Dory", "Biff", "Ariel", "Tony", "Rafiki"],
         "media_type": "image",
         "media_url": "https://i.pinimg.com/originals/85/d5/04/85d5048419fa3af1fadaf073198301c6.jpg"
       },
