@@ -770,9 +770,12 @@ export const questionEnd = async (
 ): Promise<boolean> => {
   const release = await connections.mutex.acquire();
   try {
+    console.log("4");
     if (connections.turn === undefined) return false;
+    console.log("3");
     if (connections.turn.timeout === undefined) return false;
     // Force the timeout to be undefined so no other requests go through
+    console.log("2");
     clearTimeout(connections.turn.timeout!);
     connections.turn = undefined;
     const game = await Game.findOne({
@@ -780,6 +783,8 @@ export const questionEnd = async (
     })
       .orFail()
       .exec();
+
+    console.log("1");
 
     // Get updated players array
     const players = await User.find({
