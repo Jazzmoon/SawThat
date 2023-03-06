@@ -796,8 +796,6 @@ export const questionEnd = async (
 
     // TODO I DID THIS TO TEST AND FIX THE CONSEQUENCES NOT DISAPPEARING BUT DIDN"T FINISH. TODO KEEP GOING
     console.log(`[GC] SENDING ${question ? 'QUESTION' : 'CONSEQUENCE'} ${early ? 'ENDED' : 'TIMEOUT'} ACK`);
-    console.log(`[GC] ${JSON.stringify(connections.host)}`)
-
     connections.host.conn.socket.send(
       JSON.stringify({
         type: question
