@@ -102,6 +102,7 @@ onMounted(() => {
           consequenceData.value = message.data;
           break;
         case WebsocketType.ConsequenceEndedAck:
+        case WebsocketType.ConsequenceTimeOut:
           completeGameStep(message);
           consequenceShown.value = false;
           break;

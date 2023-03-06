@@ -36,27 +36,29 @@ export const validateAnswer = async (
     "themes",
     `${themePackName}.json`
   );
-  return readFile(theme_path, "utf-8")
-    .then((fstream) => {
-      let themePack = JSON.parse(fstream);
-      // Find question
-      let question = questionType
-        ? themePack.questions[questionCategory].find(
-            (q: Question) =>
-              q.id === questionID && q.question_type === questionType
-          )
-        : themePack.questions[questionCategory].find(
-            (q: Question) => q.id === questionID
-          );
-      if (!question)
-        return Promise.reject(
-          `No question in ${questionCategory} has ID number ${questionID}.`
+  console.log(`THEME PATH: ${theme_path}`);
+  try {
+    const fstream = await readFile(theme_path, "utf-8");
+    console.log("done reading file");
+    let themePack = await JSON.parse(fstream);
+    console.log("done parsing file");
+    // Find question
+    let question = questionType
+      ? themePack.questions[questionCategory].find(
+          (q: Question) =>
+            q.id === questionID && q.question_type === questionType
+        )
+      : themePack.questions[questionCategory].find(
+          (q: Question) => q.id === questionID
         );
-      return Promise.resolve(question.answer === userAnswer);
-    })
-    .catch((err) => {
-      return Promise.reject(err);
-    });
+    if (!question)
+      throw `No question in ${questionCategory} has ID number ${questionID}.`;
+
+    return question.answer === userAnswer;
+  } catch (err) {
+    console.log("[QC] ERROR OCCURRED WHILE VALIDATING ANSWER");
+    throw err;
+  }
 };
 
 /**
