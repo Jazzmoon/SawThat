@@ -7,8 +7,7 @@
  */
 
 import { FastifyReply, FastifyRequest } from "fastify";
-import mongoose, { Mongoose } from "mongoose";
-import { Mutex } from "async-mutex";
+import mongoose from "mongoose";
 
 import { generateJWT } from "./AuthController";
 import {
@@ -601,18 +600,21 @@ export const turn = async (
           } as WebsocketResponse)
         );
     }
-    connections.turn!.timeout = setTimeout(() => {
-      questionEnd(
-        connections,
-        data,
-        context,
-        false,
-        res_type === WebsocketType.QuestionAck
-      );
-    }, Math.abs(Date.now() - (res_data.timer_start + res_data.timer_length * 1000)));
   } finally {
     release();
   }
+  // You cannot call questionEnd without releasing the mutex first
+  connections.turn!.timeout = setTimeout(
+    questionEnd,
+    Math.abs(
+      Date.now() - (res_data.timer_start + res_data.timer_length * 1000)
+    ),
+    connections,
+    data,
+    context,
+    false,
+    res_type === WebsocketType.QuestionAck
+  );
   return connections.turn;
 };
 
@@ -654,8 +656,9 @@ export const questionAnswer = async (
     if (
       game.used_questions[game.used_questions.length - 1] !==
       (data.data as QuestionAnswerData).id
-    )
+    ) {
       return false;
+    }
     // Add the user to the list of people who answered
     connections.turn.answered.push(context.username);
 
@@ -689,6 +692,7 @@ export const questionAnswer = async (
         console.log(`[GC] Player moved: ${movement}`);
       }
       // If correct, kill the timeout and move player accordingly
+      release(); // Release the mutex so that questionEnd can acquire it
       const question_end = await questionEnd(
         connections,
         data,
@@ -697,14 +701,13 @@ export const questionAnswer = async (
         true
       );
       console.log(`[GC] Ending Question Early: ${question_end}`);
-    }
-
-    // If this player was the last player required before timeout, kill the question
-    else if (
+    } else if (
       (connections.turn.all_play === false &&
         connections.turn.answered.length === 1) ||
       connections.turn.answered.length === game.players.length
     ) {
+      // If this player was the last player required before timeout, kill the question
+      release(); // Release the mutex so that questionEnd can acquire it
       const question_end = await questionEnd(
         connections,
         data,
@@ -715,7 +718,8 @@ export const questionAnswer = async (
       console.log(`[GC] Ending Question Early: ${question_end}`);
     }
   } finally {
-    release();
+    // if mutex is not released, release it
+    if (connections.mutex.isLocked()) release();
   }
   return correct;
 };
@@ -768,6 +772,7 @@ export const questionEnd = async (
   early: boolean,
   question: boolean
 ): Promise<boolean> => {
+  // Acquire the turn mutex to ensure that no other requests are being processed
   const release = await connections.mutex.acquire();
   try {
     console.log("4");
@@ -795,20 +800,22 @@ export const questionEnd = async (
       .exec();
 
     // TODO I DID THIS TO TEST AND FIX THE CONSEQUENCES NOT DISAPPEARING BUT DIDN"T FINISH. TODO KEEP GOING
-    console.log(`[GC] SENDING ${question ? 'QUESTION' : 'CONSEQUENCE'} ${early ? 'ENDED' : 'TIMEOUT'} ACK`);
-    console.log(`[GC] ${JSON.stringify(connections.host)}`)
+    console.log(
+      `[GC] SENDING ${question ? "QUESTION" : "CONSEQUENCE"} ${
+        early ? "ENDED" : "TIMEOUT"
+      } ACK`
+    );
+    console.log(`[GC] ${JSON.stringify(connections.host)}`);
 
     connections.host.conn.socket.send(
       JSON.stringify({
         type: question
-          ? (early
+          ? early
             ? WebsocketType.QuestionEndedAck
             : WebsocketType.QuestionTimeOut
-          )
-          : (early
-            ? WebsocketType.ConsequenceEndedAck
-            : WebsocketType.ConsequenceTimeOut
-          ),
+          : early
+          ? WebsocketType.ConsequenceEndedAck
+          : WebsocketType.ConsequenceTimeOut,
         requestId: data.requestId,
         data: {
           players: players
@@ -849,7 +856,7 @@ export const questionEnd = async (
       );
     });
   } finally {
-    release();
+    if (connections.mutex.isLocked()) release();
   }
   return true;
 };
