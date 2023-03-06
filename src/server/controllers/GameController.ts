@@ -768,6 +768,8 @@ export const questionEnd = async (
   early: boolean,
   question: boolean
 ): Promise<boolean> => {
+  // TODO I DID THIS TO TEST AND FIX THE CONSEQUENCES NOT DISAPPEARING BUT DIDN"T FINISH. TODO KEEP GOING
+  console.log(`[GC] SENDING ${question ? 'QUESTION' : 'CONSEQUENCE'} ${early ? 'ENDED' : 'TIMEOUT'} ACK`);
   const release = await connections.mutex.acquire();
   try {
     if (connections.turn === undefined) return false;
@@ -789,7 +791,6 @@ export const questionEnd = async (
       .orFail()
       .exec();
 
-    console.log(`[GC] SENDING ${question ? 'QUESTION' : 'CONSEQUENCE'} ${early ? 'ENDED' : 'TIMEOUT'} ACK`);
     connections.host.conn.socket.send(
       JSON.stringify({
         type: question
