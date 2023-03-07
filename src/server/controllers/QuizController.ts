@@ -53,10 +53,10 @@ export const validateAnswer = async (
         );
     if (!question)
       throw `No question in ${questionCategory} has ID number ${questionID}.`;
-    
-      return question.answer === userAnswer;
-  } catch(err) {
-    console.log("[QC] ERROR OCCURED WHILE VALIDATING ANSWER");
+
+    return question.answer === userAnswer;
+  } catch (err) {
+    console.log("[QC] ERROR OCCURRED WHILE VALIDATING ANSWER");
     throw err;
   }
 };
