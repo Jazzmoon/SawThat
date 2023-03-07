@@ -601,6 +601,7 @@ export const turn = async (
           } as WebsocketResponse)
         );
     }
+    console.log(`[GC] STARTING TIMEOUT TIMER FOR ${Date.now() - (res_data.timer_start + res_data.timer_length * 1000)} ms`);
     connections.turn!.timeout = setTimeout(() => {
       questionEnd(
         connections,
