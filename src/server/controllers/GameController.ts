@@ -436,6 +436,7 @@ export const generateQuestion = async (
       throw "[GC] Consequences did not update properly";
     }
     // Move the player
+    console.log(`[GC] Moving player ${movement_die} spots because of consequence`)
     await movePlayer(context.gameID, movement_die);
     return [WebsocketType.ConsequenceAck, consequence_data];
   } else {

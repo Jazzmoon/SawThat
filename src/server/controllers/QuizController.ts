@@ -36,12 +36,9 @@ export const validateAnswer = async (
     "themes",
     `${themePackName}.json`
   );
-  console.log(`THEME PATH: ${theme_path}`);
   try {
     const fstream = await readFile(theme_path, "utf-8");
-    console.log("done reading file");
     let themePack = await JSON.parse(fstream);
-    console.log("done parsing file");
     // Find question
     let question = questionType
       ? themePack.questions[questionCategory].find(
