@@ -604,7 +604,11 @@ export const turn = async (
     release();
   }
   // You cannot call questionEnd without releasing the mutex first
-  console.log(`[GC] STARTING TIMEOUT TIMER FOR ${Date.now() - (res_data.timer_start + res_data.timer_length * 1000)} ms`);
+  console.log(
+    `[GC] STARTING TIMEOUT TIMER FOR ${
+      Date.now() - (res_data.timer_start + res_data.timer_length * 1000)
+    } ms`
+  );
   connections.turn!.timeout = setTimeout(
     questionEnd,
     Math.abs(
@@ -685,6 +689,7 @@ export const questionAnswer = async (
     if (correct) {
       console.log(`[GC] User ${context.username} was correct.`);
       // If it is the players turn. Move them.
+      release(); // Release the mutex so that questionEnd can acquire it
       if (game.players[game.turn].username === context.username) {
         const movement = await movePlayer(
           context.gameID,
@@ -693,7 +698,6 @@ export const questionAnswer = async (
         console.log(`[GC] Player moved: ${movement}`);
       }
       // If correct, kill the timeout and move player accordingly
-      release(); // Release the mutex so that questionEnd can acquire it
       const question_end = await questionEnd(
         connections,
         data,
