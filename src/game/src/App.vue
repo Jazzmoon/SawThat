@@ -141,7 +141,6 @@ const currentView = computed(() => {
 });
 
 function completeGameStep(message: WebsocketMessage): void {
-  console.log(message);
   // if the list of players was updated, update it
   if (message.data.players) {
     updatePlayersList(message.data.players);
