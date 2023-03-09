@@ -1,6 +1,5 @@
 <template>
   <div id="root">
-    <ConsequenceModal v-if="consequenceShown" :data="consequenceData" />
     <transition name="fade" mode="out-in">
       <FinalStandings
         v-if="currentView == FinalStandings.__name"
@@ -11,6 +10,10 @@
         v-else-if="currentView == QuestionView.__name"
         :players="players"
         :data="currentQuestionData"
+      />
+      <ConsequenceView 
+        v-else-if="currentView == ConsequenceView.__name" 
+        :data="consequenceData"
       />
       <MainView
         v-else-if="currentView == MainView.__name"
@@ -31,7 +34,7 @@
 import HomeView from "./views/HomeView.vue";
 import MainView from "./views/MainView.vue";
 import QuestionView from "./views/QuestionView.vue";
-import ConsequenceModal from "./components/ConsequenceModal.vue";
+import ConsequenceView from "./views/ConsequenceView.vue";
 import FinalStandings from "./views/FinalStandings.vue";
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import { WS_API } from "./middleware/WS_API";
@@ -48,7 +51,8 @@ enum GameState {
   NONE = 0, // game is not created or started yet
   RUNNING = 1, // game is running but not currently showing a question or consequence
   SHOWING_QUESTION = 2, // game is running and showing a question
-  ENDED = 3, // game has ended but not yet returned to the home screen
+  SHOWING_CONSEQUENCE = 3, // game is running and showing a consequence
+  ENDED = 4, // game has ended but not yet returned to the home screen
 }
 
 let topPlayers = ref([] as Player[]);
@@ -56,7 +60,6 @@ let currentGameState = ref(GameState.NONE);
 let players = ref([] as Player[]);
 let previousTurnPlayers = ref([] as Player[]);
 let currentQuestionData = ref({} as QuestionData);
-let consequenceShown = ref(false);
 let consequenceData = ref({} as ConsequenceData);
 let currentPlayer = ref(-1);
 
@@ -94,17 +97,14 @@ onMounted(() => {
         case WebsocketType.QuestionTimeOut:
         case WebsocketType.QuestionAnswer:
         case WebsocketType.QuestionEndedAck:
+        case WebsocketType.ConsequenceEndedAck:
+        case WebsocketType.ConsequenceTimeOut:
           completeGameStep(message);
           currentGameState.value = GameState.RUNNING;
           break;
         case WebsocketType.ConsequenceAck:
-          consequenceShown.value = true;
           consequenceData.value = message.data;
-          break;
-        case WebsocketType.ConsequenceEndedAck:
-        case WebsocketType.ConsequenceTimeOut:
-          completeGameStep(message);
-          consequenceShown.value = false;
+          currentGameState.value = GameState.SHOWING_CONSEQUENCE;
           break;
         case WebsocketType.GameEndedAck:
           topPlayers.value = message.data.ranking;
@@ -137,6 +137,8 @@ const currentView = computed(() => {
       return MainView.__name;
     case GameState.SHOWING_QUESTION:
       return QuestionView.__name;
+    case GameState.SHOWING_CONSEQUENCE:
+      return ConsequenceView.__name;
   }
 });
 
