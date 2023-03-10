@@ -7,7 +7,7 @@ import type { WebsocketMessage } from "../../../shared/types/Websocket";
  * during the game.
  */
 export class WS_API extends Base_WS_API {
-    private static serverURL = "wss://sawthat.jazzmoon.host/api/ws";
+    private static serverURL = "wss://sawthat.jazzmoon.ca/api/ws";
 
     /**
      * no-op but this method should not be used from outside this class
