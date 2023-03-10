@@ -1,0 +1,74 @@
+{
+  "questions": {
+    "Take Three": [
+      {
+        "id": 1,
+        "question_type": "Multiple Choice",
+        "question": "Which alien villain had a plan that consisted of <_>, <_>, and <_>.",
+        "answer": "The Slitheen",
+        "clue_list": [
+          "faking an alien crash landing in the Thames",
+          "killing the Prime Minister to get the nuclear launch codes",
+          "selling the Earth's radioactive remains post nuclear war as a fuel source"
+        ],
+        "fake_answers": [
+          "The Daleks",
+          "The Cybermen",
+          "The Sontarans",
+          "The Master",
+          "The Silence",
+          "The Weeping Angels",
+          "The Nestene Consciousness",
+          "The Vashta Nerada",
+          "The Zygons",
+          "The Ood"
+        ],
+        "media_type": "image",
+        "media_url": "https://m.media-amazon.com/images/M/MV5BOTVlMGU3OGItNmM1Ny00NmVjLTljYjQtZDAzYjEyMzAzY2Y2XkEyXkFqcGdeQXVyODc5MTI0NjU@._V1_.jpg"
+      }
+    ],
+    "Musical": [
+      {
+        "id": 2,
+        "question_type": "Multiple Choice",
+        "question": "Which Doctor Who companion said \"<_>\"?",
+        "answer": "Donna Noble",
+        "clue_list": [
+          "Give me pockets!",
+          "Isn't Traveling With You One Big Spoiler?",
+          "I'm Waving At Fat.",
+          "I Must Have Been Mad Turning Down That Offer.",
+          "We're So Not Married.",
+          "I'm Nothing Special."
+        ],
+        "fake_answers": [
+          "Rose Tyler",
+          "Martha Jones",
+          "Amy Pond",
+          "Clara Oswald",
+          "River Song",
+          "Sarah Jane Smith",
+          "Ace",
+          "Leela",
+          "Romana",
+          "Adric"
+        ],
+        "media_type": "image",
+        "media_url": "https://thecreativitystorm.files.wordpress.com/2019/07/the-companions1-e1564417086236.jpg"
+      }
+    ],
+    "Miscellaneous": [
+      {
+        "id": 3,
+        "question_type": "Multiple Choice",
+        "question": "How many regenerations of the Doctor do we see in the series for more than one episode? (Including the War Doctor, Curator, and the Ruth Doctor)",
+        "answer": "18",
+        "clue_list": [],
+        "fake_answers": ["11", "12", "13", "14", "15", "16", "17", "19", "20"],
+        "media_type": "image",
+        "media_url": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FThe_Doctor_%2528Doctor_Who%2529&psig=AOvVaw0iGh5qXmQ7wI5hJkP9RjPC&ust=1678547452796000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCJiUm9fS0f0CFQAAAAAdAAAAABAE"
+      }
+    ]
+  },
+  "consequences": []
+}
