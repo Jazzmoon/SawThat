@@ -436,7 +436,9 @@ export const generateQuestion = async (
       throw "[GC] Consequences did not update properly";
     }
     // Move the player
-    console.log(`[GC] Moving player ${movement_die} spots because of consequence`)
+    console.log(
+      `[GC] Moving player ${movement_die} spots because of consequence`
+    );
     await movePlayer(context.gameID, movement_die);
     return [WebsocketType.ConsequenceAck, consequence_data];
   } else {
@@ -606,9 +608,9 @@ export const turn = async (
   }
   // You cannot call questionEnd without releasing the mutex first
   console.log(
-    `[GC] STARTING TIMEOUT TIMER FOR ${
+    `[GC] STARTING TIMEOUT TIMER FOR ${Math.abs(
       Date.now() - (res_data.timer_start + res_data.timer_length * 1000)
-    } ms`
+    )} ms`
   );
   connections.turn!.timeout = setTimeout(
     questionEnd,
