@@ -213,6 +213,62 @@
         ],
         "media_type": "image",
         "media_url": "https://static.wikia.nocookie.net/pixar/images/6/66/MutantToys2.jpg/revision/latest?cb=20101004212202"
+      },
+      {
+        "id": 18,
+        "question_type": "Multiple Choice",
+        "question": "What Disney character <_>, <_>, and <_>?",
+        "answer": "Dumbo",
+        "clue_list": [
+          "was delivered to the circus by a stork",
+          "has big ears",
+          "can fly"
+        ],
+        "fake_answers": [
+          "Andy",
+          "Bonnie",
+          "Molly",
+          "Stuart",
+          "Jerry",
+          "Mickey",
+          "Tom",
+          "Timothy Mouse",
+          "Todd",
+          "Sid",
+          "Alice",
+          "Aiden",
+          "Aladdin",
+          "Thumper",
+          "Flower"
+        ],
+        "media_type": "image",
+        "media_url": "https://img.buzzfeed.com/store-an-image-prod-us-east-1/8v_kBf8b.png?output-format=jpg&output-quality=auto"
+      },
+      {
+        "id": 20,
+        "question_type": "Multiple Choice",
+        "question": "<_>, <_>, and <_> are a part of which classic Disney animated feature?",
+        "answer": "The Sword in the Stone",
+        "clue_list": ["An owl", "A wizard", "A boy named Wart"],
+        "fake_answers": [
+          "The Jungle Book",
+          "The Lion King",
+          "The Little Mermaid",
+          "The Rescuers",
+          "The Aristocats",
+          "The Many Adventures of Winnie the Pooh",
+          "The Black Cauldron",
+          "The Great Mouse Detective",
+          "The Fox and the Hound",
+          "The Rescuers Down Under",
+          "Oliver & Company",
+          "The Little Mermaid II: Return to the Sea",
+          "The Hunchback of Notre Dame",
+          "The Hunchback of Notre Dame II",
+          "The Princess and the Frog"
+        ],
+        "media_type": "image",
+        "media_url": "https://m.media-amazon.com/images/M/MV5BMTgwNzM4ODYxM15BMl5BanBnXkFtZTcwNjM0MjIyNw@@._V1_.jpg"
       }
     ],
     "Musical": [
@@ -381,6 +437,23 @@
         ],
         "media_type": "image",
         "media_url": "https://d2j1wkp1bavyfs.cloudfront.net/wp-content/uploads/2019/06/06160900/finding-nemo.jpg?q=80"
+      },
+      {
+        "id": 19,
+        "question_type": "Multiple Choice",
+        "question": "Which Disney Villain turns her enemies into stone?",
+        "answer": "The White Witch",
+        "clue_list": [],
+        "fake_answers": [
+          "Maleficent",
+          "Madam Mim",
+          "Jafar",
+          "Scar",
+          "Duke of Weselton",
+          "Hans"
+        ],
+        "media_type": "image",
+        "media_url": "https://static.wikia.nocookie.net/disneyvillains/images/e/e1/Disney_villains.jpg/revision/latest?cb=20200613181817"
       }
     ]
   },
