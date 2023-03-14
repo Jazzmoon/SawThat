@@ -1,12 +1,3 @@
-<script setup lang="ts">
-import type { QuestionData } from "../../../shared/apis/WebSocketAPIType";
-import type { Player } from "../../../shared/types/Player";
-const props = defineProps<{
-  data: QuestionData;
-  players: Player[];
-}>();
-</script>
-
 <template>
   <main id="parent">
     <div id="gradient">
@@ -24,10 +15,30 @@ const props = defineProps<{
     <img
       id="background"
       v-if="props.data.media_type === 'image'"
-      :src="props.data.media_url ?? ''"
+      :src="backgroundImage"
+      @error="imageError = true"
     />
   </main>
 </template>
+
+<script setup lang="ts">
+import type { QuestionData } from "../../../shared/apis/WebSocketAPIType";
+import type { Player } from "../../../shared/types/Player";
+import {ref, computed } from "vue";
+
+const props = defineProps<{
+  data: QuestionData;
+  players: Player[];
+}>();
+
+let imageError = ref(false);
+
+let backgroundImage = computed(() => {
+  return (!imageError.value && props.data.media_url)
+    ? props.data.media_url! 
+    : '/backup_background_img.jpg';
+})
+</script>
 
 <style scoped>
 #parent {
@@ -56,7 +67,7 @@ const props = defineProps<{
 #gradient {
   background: linear-gradient(
     180.92deg,
-    rgba(0, 0, 0, 0) 0.79%,
+    rgba(0, 0, 0, 0) 3%,
     rgba(23, 23, 23, 0.65) 25%,
     #171717 58.42%
   );
