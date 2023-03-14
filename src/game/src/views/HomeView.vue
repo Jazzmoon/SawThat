@@ -9,7 +9,7 @@
           <button id="gameCode" @click="copyCode()">{{ gameCode }}</button>
           <p>
             Go to
-            {{ /*import.meta.env.DOMAIN*/ "https://sawthat.jazzmoon.host/" }}
+            {{ /*import.meta.env.DOMAIN*/ "https://sawthat.jazzmoon.ca/" }}
             and enter this code to join!
           </p>
         </div>

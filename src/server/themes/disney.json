@@ -22,7 +22,7 @@
           "Payne"
         ],
         "media_type": "image",
-        "media_url": "https://d2j1wkp1bavyfs.cloudfront.net/wp-content/legacy/posts/82bd36d7-0027-4666-921c-f74928785e04.jpg?q=80"
+        "media_url": "https://static.wikia.nocookie.net/disney/images/0/03/Incredibles2-animationscreencaps.com-12451.jpg/revision/latest?cb=20200201174722"
       },
       {
         "id": 2,
@@ -71,7 +71,7 @@
           "is voiced by John Goodman",
           "is best friends with Mike Wazowski"
         ],
-        "fake_answers":["Abu", "Mike", "Butch", "Mark", "Philip", "Ramirez"],
+        "fake_answers": ["Abu", "Mike", "Butch", "Mark", "Philip", "Ramirez"],
         "media_type": "image",
         "media_url": "https://i.pinimg.com/736x/b7/b3/b0/b7b3b03715be30c158a66c23f1c3a276--homecoming-decorations-moodboard.jpg"
       },
@@ -108,7 +108,15 @@
           "is voiced by Alexander Gould",
           "is a clownfish"
         ],
-        "fake_answers": ["Walrus", "Marlin", "Dory", "Biff", "Ariel", "Tony", "Rafiki"],
+        "fake_answers": [
+          "Walrus",
+          "Marlin",
+          "Dory",
+          "Biff",
+          "Ariel",
+          "Tony",
+          "Rafiki"
+        ],
         "media_type": "image",
         "media_url": "https://i.pinimg.com/originals/85/d5/04/85d5048419fa3af1fadaf073198301c6.jpg"
       },
@@ -149,6 +157,118 @@
         "fake_answers": ["M-O", "Axiom", "ExVee", "Ellie", "Vanessa"],
         "media_type": "image",
         "media_url": "https://miro.medium.com/max/1024/1*Ms4DlzupS1ul8j8fafsa3g.jpeg"
+      },
+      {
+        "id": 15,
+        "question_type": "Multiple Choice",
+        "question": "What is the name of the rat who <_>, <_>, and <_> in the Pixar film Ratatouille?",
+        "answer": "Remy",
+        "clue_list": [
+          "dreams of becoming a chef",
+          "acts as a rat poison detector",
+          "controls a human body by pulling hair"
+        ],
+        "fake_answers": [
+          "Stuart",
+          "Jerry",
+          "Mickey",
+          "Tom",
+          "Tim",
+          "Todd",
+          "Sid",
+          "Bonnie",
+          "Molly",
+          "Linguini",
+          "Colette",
+          "Skinner"
+        ],
+        "media_type": "image",
+        "media_url": "https://www.looper.com/img/gallery/things-only-adults-notice-in-ratatouille/mabel-has-a-massive-rat-problem-in-ratatouille-1587064339.jpg"
+      },
+      {
+        "id": 16,
+        "question_type": "Multiple Choice",
+        "question": "In the Pixar film Toy Story, what is the name of the boy who owns <_>, <_>, and <_>?",
+        "answer": "Sid",
+        "clue_list": [
+          "Babyface",
+          "Ducky",
+          "The Frog and Walking Car",
+          "Hand-in-the-Box",
+          "Legs",
+          "Rockmobile",
+          "Jingle Joe",
+          "Roller Bob"
+        ],
+        "fake_answers": [
+          "Andy",
+          "Bonnie",
+          "Molly",
+          "Stuart",
+          "Jerry",
+          "Mickey",
+          "Tom",
+          "Tim",
+          "Todd"
+        ],
+        "media_type": "image",
+        "media_url": "https://static.wikia.nocookie.net/pixar/images/6/66/MutantToys2.jpg/revision/latest?cb=20101004212202"
+      },
+      {
+        "id": 18,
+        "question_type": "Multiple Choice",
+        "question": "What Disney character <_>, <_>, and <_>?",
+        "answer": "Dumbo",
+        "clue_list": [
+          "was delivered to the circus by a stork",
+          "has big ears",
+          "can fly"
+        ],
+        "fake_answers": [
+          "Andy",
+          "Bonnie",
+          "Molly",
+          "Stuart",
+          "Jerry",
+          "Mickey",
+          "Tom",
+          "Timothy Mouse",
+          "Todd",
+          "Sid",
+          "Alice",
+          "Aiden",
+          "Aladdin",
+          "Thumper",
+          "Flower"
+        ],
+        "media_type": "image",
+        "media_url": "https://img.buzzfeed.com/store-an-image-prod-us-east-1/8v_kBf8b.png?output-format=jpg&output-quality=auto"
+      },
+      {
+        "id": 20,
+        "question_type": "Multiple Choice",
+        "question": "<_>, <_>, and <_> are a part of which classic Disney animated feature?",
+        "answer": "The Sword in the Stone",
+        "clue_list": ["An owl", "A wizard", "A boy named Wart"],
+        "fake_answers": [
+          "The Jungle Book",
+          "The Lion King",
+          "The Little Mermaid",
+          "The Rescuers",
+          "The Aristocats",
+          "The Many Adventures of Winnie the Pooh",
+          "The Black Cauldron",
+          "The Great Mouse Detective",
+          "The Fox and the Hound",
+          "The Rescuers Down Under",
+          "Oliver & Company",
+          "The Little Mermaid II: Return to the Sea",
+          "The Hunchback of Notre Dame",
+          "The Hunchback of Notre Dame II",
+          "The Princess and the Frog"
+        ],
+        "media_type": "image",
+        "media_url": "https://m.media-amazon.com/images/M/MV5BMTgwNzM4ODYxM15BMl5BanBnXkFtZTcwNjM0MjIyNw@@._V1_.jpg"
       }
     ],
     "Musical": [
@@ -170,8 +290,8 @@
           "Moana",
           "Elsa"
         ],
-        "media_type": null,
-        "media_url": null
+        "media_type": "image",
+        "media_url": "https://www.diaryofanaspiringloser.com/wp-content/uploads/2020/03/Little-Mermaid-sisters-_-Ariels-sisters-Ariels-Beginning.jpeg"
       },
       {
         "id": 9,
@@ -192,8 +312,8 @@
           "Snow White",
           "Tiana"
         ],
-        "media_type": null,
-        "media_url": null
+        "media_type": "image",
+        "media_url": "https://static.wikia.nocookie.net/disney/images/6/64/Alice-in-Wonderland_Alice-3.jpg/revision/latest?cb=20220121191634"
       },
       {
         "id": 10,
@@ -220,8 +340,8 @@
           "Yelana",
           "Duke of Weselton"
         ],
-        "media_type": null,
-        "media_url": null
+        "media_type": "image",
+        "media_url": "https://e0.pxfuel.com/wallpapers/504/405/desktop-wallpaper-disney-frozen-background-frozen-castle.jpg"
       },
       {
         "id": 11,
@@ -241,8 +361,8 @@
           "Cassim",
           "Sadira"
         ],
-        "media_type": null,
-        "media_url": null
+        "media_type": "image",
+        "media_url": "https://upload.wikimedia.org/wikipedia/en/b/b9/Aladdin-Disney-Charecters.jpg"
       }
     ],
     "Miscellaneous": [
@@ -261,8 +381,8 @@
           "Hamm"
         ],
         "fake_answers": ["Allen", "Aiden", "Bobby", "Brett", "Tim", "Tom"],
-        "media_type": null,
-        "media_url": null
+        "media_type": "image",
+        "media_url": "https://static.wikia.nocookie.net/toystoryfanatic/images/f/fc/Toy_story_character_page.jpg/revision/latest?cb=20100401165900"
       },
       {
         "id": 13,
@@ -280,7 +400,7 @@
           "Don"
         ],
         "media_type": "image",
-        "media_url": "https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/A7985D9BF379DE15F82293F034CFC045A17B88449EE56DB9770BD7AE5AA69825/scale?width=1200&aspectRatio=1.78&format=jpeg"
+        "media_url": "https://www.liveabout.com/thmb/Uwm6lYie5SxgyLed5ufDpFn2pxY=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/up001-56a573d75f9b58b7d0dcfb06.jpg"
       },
       {
         "id": 14,
@@ -291,6 +411,49 @@
         "fake_answers": ["America", "France", "Germany", "Spain"],
         "media_type": "image",
         "media_url": "https://prod-ripcut-delivery.disney-plus.net/v1/variant/disney/A7985D9BF379DE15F82293F034CFC045A17B88449EE56DB9770BD7AE5AA69825/scale?width=1200&aspectRatio=1.78&format=jpeg"
+      },
+      {
+        "id": 17,
+        "question_type": "Multiple Choice",
+        "question": "In the Pixar film Finding Nemo, what is the name of the fish who helps Marlin find his son?",
+        "answer": "Dory",
+        "clue_list": [],
+        "fake_answers": [
+          "Destiny",
+          "Bailey",
+          "Hank",
+          "Nemo",
+          "Bruce",
+          "Pearl",
+          "Bubbles",
+          "Gill",
+          "Bloat",
+          "Nigel",
+          "Chum",
+          "Fluke",
+          "Gurgle",
+          "Deb",
+          "Jacques"
+        ],
+        "media_type": "image",
+        "media_url": "https://d2j1wkp1bavyfs.cloudfront.net/wp-content/uploads/2019/06/06160900/finding-nemo.jpg?q=80"
+      },
+      {
+        "id": 19,
+        "question_type": "Multiple Choice",
+        "question": "Which Disney Villain turns her enemies into stone?",
+        "answer": "The White Witch",
+        "clue_list": [],
+        "fake_answers": [
+          "Maleficent",
+          "Madam Mim",
+          "Jafar",
+          "Scar",
+          "Duke of Weselton",
+          "Hans"
+        ],
+        "media_type": "image",
+        "media_url": "https://static.wikia.nocookie.net/disneyvillains/images/e/e1/Disney_villains.jpg/revision/latest?cb=20200613181817"
       }
     ]
   },

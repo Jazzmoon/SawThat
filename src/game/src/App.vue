@@ -147,10 +147,10 @@ function completeGameStep(message: WebsocketMessage): void {
   if (message.data.players) {
     updatePlayersList(message.data.players);
   }
-  // start a timer for 5 seconds so that players can see the new standings. Then request a new question from the server
+  // start a timer for 4 seconds so that players can see the new standings. Then request a new question from the server
   setTimeout(() => {
     WS_API.sendNextQuestionRequest();
-  }, 7000 /* 7 seconds */);
+  }, 5 * 1000 /* 5 seconds */);
 }
 
 function updatePlayersList(newPlayers: Player[]): void {

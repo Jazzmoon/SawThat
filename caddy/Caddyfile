@@ -1,4 +1,5 @@
-{$DOMAIN:localhost}:80 {
+{$DOMAIN:localhost}:80,
+{$DOMAIN_ALT:localhost}:80 {
   handle_path /api/* {
     reverse_proxy * http://server:3000
   }
@@ -8,11 +9,12 @@
   }
 }
 
-{$GAME_DOMAIN:localhost}:80 {  
+{$GAME_DOMAIN:localhost}:80,
+{$GAME_DOMAIN_ALT:localhost}:80 {
   handle_path /api/* {
     reverse_proxy * http://server:3000
   }
-  
+
   handle {
     reverse_proxy * http://game:8080
   }

@@ -6,7 +6,7 @@ import type { JoinResponse } from "../../../shared/apis/HttpAPIType";
  * during the game.
  */
 export class HTTP_API extends Base_HTTP_API {
-    private static serverUrl = "https://sawthat.jazzmoon.host/api/client";
+    private static serverUrl = "https://sawthat.jazzmoon.ca/api/client";
     /**
      * no-op but this method should not be used from outside this class
      * so it is made private.

@@ -6,7 +6,7 @@ import type { CreateResponse } from "../../../shared/apis/HttpAPIType";
  * during the game.
  */
 export class HTTP_API extends Base_HTTP_API {
-    private static serverUrl = "https://sawthatgame.jazzmoon.host/api/game"
+    private static serverUrl = "https://sawthatgame.jazzmoon.ca/api/game"
 
     /**
      * no-op but this method should not be used from outside this class
