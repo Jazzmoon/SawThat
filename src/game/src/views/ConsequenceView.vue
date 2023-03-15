@@ -14,12 +14,21 @@
       >
         {{ timer }}
       </RadialProgress>
-      <h3 v-if="props.data.consequence_type == 0">
+      <h3
+        v-if="
+          props.data.consequence_type == 0 || props.data.consequence_type == 3
+        "
+      >
         Move {{ props.data.movement_die }} Spaces
       </h3>
-      <h3 v-else-if="props.data.consequence_type == 1">
+      <h3
+        v-else-if="
+          props.data.consequence_type == 1 || props.data.consequence_type == 2
+        "
+      >
         Move {{ -props.data.movement_die }} Spaces Back
       </h3>
+      <!-- Below are unimplemented; lose counts as negative movement, skip is positive. -->
       <h3 v-else-if="props.data.consequence_type == 2">Lose a Turn</h3>
       <h3 v-else-if="props.data.consequence_type == 3">Skip a Turn</h3>
     </div>
