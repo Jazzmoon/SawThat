@@ -16,7 +16,7 @@
         <div v-else>
           <h3>Theme pack</h3>
           <select v-model="selectedTheme">
-            <option v-for="theme in themes" :value="theme">{{ theme }}</option>
+            <option v-for="theme in themesDisplay" :value="theme">{{ theme }}</option>
           </select>
         </div>
         <button id="gameButton" @click="nextSetupStep()" :disabled="!canGoNext">
@@ -53,13 +53,15 @@ const emit = defineEmits(["gameStarted"]);
 const gameCode = ref("");
 const canGoNext = ref(true);
 
-let themes = ref([] as string[])
+let themes: string[] = []
+let themesDisplay = ref([] as string[])
 let selectedTheme = "";
 
 onMounted(async () => {
-    themes.value = await HTTP_API.getAvailableThemePacks();
-    console.log(themes.value)
-    selectedTheme = themes.value[0];
+    themes = await HTTP_API.getAvailableThemePacks();
+    themesDisplay.value = themes.map(name => name.split("_")
+        .map((word) => word[0].toUpperCase() + word.substring(1,)).join(' '))
+    selectedTheme = themesDisplay.value[0];
 })
 /**
  * Helper function to decide what text to show on the button that
@@ -106,7 +108,8 @@ async function createGame() {
     alert("Please select a theme first");
     return;
   }
-  const requestResult = await HTTP_API.sendCreate(selectedTheme);
+  const index = themesDisplay.value.indexOf(selectedTheme);
+  const requestResult = await HTTP_API.sendCreate(themes[index]);
   if (!requestResult || requestResult.hasOwnProperty("error")) {
     alert(`Failed to create a new game.\n${JSON.stringify(requestResult)}`);
     return;
