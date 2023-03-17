@@ -57,10 +57,9 @@ let themes = ref([] as string[])
 let selectedTheme = "";
 
 onMounted(async () => {
-  if (themes.value.length == 0) {
     themes.value = await HTTP_API.getAvailableThemePacks();
+    console.log(themes.value)
     selectedTheme = themes.value[0];
-  }
 })
 /**
  * Helper function to decide what text to show on the button that
@@ -223,5 +222,6 @@ select {
   padding: 6px;
   background-color: #003fa3;
   border-radius: 25px;
+  color: white;
 }
 </style>
