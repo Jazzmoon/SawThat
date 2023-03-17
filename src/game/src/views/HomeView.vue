@@ -12,6 +12,8 @@
             {{ /*import.meta.env.DOMAIN*/ "https://sawthat.jazzmoon.ca/" }}
             and enter this code to join!
           </p>
+        </div>
+        <div v-else>
           <h3>Theme pack</h3>
           <select v-model="selectedTheme">
             <option v-for="theme in availableThemes" :value="theme">{{ theme }}</option>
