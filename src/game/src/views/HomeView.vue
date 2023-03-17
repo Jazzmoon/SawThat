@@ -16,7 +16,7 @@
         <div v-else>
           <h3>Theme pack</h3>
           <select v-model="selectedTheme">
-            <option v-for="theme in availableThemes" :value="theme">{{ theme }}</option>
+            <option v-for="theme in themes" :value="theme">{{ theme }}</option>
           </select>
         </div>
         <button id="gameButton" @click="nextSetupStep()" :disabled="!canGoNext">
@@ -40,7 +40,7 @@ import LogoSVG from "@/assets/logo.svg?component";
 import PlayersListVue from "@/components/PlayersList.vue";
 import { HTTP_API } from "@/middleware/HTTP_API";
 import { WS_API } from "@/middleware/WS_API";
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { WebsocketType } from "../../../shared/enums/WebsocketTypes";
 import type { Player } from "../../../shared/types/Player";
 
@@ -53,16 +53,15 @@ const emit = defineEmits(["gameStarted"]);
 const gameCode = ref("");
 const canGoNext = ref(true);
 
-let themes: string[] = ['test', 'test2']
+let themes = ref([] as string[])
 let selectedTheme = "";
-const availableThemes = computed(async() => {
-  if (themes.length == 0) {
-    themes = await HTTP_API.getAvailableThemePacks();
-    selectedTheme = themes[0];
-  }
-  return themes;
-});
 
+onMounted(async () => {
+  if (themes.value.length == 0) {
+    themes.value = await HTTP_API.getAvailableThemePacks();
+    selectedTheme = themes.value[0];
+  }
+})
 /**
  * Helper function to decide what text to show on the button that
  * creates and starts the game.
@@ -104,6 +103,10 @@ async function nextSetupStep() {
  * Creates a new game with the server that client nodes can then join.
  */
 async function createGame() {
+  if (selectedTheme.length === 0) {
+    alert("Please select a theme first");
+    return;
+  }
   const requestResult = await HTTP_API.sendCreate(selectedTheme);
   if (!requestResult || requestResult.hasOwnProperty("error")) {
     alert(`Failed to create a new game.\n${JSON.stringify(requestResult)}`);
