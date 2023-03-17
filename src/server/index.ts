@@ -8,6 +8,7 @@ import * as dotenv from "dotenv";
 // Import Fastify Requirements
 import fastify, { FastifyInstance } from "fastify";
 import websocket from "@fastify/websocket";
+import cors from "@fastify/cors";
 
 // Import Mongoose
 import mongoose from "mongoose";
@@ -36,6 +37,15 @@ const app: FastifyInstance = fastify({
   logger: true,
 });
 app.register(websocket);
+app.register(cors, {
+  origin: [
+    process.env.DOMAIN!,
+    process.env.GAME_DOMAIN!,
+    process.env.DOMAIN_ALT!,
+    process.env.GAME_DOMAIN_ALT!,
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+});
 
 // Bind Routes
 app.register(BasicRouter, { prefix: "/" });
