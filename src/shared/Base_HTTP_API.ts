@@ -23,6 +23,15 @@ export default class Base_HTTP_API {
     }
 
     /**
+     * Sends a GET request over HTTP or HTTPS (depending on url)
+     * @param url the url to send the request to
+     * @returns the parsed data that the server sent back
+     */
+    protected static async sendGET(url: string): Promise<any> {
+        return this.sendRequest(url, 'GET', '');
+    }
+
+    /**
      * Sends a soem HTTP request over HTTP or HTTPS (depending on url)
      * @param url the url to send the request to
      * @param method the type of request to send

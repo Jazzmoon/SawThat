@@ -17,8 +17,16 @@ export class HTTP_API extends Base_HTTP_API {
     }
 
     /**
+     * Fetches the available theme packs
+     * @returns
+     */
+    public static getAvailableThemePacks(): Promise<string[]> {
+        return HTTP_API.sendGET(`${this.serverUrl}/themes`);
+    }
+
+    /**
      * Sends a request to start a game
-     * @param themepack the id of the theme pack (TODO THIS SHOULD BE A URL OR A FILE UPLOAD THING)
+     * @param themepack the id of the theme pack
      */
     public static sendCreate(theme_pack: string): Promise<CreateResponse> {
         return HTTP_API.sendPOST(`${this.serverUrl}/create`, {

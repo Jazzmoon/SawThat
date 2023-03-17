@@ -162,7 +162,7 @@ test('Test Base_WS_API handles new messages properly', () => {
     expect(counter).toBe(4);
 });
 
-test('Test Base_WS_API handles unformatted messages properly', () => { // TODO WHY DOESN"T THIS ERROR H+GET CAUGHT
+test('Test Base_WS_API handles unformatted messages properly', () => {
     try {
         //@ts-ignore
         Testable_WS_API.handleMessageFromServer("NOT JSON");

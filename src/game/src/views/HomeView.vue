@@ -4,7 +4,7 @@
       <div id="left">
         <LogoSVG id="icon" />
         <h1 id="title">SawThat?</h1>
-        <div v-if="gameCode">
+        <div v-if="isGameCreated()">
           <p>Game Code (Click to Copy):</p>
           <button id="gameCode" @click="copyCode()">{{ gameCode }}</button>
           <p>
@@ -12,6 +12,10 @@
             {{ /*import.meta.env.DOMAIN*/ "https://sawthat.jazzmoon.ca/" }}
             and enter this code to join!
           </p>
+          <h3>Theme pack</h3>
+          <select v-model="selectedTheme">
+            <option v-for="theme in availableThemes" :value="theme">{{ theme }}</option>
+          </select>
         </div>
         <button id="gameButton" @click="nextSetupStep()" :disabled="!canGoNext">
           {{ buttonText }}
@@ -46,6 +50,16 @@ const emit = defineEmits(["gameStarted"]);
 
 const gameCode = ref("");
 const canGoNext = ref(true);
+
+let themes: string[] = ['test', 'test2']
+let selectedTheme = "";
+const availableThemes = computed(async() => {
+  if (themes.length == 0) {
+    themes = await HTTP_API.getAvailableThemePacks();
+    selectedTheme = themes[0];
+  }
+  return themes;
+});
 
 /**
  * Helper function to decide what text to show on the button that
@@ -88,7 +102,7 @@ async function nextSetupStep() {
  * Creates a new game with the server that client nodes can then join.
  */
 async function createGame() {
-  const requestResult = await HTTP_API.sendCreate("disney"); // todo let the user decide this
+  const requestResult = await HTTP_API.sendCreate(selectedTheme);
   if (!requestResult || requestResult.hasOwnProperty("error")) {
     alert(`Failed to create a new game.\n${JSON.stringify(requestResult)}`);
     return;
@@ -173,7 +187,7 @@ async function startGame() {
   margin: auto;
   color: white;
   background-color: #003fa3;
-  border-radius: 30px;
+  border-radius: 25px;
 }
 #left {
   margin-left: 48px;
@@ -186,7 +200,7 @@ async function startGame() {
 
 button {
   border: 1rem solid #003fa3;
-  border-radius: 30px;
+  border-radius: 25px;
   margin: 8px;
   color: white;
   text-align: center;
@@ -197,5 +211,12 @@ button {
 button:disabled {
   border: 1rem solid #778db1;
   background-color: #778db1;
+}
+
+select {
+  width: 95%;
+  padding: 6px;
+  background-color: #003fa3;
+  border-radius: 25px;
 }
 </style>

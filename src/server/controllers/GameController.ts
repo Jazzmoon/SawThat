@@ -802,7 +802,6 @@ export const questionEnd = async (
       .orFail()
       .exec();
 
-    // TODO I DID THIS TO TEST AND FIX THE CONSEQUENCES NOT DISAPPEARING BUT DIDN"T FINISH. TODO KEEP GOING
     console.log(
       `[GC] SENDING ${question ? "QUESTION" : "CONSEQUENCE"} ${
         early ? "ENDED" : "TIMEOUT"

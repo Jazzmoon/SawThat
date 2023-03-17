@@ -67,7 +67,6 @@ function tick(offset: number = 0): void {
     padding: 12px;
     align-content: center;
     width: 400px;
-    height: 550px; /* TODO MAKE THIS DYNAMIC */
 }
 
 #root * {
