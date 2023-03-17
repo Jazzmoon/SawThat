@@ -28,7 +28,7 @@ export default class Base_HTTP_API {
      * @returns the parsed data that the server sent back
      */
     protected static async sendGET(url: string): Promise<any> {
-        return this.sendRequest(url, 'GET', '');
+        return this.sendRequest(url, 'GET');
     }
 
     /**
@@ -38,12 +38,17 @@ export default class Base_HTTP_API {
      * @param data the payload to include in the request
      * @returns the parsed data that the server sent back
      */
-    private static async sendRequest(url: string, method: string, data: any): Promise<any> {
-        const response = await fetch(url, {
+    private static async sendRequest(url: string, method: string, data: any = undefined): Promise<any> {
+        let request: any = {
             method: method,
-            body: JSON.stringify(data),
             headers: { "Content-Type": "application/json" }
-        });
+        };
+        
+        if (data !== undefined) {
+            request['body'] = JSON.stringify(data);
+        }
+
+        const response = await fetch(url, request);
 
         return response.json();
     }
