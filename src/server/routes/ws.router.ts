@@ -610,7 +610,7 @@ async function gameQuestionAnswer(
   if (!checkUserAuthorization(conn, data, context, "Client")) {
     throw "[WS] User is not an authorized Client.";
   }
-  tryTurnAction(conn, data, context, "Question Answered", async () => {
+  await tryTurnAction(conn, data, context, "Question Answered", async () => {
     const correct = await questionAnswer(
       connections[context.gameID],
       data,
