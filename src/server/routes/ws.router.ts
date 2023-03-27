@@ -638,11 +638,11 @@ async function gameConsequenceEnded(
 async function handleMessage(conn: SocketStream, data: any, context: Context) {
   switch (data.type) {
     case WebsocketType.GameSetup: {
-      gameSetupRequest(conn, data, context);
+      await gameSetupRequest(conn, data, context);
       break;
     }
     case WebsocketType.GameJoin: {
-      gameJoinRequest(conn, data, context);
+      await gameJoinRequest(conn, data, context);
       break;
     }
     case WebsocketType.GameStart: {

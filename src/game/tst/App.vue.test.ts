@@ -8,7 +8,8 @@ it.each([
     [0, "HomeView"],
     [1, "MainView"],
     [2, "QuestionView"],
-    [3, "FinalStandings"],
+    [3, "ConsequenceView"],
+    [4, "FinalStandings"],
   ])("App renders proper screen when necessary", (state, page) => {
     const app = shallowMount(App);
 
@@ -102,7 +103,7 @@ it('App handles consequence messages properly', (message) => {
     
     // check that we are seeing a consequence now
     // @ts-ignore
-    assert.equal(app.getCurrentComponent().setupState.consequenceShown, true);
+    assert.equal(app.getCurrentComponent().setupState.currentGameState, 3);
     // @ts-ignore
     assert.equal(JSON.stringify(app.getCurrentComponent().setupState.consequenceData), JSON.stringify(dummyData));
     
@@ -114,7 +115,7 @@ it('App handles consequence messages properly', (message) => {
     });
     
     // @ts-ignore
-    assert.equal(app.getCurrentComponent().setupState.consequenceShown, false);
+    assert.equal(app.getCurrentComponent().setupState.currentGameState, 1);
     // @ts-ignore
     assert.equal(app.getCurrentComponent().setupState.players.length, 1);
 });
