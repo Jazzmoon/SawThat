@@ -498,6 +498,107 @@ Returns whether or not a user's answer to a question is correct.
 
 [controllers/QuizController.ts:25](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/controllers/QuizController.ts#L25)
 
+## Module: controllers/WebSocketController
+
+### ClientConn
+
+T **ClientConn**: `Object`
+
+#### Type declaration
+
+| Name       | Type           |
+| :--------- | :------------- |
+| `conn`     | `SocketStream` |
+| `username` | `string`       |
+
+#### Defined in
+
+[controllers/WebSocketController.ts:5](https://github.com/Jazzmoon/SawThat/blob/ec22236/src/server/controllers/WebSocketController.ts#L5)
+
+
+### Connection
+
+T **Connection**: `Object`
+
+#### Type declaration
+
+| Name                 | Type                                                                                                                                                                     |
+| :------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `clients`            | [`ClientConn`](controllers_WebSocketController.md#clientconn)[]                                                                                                          |
+| `host`               | [`ClientConn`](controllers_WebSocketController.md#clientconn)                                                                                                            |
+| `mutex`              | `MutexInterface`                                                                                                                                                         |
+| `turn?`              | { `all_play`: `boolean` ; `answered`: `string`[] ; `movement_die`: `number` ; `timeout?`: `NodeJS.Timeout` ; `turn_modifier`: `TurnModifier` ; `turn_start`: `number`  } |
+| `turn.all_play`      | `boolean`                                                                                                                                                                |
+| `turn.answered`      | `string`[]                                                                                                                                                               |
+| `turn.movement_die`  | `number`                                                                                                                                                                 |
+| `turn.timeout?`      | `NodeJS.Timeout`                                                                                                                                                         |
+| `turn.turn_modifier` | `TurnModifier`                                                                                                                                                           |
+| `turn.turn_start`    | `number`                                                                                                                                                                 |
+
+#### Defined in
+
+[controllers/WebSocketController.ts:10](https://github.com/Jazzmoon/SawThat/blob/ec22236/src/server/controllers/WebSocketController.ts#L10)
+
+
+### Connections
+
+T **Connections**: `Record`<`string`, [`Connection`](controllers_WebSocketController.md#connection)\>
+
+#### Defined in
+
+[controllers/WebSocketController.ts:24](https://github.com/Jazzmoon/SawThat/blob/ec22236/src/server/controllers/WebSocketController.ts#L24)
+
+#### formatQuestion
+
+- **formatQuestion**(`theme_pack_name`, `category`, `question_type`, `used_questions`): `Promise`<{ `id`: `number` ; `media_type`: ``null`` \| ``"image"`` \| ``"video"`` ; `media_url`: ``null`` \| `string` ; `options`: `string`[] ; `question`: `string`  }\>
+
+Fetches a random question from the given theme pack, formatted for display.
+
+##### Parameters
+
+| Name              | Type                                         | Description                                                             |
+| :---------------- | :------------------------------------------- | :---------------------------------------------------------------------- |
+| `theme_pack_name` | `string`                                     | Name of the Theme Pack file in which a question is being generated for. |
+| `category`        | `string`                                     | The name of the category that the question must belong to.              |
+| `question_type`   | ``"Multiple Choice"`` \| ``"Text Question"`` | Denotes whether the question is multiple choice or text.                |
+| `used_questions`  | `number`[]                                   | A list of question ids in which have already been used by the game.     |
+
+##### Returns
+
+`Promise`<{ `id`: `number` ; `media_type`: ``null`` \| ``"image"`` \| ``"video"`` ; `media_url`: ``null`` \| `string` ; `options`: `string`[] ; `question`: `string`  }\>
+
+Formatted question data, loaded from file.
+
+##### Defined in
+
+[controllers/QuizController.ts:70](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/controllers/QuizController.ts#L70)
+
+#### validateAnswer
+
+- **validateAnswer**(`themePackName`, `questionID`, `questionCategory`, `userAnswer`, `questionType?`): `Promise`<`boolean`\>
+
+Returns whether or not a user's answer to a question is correct.
+
+##### Parameters
+
+| Name               | Type     | Description                                                                    |
+| :----------------- | :------- | :----------------------------------------------------------------------------- |
+| `themePackName`    | `string` | Name of the Theme Pack file in which a question needs to be validated against. |
+| `questionID`       | `number` | The specific question id within that question file.                            |
+| `questionCategory` | `string` | The category in which the question can be found in.                            |
+| `userAnswer`       | `string` | The user answer to the question, in which needs to be validated.               |
+| `questionType?`    | `string` | The specific type of question asked, if known.                                 |
+
+##### Returns
+
+`Promise`<`boolean`\>
+
+##### Defined in
+
+[controllers/QuizController.ts:25](https://github.com/Jazzmoon/SawThat/blob/d5e47b5/src/server/controllers/QuizController.ts#L25)
+
+
+
 ## Module: models/Game
 
 ### Type Aliases
