@@ -50,8 +50,7 @@ onMounted(() => {
   let offset = props.data.timer_start
     ? ((Date.now() - new Date(props.data.timer_start).getTime()) / 1000)
     : 0;
-  alert(`${offset}   ${props.data.timer_length}   ${props.data.timer_start}    ${new Date(props.data.timer_start!)}`)
-  timer.value = props.data.timer_length - ~~offset;
+  timer.value = props.data.timer_length - Math.ceil(offset);
   tick(offset);
 });
 
@@ -63,7 +62,7 @@ function tick(offset: number = 0): void {
   setTimeout(() => {
     timer.value--;
     if (timer.value > 0) {
-      tick(0);
+      tick(3); // adjust for various overhead (overcompensating is ok)
     }
   }, 1000 - offset);
 }
