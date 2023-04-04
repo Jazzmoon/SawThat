@@ -374,23 +374,24 @@ export const generateQuestion = async (
   const question_type: "Multiple Choice" | "Text Question" = "Multiple Choice";
   let game = await Game.findOne({ game_code: context.gameID }).orFail().exec(),
     category: string = "Consequence";
-  switch (challenge_die) {
-    case QuestionCategory.TakeThreeAllPlay:
-    case QuestionCategory.TakeThreeMyPlay:
-      category = "Take Three";
-      break;
-    case QuestionCategory.MusicalAllPlay:
-    case QuestionCategory.MusicalMyPlay:
-      category = "Musical";
-      break;
-    case QuestionCategory.MiscellaneousAllPlay:
-    case QuestionCategory.MiscellaneousMyPlay:
-      category = "Miscellaneous";
-      break;
-    default:
+    // TODO UNCOMMENT. JUST FOR TESTING
+  // switch (challenge_die) {
+  //   case QuestionCategory.TakeThreeAllPlay:
+  //   case QuestionCategory.TakeThreeMyPlay:
+  //     category = "Take Three";
+  //     break;
+  //   case QuestionCategory.MusicalAllPlay:
+  //   case QuestionCategory.MusicalMyPlay:
+  //     category = "Musical";
+  //     break;
+  //   case QuestionCategory.MiscellaneousAllPlay:
+  //   case QuestionCategory.MiscellaneousMyPlay:
+  //     category = "Miscellaneous";
+  //     break;
+  //   default:
       category = "Consequence";
-      break;
-  }
+      // break;
+  // }
 
   if (category === "Consequence") {
     // Fetch consequence
