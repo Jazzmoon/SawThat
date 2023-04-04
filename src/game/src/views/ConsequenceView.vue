@@ -62,7 +62,7 @@ function tick(offset: number = 0): void {
   setTimeout(() => {
     timer.value--;
     if (timer.value > 0) {
-      tick(3); // adjust for various overhead (overcompensating is ok)
+      tick(200); // adjust for various overhead (overcompensating is ok)
     }
   }, 1000 - offset);
 }
