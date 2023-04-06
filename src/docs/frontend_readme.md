@@ -99,10 +99,6 @@ This view is shown to the player once it is their turn to answer a question. Upo
 
 Displays the positional of each player as a coloured circle on a virtual board. Once the players reach the last position, they win. Each player's circle color is randomly assigned but is consistent through all the nodes.
 
-### ConsequenceModal.vue
-
-This component pops-up when a player must face a consequence. It displays the consequence in textual form and shows a timer. After the timer expires, the component disappears and the game continues.
-
 ## PlayersList.vue
 
 This view lists all the players that are currently in the game as well as highlights the player who is currently answering a question.
@@ -117,9 +113,13 @@ This view is responsible for creating and then starting a game, displaying the g
 
 This is the main view that is displayed throughout the game. It consists of the board (which shows the current location of each player) as well as a player list (which shows the current players and highlights the player whose turn is next).
 
-### MultipleChoiceQuestion.vue
+### QuestionView.vue
 
 This view appears when a client node needs to answer a question. This view shows the question as well as a related or decorational background image as well as a timer while the player is answering. After the player answer, or the timer runs out, the gam enode transitions back to the `MainView`.
+
+### ConsequenceView.vue
+
+This component pops-up when a player must face a consequence. It displays the consequence in textual form and shows a timer. After the timer expires, the component disappears and the game continues.
 
 ### FinalStandings.vue
 
