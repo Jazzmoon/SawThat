@@ -14,7 +14,7 @@ dotenv.config();
 /**
  * Generate the user access token that identifies each connected user, and create their user within the database.
  * @param requestData - The username, game code, and type of user in which is generating their authentication token.
- * @param {string} requestData.username - The username of the user sending te request to generate a JWT token.
+ * @param {string} requestData.username - The username of the user sending the request to generate a JWT token.
  * @param {string} requestData.gameCode - The game code for the game that the user is going to be related to.
  * @param {"Game" | "Client"} requestData.userType - Whether the user being created is a game or client node user.
  * @param {Color | undefined} requestData.color - If the user is a client node user, they will provide the color for their player piece.

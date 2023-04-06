@@ -145,7 +145,7 @@ Generate the user access token that identifies each connected user, and create t
 | `requestData.color?`   | `Color`                    | If the user is a client node user, they will provide the color for their player piece.       |
 | `requestData.gameCode` | `string`                   | The game code for the game that the user is going to be related to.                          |
 | `requestData.userType` | ``"Game"`` \| ``"Client"`` | Whether the user being created is a game or client node user.                                |
-| `requestData.username` | `string`                   | The username of the user sending te request to generate a JWT token.                         |
+| `requestData.username` | `string`                   | The username of the user sending the request to generate a JWT token.                        |
 
 ##### Returns
 

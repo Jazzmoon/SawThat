@@ -166,6 +166,13 @@ const WSRouter: FastifyPluginCallback = async (fastify, opts, done) => {
   done();
 };
 
+/**
+ * Attempts to get the game from the database.
+ * @param conn Websocket connection
+ * @param data Data sent from the client
+ * @param context User context information
+ * @returns The game if it exists, otherwise throws an error.
+ */
 async function tryGetGame(
   conn: SocketStream,
   data: any,
@@ -203,6 +210,11 @@ async function tryGetGame(
   return game;
 }
 
+/**
+ * Handles when a client disconnects from the server.
+ * @param conn The websocket connection
+ * @param gameID The game that the client belonged to
+ */
 async function handleDisconnect(conn: SocketStream, gameID: string) {
   if (!connections[gameID]) {
     // User never sent message and was never assigned to game
@@ -303,6 +315,12 @@ async function handleDisconnect(conn: SocketStream, gameID: string) {
   }
 }
 
+/**
+ * Handles when a client sends a GameSetup Request.
+ * @param conn The websocket connection
+ * @param data The data sent from the client about the game
+ * @param context The user context information
+ */
 async function gameSetupRequest(
   conn: SocketStream,
   data: any,
@@ -356,6 +374,12 @@ async function gameSetupRequest(
   }
 }
 
+/**
+ * Handles when a client sends a GameJoin Request.
+ * @param conn The websocket connection
+ * @param data The data sent from the client about the game
+ * @param context The user context information
+ */
 async function gameJoinRequest(
   conn: SocketStream,
   data: any,
@@ -429,6 +453,12 @@ async function gameJoinRequest(
   }
 }
 
+/**
+ * Handles when a client sends a GameStart Request.
+ * @param conn The websocket connection
+ * @param data The data sent from the client about the game
+ * @param context The user context information
+ */
 async function gameStartRequest(
   conn: SocketStream,
   data: any,
@@ -498,6 +528,12 @@ async function gameStartRequest(
   }
 }
 
+/**
+ * Handles when a client sends a NextPlayer Request.
+ * @param conn The websocket connection
+ * @param data The data sent from the client about the game
+ * @param context The user context information
+ */
 async function gameNextPlayerRequest(
   conn: SocketStream,
   data: any,
@@ -589,6 +625,12 @@ async function gameNextPlayerRequest(
   }
 }
 
+/**
+ * Handles when a client sends a Question Request.
+ * @param conn The websocket connection
+ * @param data The data sent from the client about the game
+ * @param context The user context information
+ */
 async function gameQuestionRequest(
   conn: SocketStream,
   data: any,
@@ -602,6 +644,13 @@ async function gameQuestionRequest(
   });
 }
 
+/**
+/**
+ * Handles when a client sends a QuestionAnswer Request.
+ * @param conn The websocket connection
+ * @param data The data sent from the client about the game
+ * @param context The user context information
+ */
 async function gameQuestionAnswer(
   conn: SocketStream,
   data: any,
@@ -622,6 +671,12 @@ async function gameQuestionAnswer(
   });
 }
 
+/**
+ * Handles when a client sends a Consequence Request.
+ * @param conn The websocket connection
+ * @param data The data sent from the client about the game
+ * @param context The user context information
+ */
 async function gameConsequenceEnded(
   conn: SocketStream,
   data: any,
@@ -635,6 +690,12 @@ async function gameConsequenceEnded(
   );
 }
 
+/**
+ * Grabs the type of the incoming request and calls the appropriate function.
+ * @param conn The websocket connection
+ * @param data The data sent from the client about the game
+ * @param context The user context information
+ */
 async function handleMessage(conn: SocketStream, data: any, context: Context) {
   switch (data.type) {
     case WebsocketType.GameSetup: {
@@ -682,6 +743,14 @@ async function handleMessage(conn: SocketStream, data: any, context: Context) {
   }
 }
 
+/**
+ * Given a user and a desired user type, checks if the user is authorized to perform the action.
+ * @param conn The websocket connection
+ * @param data  The data sent from the client about the game
+ * @param context The user context information
+ * @param goalUserType The desired user type to check against
+ * @returns Whether or not the user is authorized
+ */
 function checkUserAuthorization(
   conn: SocketStream,
   data: any,
@@ -702,6 +771,15 @@ function checkUserAuthorization(
   return true;
 }
 
+/**
+ * Attempts to execute a "Turn" action within the game and handles any errors that occur.
+ * @param conn The websocket connection
+ * @param data The data sent from the client about the game
+ * @param context The user context information
+ * @param actionName Descriptive name of the action
+ * @param action Function to execute the action
+ * @returns The result of the action was successful or not
+ */
 async function tryTurnAction(
   conn: SocketStream,
   data: any,
@@ -724,6 +802,15 @@ async function tryTurnAction(
   }
 }
 
+/**
+ * When ever an error occurs, this function is called to send the error to the client.
+ * @param conn The websocket connection
+ * @param data The data sent from the client about the game
+ * @param context The user context information
+ * @param err The error that occurred
+ * @param message A message to send to the client about the error
+ * @param fatal Whether or not the error is fatal to the backend running
+ */
 function sendError(
   conn: SocketStream,
   data: any,
