@@ -14,22 +14,78 @@
           </p>
         </div>
         <div v-else>
-          <h3>Theme pack</h3>
+          <h3>Theme Pack</h3>
           <select v-model="selectedTheme">
-            <option v-for="theme in themesDisplay" :value="theme">{{ theme }}</option>
+            <option v-for="theme in themesDisplay" :value="theme">
+              {{ theme }}
+            </option>
           </select>
         </div>
+        <br />
         <button id="gameButton" @click="nextSetupStep()" :disabled="!canGoNext">
           {{ buttonText }}
         </button>
+        <br />
       </div>
-      <div id="right" v-if="gameCode">
-        <h2>Who's already here:</h2>
-        <PlayersListVue
-          id="players"
-          :players="props.players"
-          :shownIndex="false"
-        />
+      <div id="right">
+        <div v-if="gameCode">
+          <h2>Who's already here:</h2>
+          <PlayersListVue
+            id="players"
+            :players="props.players"
+            :shownIndex="false"
+          />
+        </div>
+        <div class="instructions" v-else>
+          <h2>Instructions</h2>
+          <h3>Game Host</h3>
+          <ul>
+            <li>Select a theme pack from the dropdown menu from the left</li>
+            <li>
+              Click "Create A New Game" and send the displayed game code to your
+              players
+            </li>
+            <li>
+              Wait for players to join, then press "Start Game" when ready
+            </li>
+          </ul>
+          <h3>Player</h3>
+          <ul>
+            <li>
+              Enter the game code given by your host, choose a username, then
+              press "Go!"
+            </li>
+            <li>Answer questions first on your turn to move forward</li>
+            <li>
+              Answer questions first on other players' turns to stop them from
+              moving forward
+            </li>
+            <li>
+              Reach the end of the board to win, but watch out for consequence
+              cards
+            </li>
+          </ul>
+          <h2>Mechanics</h2>
+          <ul>
+            <li>
+              On each turn, either a Question or Consequence Card will be played
+            </li>
+            <li>
+              Each card has an associated random movement value, which is always
+              positive for Questions, but can be negative for Consequences
+            </li>
+            <li>
+              Each Question is either a "My Play", where only one person may
+              answer, or an "All Play", where anyone may answer. Regardless of
+              which, only the player whose turn it is may advance on a correct
+              answer
+            </li>
+            <li>
+              Each Consequence only affects the current player, and will cause
+              them to either move forwards or backwards
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </main>
@@ -53,16 +109,20 @@ const emit = defineEmits(["gameStarted"]);
 const gameCode = ref("");
 const canGoNext = ref(true);
 
-let themes: string[] = []
-let themesDisplay = ref([] as string[])
+let themes: string[] = [];
+let themesDisplay = ref([] as string[]);
 let selectedTheme = "";
 
 onMounted(async () => {
-    themes = await HTTP_API.getAvailableThemePacks();
-    themesDisplay.value = themes.map(name => name.split("_")
-        .map((word) => word[0].toUpperCase() + word.substring(1,)).join(' '))
-    selectedTheme = themesDisplay.value[0];
-})
+  themes = await HTTP_API.getAvailableThemePacks();
+  themesDisplay.value = themes.map((name) =>
+    name
+      .split("_")
+      .map((word) => word[0].toUpperCase() + word.substring(1))
+      .join(" ")
+  );
+  selectedTheme = themesDisplay.value[0];
+});
 /**
  * Helper function to decide what text to show on the button that
  * creates and starts the game.
@@ -116,19 +176,23 @@ async function createGame() {
   } else {
     gameCode.value = requestResult.gameID;
   }
-  
+
   WS_API.setUserToken(requestResult.userToken);
-  
+
   // setup the websocket connection
   const requestSuccess = await WS_API.setupWebSocketConnection(gameCode.value);
   if (!requestSuccess) {
-    alert("An error occurred while trying to upgrade the connection with the server.");
+    alert(
+      "An error occurred while trying to upgrade the connection with the server."
+    );
     return;
   }
-  
+
   const request2Success = await WS_API.sendCreateGameRequest();
   if (!request2Success || request2Success.type === WebsocketType.Error) {
-    alert(`An error occurred while trying to create the game.${request2Success.data}`);
+    alert(
+      `An error occurred while trying to create the game.${request2Success.data}`
+    );
     return;
   }
 
@@ -141,10 +205,10 @@ async function createGame() {
       case WebsocketType.GameJoinAck:
         playerCounter++;
         break;
-        case WebsocketType.PlayerDisconnectAck:
+      case WebsocketType.PlayerDisconnectAck:
         playerCounter--;
         break;
-      }
+    }
     canGoNext.value = playerCounter >= 2;
   });
 }
@@ -205,6 +269,22 @@ async function startGame() {
   width: 100%;
 }
 
+.instructions {
+  width: 45%;
+  margin: auto;
+}
+
+.instructions ul {
+  text-align: left;
+}
+
+.instructions li {
+  /* margin-bottom: 8px;
+  margin-left: 4px;
+  margin-right: 4px; */
+  padding: 4px;
+}
+
 button {
   border: 1rem solid #003fa3;
   border-radius: 25px;
@@ -212,7 +292,7 @@ button {
   color: white;
   text-align: center;
   background-color: #003fa3;
-  min-width: 120px;
+  min-width: 160px;
 }
 
 button:disabled {
@@ -222,9 +302,10 @@ button:disabled {
 
 select {
   width: 95%;
-  padding: 6px;
+  padding: 8px;
   background-color: #003fa3;
   border-radius: 25px;
   color: white;
+  border: none;
 }
 </style>
