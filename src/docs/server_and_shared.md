@@ -460,16 +460,18 @@ The definition of what a game looks like within the database.
 
 #### **Type declaration**
 
-|        Name         |            Type             |
-| :-----------------: | :-------------------------: |
-|     `game_code`     |          `string`           |
-|      `hostId`       |  `mongoose.Types.ObjectId`  |
-|      `players`      | `mongoose.Types.ObjectId`[] |
-|      `started`      |          `boolean`          |
-|    `theme_pack`     |          `string`           |
-|       `turn`        |          `number`           |
-| `used_consequences` |         `number`[]          |
-|  `used_questions`   |         `number`[]          |
+|            Name            |            Type             |
+| :------------------------: | :-------------------------: |
+|        `game_code`         |          `string`           |
+|          `hostId`          |  `mongoose.Types.ObjectId`  |
+|         `players`          | `mongoose.Types.ObjectId`[] |
+|         `started`          |          `boolean`          |
+|        `theme_pack`        |          `string`           |
+|           `turn`           |          `number`           |
+|    `used_consequences`     |         `number`[]          |
+|      `used_questions`      |         `number`[]          |
+|  `config.question_timer`   |     `number` \| `null`      |
+| `config.consequence_timer` |     `number` \| `null`      |
 
 #### **Variables**
 
@@ -910,12 +912,12 @@ If an error occurs, send back data of this format to ensure it can be handled.
 
 #### **Type declaration**
 
-|    Name    |        Type         |
-| :--------: | :-----------------: |
-|  `error`   | `string` \| `Error` |
-|  `fatal`   |      `boolean`      |
-| `message?` |      `string`       |
-|  `token`   |      `string`       |
+|   Name    |        Type         |
+| :-------: | :-----------------: |
+|  `error`  | `string` \| `Error` |
+|  `fatal`  |      `boolean`      |
+| `message` | `string` \| `null`  |
+|  `token`  |      `string`       |
 
 #### **GameEndAckData**
 
