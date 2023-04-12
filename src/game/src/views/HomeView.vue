@@ -1,19 +1,12 @@
 <template>
   <main>
     <div id="root">
-      <div id="left">
+      <div id="left" style="height: 99vh; overflow-y: auto;">
         <LogoSVG id="icon" />
         <h1 id="title">SawThat?</h1>
-        <div style="height: 99vh; overflow-y: auto;" v-if="isGameCreated()">
+        <div v-if="isGameCreated()">
           <p>Game Code (Click to Copy):</p>
           <button id="gameCode" @click="copyCode()">{{ gameCode }}</button>
-          <p>
-            Go to
-            {{ /*import.meta.env.DOMAIN*/ "https://sawthat.jazzmoon.ca/" }}
-            and enter this code to join!
-          </p>
-          <p>Or scan this code:</p>
-          <img src="/client_node_qrcode.png"/>
         </div>
         <div v-else>
           <h3>Theme Pack</h3>
@@ -23,11 +16,18 @@
             </option>
           </select>
         </div>
-        <br />
         <button id="gameButton" @click="nextSetupStep()" :disabled="!canGoNext">
           {{ buttonText }}
         </button>
-        <br />
+        <div v-if="isGameCreated()">
+          <p>
+            Go to
+            {{ /*import.meta.env.DOMAIN*/ "https://sawthat.jazzmoon.ca/" }}
+            and enter this code to join!
+          </p>
+          <p>Or scan this code:</p>
+          <img src="/client_node_qrcode.png"/>
+        </div>
       </div>
       <div id="right">
         <div v-if="gameCode">
