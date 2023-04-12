@@ -1,7 +1,7 @@
 <template>
   <main>
     <div id="root">
-      <div id="left" style="height: 99vh; overflow-y: auto;">
+      <div id="left">
         <LogoSVG id="icon" />
         <h1 id="title">SawThat?</h1>
         <div v-if="isGameCreated()">
@@ -262,10 +262,13 @@ async function startGame() {
   background-color: #003fa3;
   border-radius: 25px;
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
 }
 #left {
   margin-left: 48px;
+  height: 99vh;
+  overflow-y: auto;
+  width: 600px;
 }
 #right {
   display: inline-block;
