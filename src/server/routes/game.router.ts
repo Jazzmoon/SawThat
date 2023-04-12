@@ -46,6 +46,8 @@ const GameRouter: FastifyPluginCallback = async (
         type: "object",
         properties: {
           theme_pack: { type: "string" },
+          question_timer: { type: ["number", "null"] },
+          consequence_timer: { type: ["number", "null"] },
         },
       },
       response: {
