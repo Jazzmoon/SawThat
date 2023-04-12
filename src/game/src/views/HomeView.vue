@@ -4,16 +4,9 @@
       <div id="left">
         <LogoSVG id="icon" />
         <h1 id="title">SawThat?</h1>
-        <div style="height: 99vh; overflow-y: auto;" v-if="isGameCreated()">
+        <div v-if="isGameCreated()">
           <p>Game Code (Click to Copy):</p>
           <button id="gameCode" @click="copyCode()">{{ gameCode }}</button>
-          <p>
-            Go to
-            {{ /*import.meta.env.DOMAIN*/ "https://sawthat.jazzmoon.ca/" }}
-            and enter this code to join!
-          </p>
-          <p>Or scan this code:</p>
-          <img src="/client_node_qrcode.png"/>
         </div>
         <div v-else>
           <h3>Theme Pack</h3>
@@ -23,11 +16,18 @@
             </option>
           </select>
         </div>
-        <br />
         <button id="gameButton" @click="nextSetupStep()" :disabled="!canGoNext">
           {{ buttonText }}
         </button>
-        <br />
+        <div v-if="isGameCreated()">
+          <p>
+            Go to
+            {{ /*import.meta.env.DOMAIN*/ "https://sawthat.jazzmoon.ca/" }}
+            and enter this code to join!
+          </p>
+          <p>Or scan this code:</p>
+          <img src="/client_node_qrcode.png"/>
+        </div>
       </div>
       <div id="right">
         <div v-if="gameCode">
@@ -262,10 +262,13 @@ async function startGame() {
   background-color: #003fa3;
   border-radius: 25px;
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
 }
 #left {
   margin-left: 48px;
+  height: 99vh;
+  overflow-y: auto;
+  width: 600px;
 }
 #right {
   display: inline-block;
