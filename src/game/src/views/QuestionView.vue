@@ -1,6 +1,16 @@
 <template>
   <main id="parent">
     <div id="gradient">
+      <RadialProgress
+        style="margin: auto"
+        :diameter="70"
+        :completed-steps="timer"
+        :total-steps="props.data.timer_length"
+        start-color="blue"
+        stop-color="blue"
+      >
+        {{ timer }}
+      </RadialProgress>
       <p class="questionInfo" v-if="props.data.all_play">
         All Play; anyone may answer!
         {{ props.players[0].username }} will move
@@ -24,7 +34,7 @@
 <script setup lang="ts">
 import type { QuestionData } from "../../../shared/apis/WebSocketAPIType";
 import type { Player } from "../../../shared/types/Player";
-import {ref, computed } from "vue";
+import {ref, computed, onMounted } from "vue";
 
 const props = defineProps<{
   data: QuestionData;
@@ -37,7 +47,30 @@ let backgroundImage = computed(() => {
   return (!imageError.value && props.data.media_url)
     ? props.data.media_url! 
     : '/backup_background_img.jpg';
-})
+});
+
+const timer = ref(0);
+
+onMounted(() => {
+  let offset = props.data.timer_start
+    ? ((Date.now() - new Date(props.data.timer_start).getTime()) / 1000)
+    : 0;
+  timer.value = props.data.timer_length - Math.ceil(offset);
+  tick(offset);
+});
+
+/**
+ * Counts down seconds until timer.value = 0.
+ * @param offset Accounts for transmission delay from server to node (first tick can be made shorter)
+ */
+function tick(offset: number = 0): void {
+  setTimeout(() => {
+    timer.value--;
+    if (timer.value > 0) {
+      tick(200); // adjust for various overhead (overcompensating is ok)
+    }
+  }, 1000 - offset);
+}
 </script>
 
 <style scoped>

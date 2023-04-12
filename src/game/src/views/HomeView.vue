@@ -36,7 +36,7 @@
             :shownIndex="false"
           />
         </div>
-        <div class="instructions" v-else>
+        <div id="instructions" v-else>
           <h2>Instructions</h2>
           <h3>Game Host</h3>
           <ul>
@@ -85,6 +85,8 @@
               them to either move forwards or backwards
             </li>
           </ul>
+          <h2>Link for players to join:</h2>
+          <img src="/client_node_qrcode.png"/>
         </div>
       </div>
     </div>
@@ -269,19 +271,20 @@ async function startGame() {
   width: 100%;
 }
 
-.instructions {
-  width: 45%;
-  margin: auto;
+#instructions {
+  width: 75%;
+  max-width: 700px;
+  min-width: 200px;
+  height: 97vh;
+  margin: 24px auto;
+  overflow-y: auto;
 }
 
-.instructions ul {
+#instructions ul {
   text-align: left;
 }
 
-.instructions li {
-  /* margin-bottom: 8px;
-  margin-left: 4px;
-  margin-right: 4px; */
+#instructions li {
   padding: 4px;
 }
 
