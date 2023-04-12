@@ -4,7 +4,7 @@
       <div id="left">
         <LogoSVG id="icon" />
         <h1 id="title">SawThat?</h1>
-        <div v-if="isGameCreated()">
+        <div style="height: 99vh; overflow-y: auto;" v-if="isGameCreated()">
           <p>Game Code (Click to Copy):</p>
           <button id="gameCode" @click="copyCode()">{{ gameCode }}</button>
           <p>
@@ -12,6 +12,8 @@
             {{ /*import.meta.env.DOMAIN*/ "https://sawthat.jazzmoon.ca/" }}
             and enter this code to join!
           </p>
+          <p>Or scan this code:</p>
+          <img src="/client_node_qrcode.png"/>
         </div>
         <div v-else>
           <h3>Theme Pack</h3>
@@ -85,8 +87,6 @@
               them to either move forwards or backwards
             </li>
           </ul>
-          <h2>Link for players to join:</h2>
-          <img src="/client_node_qrcode.png"/>
         </div>
       </div>
     </div>
@@ -261,6 +261,8 @@ async function startGame() {
   color: white;
   background-color: #003fa3;
   border-radius: 25px;
+  font-weight: bold;
+  font-size: 1.2rem;
 }
 #left {
   margin-left: 48px;

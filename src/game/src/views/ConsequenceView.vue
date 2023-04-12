@@ -6,7 +6,7 @@
       <p>{{ props.data.story }}</p>
       <RadialProgress
         style="margin: auto"
-        :diameter="70"
+        :diameter="100"
         :completed-steps="timer"
         :total-steps="props.data.timer_length"
         start-color="blue"
@@ -62,7 +62,7 @@ function tick(offset: number = 0): void {
   setTimeout(() => {
     timer.value--;
     if (timer.value > 0) {
-      tick(200); // adjust for various overhead (overcompensating is ok)
+      tick(170); // adjust for various overhead (overcompensating is ok)
     }
   }, 1000 - offset);
 }
