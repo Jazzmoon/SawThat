@@ -106,11 +106,13 @@ export const createGame = async (
   req: FastifyRequest<{
     Body: {
       theme_pack: string;
+      question_timer?: number;
+      consequence_timer?: number;
     };
   }>,
   res: FastifyReply
 ) => {
-  const { theme_pack } = req.body;
+  const { theme_pack, question_timer, consequence_timer } = req.body;
 
   if (!theme_pack || typeof theme_pack !== "string") {
     res
@@ -168,6 +170,8 @@ export const createGame = async (
     players: [],
     used_questions: [],
     used_consequences: [],
+    question_timer: question_timer ?? 20,
+    consequence_timer: consequence_timer ?? 10,
   });
 
   try {
@@ -419,7 +423,7 @@ export const generateQuestion = async (
       consequence_type: consequence.consequenceType,
       story: consequence.story,
       movement_die: movement_die,
-      timer_length: 10,
+      timer_length: game.config.consequence_timer ?? 10,
     };
     // Add consequence ID to used list
     game = await Game.findByIdAndUpdate(
@@ -465,7 +469,7 @@ export const generateQuestion = async (
             ? movement_die * 2
             : movement_die,
         challenge_die: challenge_die,
-        timer_length: 15,
+        timer_length: game.config.question_timer ?? 20,
       };
 
     // Add question ID to used list

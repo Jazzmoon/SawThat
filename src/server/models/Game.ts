@@ -18,6 +18,10 @@ export type GameType = {
   players: Array<mongoose.Types.ObjectId>;
   turn: number;
   started: boolean;
+  config: {
+    question_timer?: number;
+    consequence_timer?: number;
+  };
 };
 
 /**
@@ -42,6 +46,10 @@ const GameSchema = new Schema({
   ],
   turn: { type: Number, require: true, default: 0 },
   started: { type: Boolean, require: true, default: false },
+  config: {
+    question_timer: { type: Number, require: true, default: 20 },
+    consequence_timer: { type: Number, require: true, default: 10 },
+  },
 });
 
 const Game = mongoose.model<GameType>("Game", GameSchema);
