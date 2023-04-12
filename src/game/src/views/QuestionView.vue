@@ -1,8 +1,7 @@
 <template>
   <main id="parent">
-    <div id="gradient">
-      <RadialProgress
-        style="margin: auto"
+    <RadialProgress
+        id="timer"
         :diameter="70"
         :completed-steps="timer"
         :total-steps="props.data.timer_length"
@@ -10,7 +9,8 @@
         stop-color="blue"
       >
         {{ timer }}
-      </RadialProgress>
+    </RadialProgress>
+    <div id="gradient">
       <p class="questionInfo" v-if="props.data.all_play">
         All Play; anyone may answer!
         {{ props.players[0].username }} will move
@@ -80,6 +80,12 @@ function tick(offset: number = 0): void {
   width: 100%;
   height: 100%;
   overflow: hidden;
+}
+#timer {
+  top: 24px;
+  left: 24px;
+  width: 600px;
+  height: 600px;
 }
 #questionText {
   position: absolute;
