@@ -268,7 +268,7 @@ async function startGame() {
   margin-left: 48px;
   height: 99vh;
   overflow-y: auto;
-  width: 600px;
+  width: 825px;
 }
 #right {
   display: inline-block;

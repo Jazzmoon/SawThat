@@ -93,4 +93,9 @@ function tick(offset: number = 0): void {
 #root * {
   text-align: center;
 }
+
+.vrp__inner {
+  font-weight: bold;
+  font-size: 1.4rem;
+}
 </style>

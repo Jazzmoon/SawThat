@@ -87,6 +87,10 @@ function tick(offset: number = 0): void {
   width: 600px;
   height: 600px;
 }
+.vrp__inner {
+  font-weight: bold;
+  font-size: 1.4rem;
+}
 #questionText {
   position: absolute;
   bottom: 24px;
