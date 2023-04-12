@@ -32,6 +32,7 @@
 </template>
 
 <script setup lang="ts">
+import RadialProgress from "vue3-radial-progress";
 import type { QuestionData } from "../../../shared/apis/WebSocketAPIType";
 import type { Player } from "../../../shared/types/Player";
 import {ref, computed, onMounted } from "vue";
